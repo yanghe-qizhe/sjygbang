@@ -1,0 +1,66 @@
+﻿<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <tem:SaveSLJHBatchOrder>
+      <!--Optional:-->
+      <tem:Model>
+        <!--Optional:-->
+        <tem:DETAILS>
+          <!--Zero or more repetitions:-->
+          <tem:Z_ITEM_DEMAND_SUM>
+            <!--Optional:-->
+            <tem:ID></tem:ID>
+            <!--Optional:-->
+            <tem:HANDLE>22000022234343434343</tem:HANDLE>
+            <!--Optional:-->
+            <tem:SITE>1000</tem:SITE>
+            <!--Optional:-->
+            <tem:SITENAME>阳光站点</tem:SITENAME>
+            <!--Optional:-->
+            <tem:WORK_SHOP_BO>1000D30030</tem:WORK_SHOP_BO>
+            <!--Optional:-->
+            <tem:WORK_SHOP_BONAME>五车间</tem:WORK_SHOP_BONAME>
+            <!--Optional:-->
+            <tem:PRODUCTION_LINE_BO>1000X0502</tem:PRODUCTION_LINE_BO>
+            <!--Optional:-->
+            <tem:PRODUCTION_LINE_BONAME>衬浆线</tem:PRODUCTION_LINE_BONAME>
+            <!--Optional:-->
+            <tem:OPERATION_BO>1000</tem:OPERATION_BO>
+            <!--Optional:-->
+            <tem:OPERATION_BONAME>打浆工序</tem:OPERATION_BONAME>
+            <!--Optional:-->
+            <tem:ITEM_BO>1000201040101A</tem:ITEM_BO>
+            <!--Optional:-->
+            <tem:ITEM_BONAME>兰花200g</tem:ITEM_BONAME>
+            <tem:DEMAND_ORIGINAL_QTY>120</tem:DEMAND_ORIGINAL_QTY>
+            <tem:DEMAND_CONFIRMED_QTY>220</tem:DEMAND_CONFIRMED_QTY>
+            <!--Optional:-->
+            <tem:DEMAND_DATE>2021-08-03</tem:DEMAND_DATE>
+            <tem:NET_DEMAND_CONFIRMED_QTY>120</tem:NET_DEMAND_CONFIRMED_QTY>
+            <tem:SYNC_FLAG>0</tem:SYNC_FLAG>
+            <tem:STATUS>0</tem:STATUS>
+            <tem:DEMAND_CONFIRMED_DATE></tem:DEMAND_CONFIRMED_DATE>
+            <!--Optional:-->
+            <tem:DEMAND_CONFIRMED_USER>111</tem:DEMAND_CONFIRMED_USER>
+            <!--Optional:-->
+            <tem:CREATED_USER>1111</tem:CREATED_USER>
+            <!--Optional:-->
+            <tem:CREATED_DATE_TIME>2021-08-31 12:50:04</tem:CREATED_DATE_TIME>
+            <!--Optional:-->
+            <tem:MODIFED_USER>2222</tem:MODIFED_USER>
+            <!--Optional:-->
+            <tem:MODIFED_DATE_TIME>2021-08-31 12:50:04</tem:MODIFED_DATE_TIME>
+            <!--Optional:-->
+            <tem:SHIFT>B</tem:SHIFT>
+            <!--Optional:-->
+            <tem:SHIFTNAME>早班</tem:SHIFTNAME>
+            <!--Optional:-->
+            <tem:WORK_BO>P0501</tem:WORK_BO>
+            <!--Optional:-->
+            <tem:WORK_BONAME>五车间工作中心</tem:WORK_BONAME>
+          </tem:Z_ITEM_DEMAND_SUM>
+        </tem:DETAILS>
+      </tem:Model>
+    </tem:SaveSLJHBatchOrder>
+  </soapenv:Body>
+</soapenv:Envelope>

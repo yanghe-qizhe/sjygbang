@@ -1,0 +1,281 @@
+﻿@{
+    ViewBag.Title = "质量标准设置";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var FANO = GetQuery("FANO");
+    var ITEMNO = GetQuery("ITEMNO");
+    var ITEMNAME = GetQuery("ITEMNAME");
+    var MAINID = GetQuery("MAINID");
+    var MEMO = GetQuery("MEMO");
+
+
+    var Code;
+    $(function () {
+        InitControl();
+        if (IsNull(MAINID)) {
+            AjaxJson("/BaseSet/ZJBZ/GetZJBZITEM?MAINID=" + escape(MAINID), "", function (data) {
+                if (IsNull(data) && data.Code == 1) {
+                    AddRowForJson(jQuery.parseJSON(data.Message));
+                } else {
+                    tipDialog(data.Message, 3, data.Code);
+                    $("#lr-add").css("display", "none");
+                }
+            });
+        }
+    })
+    function AddRowForJson(json) {
+        var type = "", pdtype = "", jzz = "", sign1 = "", maxjs = "", sign2 = "", minjs = "";
+        if (IsNull(json)) {
+            $.each(json, function (i, o) {
+                AddRow(o);
+            })
+        }
+    }
+
+    function AddRow(o) {
+        var maxcode = parseInt($("#MaxID").val()) + 1;
+        var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" ondblclick="Del(this)" index=' + maxcode + ' >' + maxcode + '</td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;display:none"><input id="ID➩' + maxcode + '" type="text" class="txt required" /></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="ISDEFAULT➩' + maxcode + '" class="txtselect required" datacol="yes" err="默认项" checkexpession="NotNull"><option value="1">默认</option><option value="0">非默认</option></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="TYPE➩' + maxcode + '" class="txtselect required" datacol="yes" err="判定方式" checkexpession="NotNull"><option value="0">自动判定</option><option value="1">人工判定</option></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="PDTYPE➩' + maxcode + '" class="txtselect required" datacol="yes" err="判定类型" checkexpession="NotNull"><option value="1">值区间</option><option value="2">文本</option></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="JZZ➩' + maxcode + '" class="txtselect required" disabled err="基准值"><option value="">=请选择=</option><option value="1">合格</option><option value="2">不合格</option></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="FDZ➩' + maxcode + '" type="text" class="txt" /></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="SIGN1➩' + maxcode + '" class="txtselect required" datacol="yes" err="比较符" checkexpession="NotNull"></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="MAXJS➩' + maxcode + '" type="text" class="txt required" /></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="SIGN2➩' + maxcode + '" class="txtselect required" datacol="yes" err="比较符" checkexpession="NotNull"></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="MINJS➩' + maxcode + '" type="text" class="txt required" /></td>';
+        tr += '<td class="formValue" style="width: 80px; text-align: center;"><input id="MEMO➩' + maxcode + '" type="text" class="txt" /></td>';
+        tr += '</tr>';
+        $("#add_TableInfo").append(tr);
+        $("#MaxID").val(maxcode);
+        $("#SIGN1➩" + maxcode).append(BindSIGN());
+        $("#SIGN2➩" + maxcode).append(BindSIGN());
+        $("#PDTYPE➩" + maxcode).bind("change", function () {
+            var index = $(this).attr("id").split('➩')[1];
+            if ($(this).val() == "1") {
+                $("#SIGN1➩" + index).removeAttr("disabled");
+                $("#MAXJS➩" + index).removeAttr("disabled");
+                $("#SIGN2➩" + index).removeAttr("disabled");
+                $("#MINJS➩" + index).removeAttr("disabled");
+                $("#JZZ➩" + index).attr("disabled", "disabled");
+                $("#JZZ➩" + index).val("");
+                $("#FDZ➩" + index).val("");
+            } else {
+                $("#SIGN1➩" + index).attr("disabled", "disabled");
+                $("#MAXJS➩" + index).attr("disabled", "disabled");
+                $("#SIGN2➩" + index).attr("disabled", "disabled");
+                $("#MINJS➩" + index).attr("disabled", "disabled");
+                $("#JZZ➩" + index).removeAttr("disabled");
+                $("#FDZ➩" + index).val("");
+            }
+        })
+        if (o != null) {
+            $("#ID➩" + maxcode).val(IsNull(o.ID) ? o.ID : "");
+            $("#ISDEFAULT➩" + maxcode).val(IsNull(o.ISDEFAULT) ? o.ISDEFAULT : "");
+            $("#TYPE➩" + maxcode).val(IsNull(o.TYPE) ? o.TYPE : "");
+            $("#PDTYPE➩" + maxcode).val(IsNull(o.PDTYPE) ? o.PDTYPE : "");
+            $("#PDTYPE➩" + maxcode).change();
+            $("#JZZ➩" + maxcode).val(IsNull(o.JZZ) ? o.JZZ : "");
+            $("#FDZ➩" + maxcode).val(IsNull(o.FDZ) ? o.FDZ : "");
+            $("#SIGN1➩" + maxcode).val(IsNull(o.SIGN1) ? o.SIGN1 : "");
+            $("#MAXJS➩" + maxcode).val(IsNull(o.MAXJS) ? o.MAXJS : "");
+            $("#SIGN2➩" + maxcode).val(IsNull(o.SIGN2) ? o.SIGN2 : "");
+            $("#MINJS➩" + maxcode).val(IsNull(o.MINJS) ? o.MINJS : "");
+            $("#MEMO➩" + maxcode).val(IsNull(o.MEMO) ? o.MEMO : "");
+        }
+    }
+
+    function BindSIGN() {
+        var tr = "<option value='>'>></option>";
+        tr += "<option value='>='>>=</option>";
+        tr += "<option value='='>=</option>";
+        tr += "<option value='<='><=</option>";
+        tr += "<option value='<'><</option>";
+        return tr;
+    }
+
+    function Del(obj) {
+        var No = $(obj).attr("index");
+        confirmDialog('', '注：您确定要删除当前第【' + No + '】行标准吗？', function (r) {
+            if (r) {
+                $("#add_TableInfo").find("tr[index='" + No + "']").remove();
+                for (var i = No; i <= $("#MaxID").val(); i++) {
+                    if (IsNull($("#MAXJS➩" + (parseInt(i) + 1)).val())) {
+                        $("#add_TableInfo").find("td[index='" + (parseInt(i) + 1) + "']").text(i);
+                        $("#add_TableInfo").find("td[index='" + (parseInt(i) + 1) + "']").attr("index", i);
+                        $("#add_TableInfo").find("tr[index='" + (parseInt(i) + 1) + "']").attr("index", i);
+
+                        $("#ISDEFAULT➩" + (parseInt(i) + 1)).attr("id", "ISDEFAULT➩" + i);
+                        $("#TYPE➩" + (parseInt(i) + 1)).attr("id", "TYPE➩" + i);
+                        $("#PDTYPE➩" + (parseInt(i) + 1)).attr("id", "PDTYPE➩" + i);
+                        $("#SIGN1➩" + (parseInt(i) + 1)).attr("id", "SIGN1➩" + i);
+                        $("#MAXJS➩" + (parseInt(i) + 1)).attr("id", "MAXJS➩" + i);
+                        $("#SIGN2➩" + (parseInt(i) + 1)).attr("id", "SIGN2➩" + i);
+                        $("#MINJS➩" + (parseInt(i) + 1)).attr("id", "MINJS➩" + i);
+                        $("#JZZ➩" + (parseInt(i) + 1)).attr("id", "JZZ➩" + i);
+                        $("#FDZ➩" + (parseInt(i) + 1)).attr("id", "FDZ➩" + i);
+                        $("#MEMO➩" + (parseInt(i) + 1)).attr("id", "MEMO➩" + i);
+                    } else {
+                        $("#add_TableInfo").find("td[index='" + i + "']").text(i);
+                        $("#add_TableInfo").find("td[index='" + i + "']").attr("index", i);
+                        $("#add_TableInfo").find("tr[index='" + i + "']").attr("index", i);
+
+                        $("#ISDEFAULT➩" + i).attr("id", "ISDEFAULT➩" + i);
+                        $("#TYPE➩" + i).attr("id", "TYPE➩" + i);
+                        $("#PDTYPE➩" + i).attr("id", "PDTYPE➩" + i);
+                        $("#SIGN1➩" + i).attr("id", "SIGN1➩" + i);
+                        $("#MAXJS➩" + i).attr("id", "MAXJS➩" + i);
+                        $("#SIGN2➩" + i).attr("id", "SIGN2➩" + i);
+                        $("#MINJS➩" + i).attr("id", "MINJS➩" + i);
+                        $("#JZZ➩" + i).attr("id", "JZZ➩" + i);
+                        $("#FDZ➩" + i).attr("id", "FDZ➩" + i);
+                        $("#MEMO➩" + i).attr("id", "MEMO➩" + i);
+                    }
+                }
+                $("#MaxID").val(parseInt($("#MaxID").val()) - 1);
+            }
+        });
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        $("#ITEMNO").val(ITEMNO);
+        $("#ITEMNAME").val(unescape(ITEMNAME));
+        $("#MEMO").val(unescape(MEMO));
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+
+
+
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = jQuery.parseJSON('{"MAINID":"' + MAINID + '","ENABLED":"' + ($("#ENABLED").attr("checked") ? "1" : "0") + '"}');
+            postData["ZJBZITEM"] = GetTableDataJson("#Temp_List");
+            AjaxJson("/BaseSet/ZJBZ/ZJBZITEMSave", postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+    <div class="PartialButton">
+        <a title="刷新" class="tools_btn" id="lr-replace" onclick="Replace()" ids="2e93cddb-303b-4584-bbc6-5bfe1fb9c858">
+            <span><b style='background: url("../../Content/Images/Icon16/arrow_refresh.png") no-repeat 50% 4px;'>
+                刷新</b></span></a> <a title="增行" class="tools_btn" id="lr-add" onclick="AddRow()"
+                    id="addrow"><span><b style='background: url("../../Content/Images/Icon16/add.png") no-repeat 50% 4px;'>
+                        增行</b></span></a>
+        <div class="tools_separator">
+        </div>
+    </div>
+</div>
+<div id="ZJFAProjectAdd">
+    <div id="RuleHead">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    质检项：
+                </th>
+                <td class="formValue">
+                    <input id="ITEMNO" type="hidden" err="质检项" datacol="yes" checkexpession="NotNull" />
+                    <input id="ITEMNAME" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                        datacol="yes" err="质检项" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    有效性：
+                </th>
+                <td class="formValue">
+                    <span class="item">
+                        <input type="checkbox" name="checkbox" checked="checked" id="ENABLED" />
+                        <label for="ENABLED">
+                            有效</label>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    描述：
+                </th>
+                <td class="formValue" colspan="3">
+                    <input id="MEMO" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    标准明细</div>
+            </div>
+        </div>
+    </div>
+    <div class="ScrollBar" style="height: 265px; margin: 1px; overflow-y: scroll;">
+        <table id="Temp_List" class="grid leftline form" style="width: 100%">
+            <thead>
+                <tr>
+                    <td style="width: 30px; text-align: center; border-left: none;">
+                        <div class="table-header">
+                            行号</div>
+                    </td>
+                    <td style="width: 50px; display: none">
+                        <div class="table-header">
+                            ID</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            默认项</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            判定方式</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            判定类型</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            基准值</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            浮动值</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            比较符</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            上限</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            比较符</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            下限</div>
+                    </td>
+                    <td style="width: 80px;">
+                        <div class="table-header">
+                            说明</div>
+                    </td>
+                </tr>
+            </thead>
+            <tbody id="add_TableInfo">
+            </tbody>
+        </table>
+    </div>
+</div>
+</form>

@@ -1,0 +1,225 @@
+﻿@{
+    ViewBag.Title = "加权平均公式管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+            var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BILLNO = $("#BILLNO").val();
+                var MATERIAL = $("#MATERIAL").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/BaseSet/AVGEXPRESSIONS/GetPageListJson")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&BILLNO=' +escape(BILLNO)+"&MATERIAL="+MATERIAL, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/AVGEXPRESSIONS/GetPageListJson")?StartTime=" + StartTime + '&EndTime=' + EndTime  ,
+            datatype: "json",
+           height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '公式单号', name: 'ID', index: 'ID',  width: 100, align: 'center'  },
+                { label: '公式名称', name: 'NAME', index: 'NAME', width: 120, align: 'center' },
+                { label: '物料编号', name: 'MATERIAL', index: 'MATERIAL', width: 120, align: 'center',hidden:true },
+                 { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center' },
+                { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 120, align: 'center' },
+                { label: '质检项1', name: 'ITEMNAME', index: 'ITEMNAME', width: 120, align: 'center' },
+                { label: '标准值1', name: 'ITEMBZ', index: 'ITEMBZ', width: 120, align: 'center' },
+                { label: '类型1', name: 'ITEMTYPE', index: 'ITEMTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "扣价";
+                          else  if (cellvalue == '0') return "扣吨";
+                        else return ""; 
+                    }
+                },
+                { label: '公式1', name: 'EXPRESSIONS', index: 'EXPRESSIONS', width: 200, align: 'center' },
+               { label: '质检项2', name: 'ITEMNAME2', index: 'ITEMNAME2', width: 120, align: 'center' },
+               { label: '标准值2', name: 'ITEMBZ2', index: 'ITEMBZ2', width: 120, align: 'center' },
+              {  label: '类型2', name: 'ITEMTYPE2', index: 'ITEMTYPE2', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "扣价";
+                           else  if (cellvalue == '0') return "扣吨";
+                        else return ""; 
+                    }
+                },
+                { label: '公式2', name: 'EXPRESSIONS2', index: 'EXPRESSIONS2', width: 200, align: 'center' },
+                { label: '质检项3', name: 'ITEMNAME3', index: 'ITEMNAME3', width: 120, align: 'center' },
+               { label: '标准值3', name: 'ITEMBZ3', index: 'ITEMBZ3', width: 120, align: 'center' },
+               { label: '类型3', name: 'ITEMTYPE3', index: 'ITEMTYPE3', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "扣价";
+                   else  if (cellvalue == '0') return "扣吨";
+                        else return ""; 
+                    }
+                },
+                { label: '公式3', name: 'EXPRESSIONS3', index: 'EXPRESSIONS3', width: 200, align: 'center' },
+
+                 { label: '质检项4', name: 'ITEMNAME4', index: 'ITEMNAME4', width: 120, align: 'center' },
+                { label: '标准值4', name: 'ITEMBZ4', index: 'ITEMBZ4', width: 120, align: 'center' },
+                   { label: '类型4', name: 'ITEMTYPE4', index: 'ITEMTYPE4', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "扣价";
+                           else  if (cellvalue == '0') return "扣吨";
+                        else return ""; 
+                    }
+                },
+                { label: '公式4', name: 'EXPRESSIONS4', index: 'EXPRESSIONS4', width: 200, align: 'center' },
+                 { label: '质检项5', name: 'ITEMNAME5', index: 'ITEMNAME5', width: 120, align: 'center' },
+                 { label: '标准值5', name: 'ITEMBZ5', index: 'ITEMBZ5', width: 120, align: 'center' },
+                { label: '类型5', name: 'ITEMTYPE5', index: 'ITEMTYPE5', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "扣价";
+                            else  if (cellvalue == '0') return "扣吨";
+                        else return ""; 
+                    }
+                },
+                { label: '公式5', name: 'EXPRESSIONS5', index: 'EXPRESSIONS5', width: 200, align: 'center' },
+                 {
+                    label: '有效', name: 'ISUSE', index: 'ISUSE', width: 45, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                },
+                {
+                    label: '开始时间', name: 'BEGINDATE', index: 'BEGINDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                {
+                    label: '截止时间', name: 'ENDDATE', index: 'ENDDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 70, align: 'center' },
+                {
+                    label: '创建时间', name: 'CRETIME', index: 'CRETIME', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var ID=rowData.ID;
+                  $("#gridETable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/BaseSet/GBMANAGER/GetOrderEntryList")?KeyValue="+ID, page: 1
+                 }).trigger('reloadGrid');
+            }
+ 
+        });
+ 
+    }
+     //新增
+   
+        function btn_add() {
+        AddTabMenu("GBMANAGERForm", "@Url.Content("~/BaseSet/AVGEXPRESSIONS/AVGEXPRESSIONSForm")?ModuleId="+ModuleId, "新增加权平均公式", "page_white_add.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+             AddTabMenu("BillSOFForm", "@Url.Content("~/BaseSet/AVGEXPRESSIONS/AVGEXPRESSIONSForm")?KeyValue=" + KeyValue+"&ModuleId="+ModuleId, "编辑加权平均公式", "page_white_edit.png", true, true, true);
+        }
+    }
+   
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue ;
+            delConfig('/BaseSet/AVGEXPRESSIONS/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+ 
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+   
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div style="margin-top: 1px; margin-bottom: 0px" class="tools_bar">
+        <div class="PartialButton">
+            <a id="ai-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+                <b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                    刷新</b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="ai-add" class="tools_btn" title="新增(Ctrl+Z)" onclick="btn_add()"><span><b
+                style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">新增</b></span></a>
+            <a id="ai-edit" class="tools_btn" title="编辑(Ctrl+W)" onclick="btn_edit()"><span><b
+                style="background: url(../../Content/Images/Icon16/edit.gif) no-repeat 50% 4px">
+                编辑</b></span></a> <a id="lr-delete" class="tools_btn" title="删除(Ctrl+S)" onclick="btn_delete()">
+                    <span><b style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">
+                        删除</b></span></a> <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()">
+                            <span><b style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                                离开</b></span></a></div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    公式单号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIAL" type="hidden" />
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    创建日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,899 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2864E41D-BF54-4013-AA35-90A43F8234E0}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>EOS.WebService</RootNamespace>
+    <AssemblyName>EOS.WebService</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <TargetFrameworkProfile />
+    <Use64BitIISExpress />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EOS.Business, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\EOS.Business.dll</HintPath>
+    </Reference>
+    <Reference Include="EOS.Cache, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\EOS.Cache.dll</HintPath>
+    </Reference>
+    <Reference Include="EOS.DataAccess, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\EOS.DataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="EOS.Entity, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\EOS.Entity.dll</HintPath>
+    </Reference>
+    <Reference Include="EOS.Repository, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\EOS.Repository.dll</HintPath>
+    </Reference>
+    <Reference Include="EOS.Utilities, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\EOS.Utilities.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.Configuration, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.1.1.2\lib\netstandard1.1\Microsoft.Extensions.Configuration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.1.1.2\lib\netstandard1.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.FileExtensions.1.1.2\lib\net451\Microsoft.Extensions.Configuration.FileExtensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Json, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Json.1.1.2\lib\net451\Microsoft.Extensions.Configuration.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.1.1\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.1.1.1\lib\netstandard1.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Physical.1.1.1\lib\net451\Microsoft.Extensions.FileProviders.Physical.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileSystemGlobbing, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileSystemGlobbing.1.1.1\lib\net45\Microsoft.Extensions.FileSystemGlobbing.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.1.1.2\lib\netstandard1.1\Microsoft.Extensions.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.1.1.2\lib\netstandard1.1\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.1.1.1\lib\netstandard1.0\Microsoft.Extensions.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net451\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SqlSugar, Version=4.9.9.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\sqlSugar.4.9.9.1\lib\SqlSugar.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.3.0\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\DbService.cs" />
+    <Compile Include="Common\RawMaterialFeedingService.cs" />
+    <Compile Include="Common\WSHelper.cs" />
+    <Compile Include="EntityModels\VAPP_HANDORDER_ADDHGFIRST.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Http\HttpHelper.cs" />
+    <Compile Include="Http\HttpUtil.cs" />
+    <Compile Include="Index.asmx.cs">
+      <DependentUpon>Index.asmx</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MESWebService.asmx.cs">
+      <DependentUpon>MESWebService.asmx</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MODELS\EOS_QKLWEIGHT.cs" />
+    <Compile Include="MODELS\EOS_ZFMM115.cs" />
+    <Compile Include="MODELS\EOS_ZFMM117.cs" />
+    <Compile Include="MODELS\EOS_ZFMM110.cs" />
+    <Compile Include="MODELS\EOS_SLJHORDER.cs" />
+    <Compile Include="MODELS\EOS_ZJORDER.cs" />
+    <Compile Include="MODELS\EOS_ZJRESULTORDER.cs" />
+    <Compile Include="MODELS\EOS_SLWEIGHT.cs" />
+    <Compile Include="MODELS\EOS_Z_GM_POST.cs" />
+    <Compile Include="MODELS\EOS_Z_PO_POST2.cs" />
+    <Compile Include="MODELS\JSONDATA.cs" />
+    <Compile Include="MODELS\PageInfo.cs" />
+    <Compile Include="MODELS\REDATA.cs" />
+    <Compile Include="MODELS\RETURN_SAP.cs" />
+    <Compile Include="MODELS\EOS_Z_PO_POST.cs" />
+    <Compile Include="MODELS\EOS_ZFMM098.cs" />
+    <Compile Include="MODELS\EOS_ZTTQM001.cs" />
+    <Compile Include="MODELS\EOS_CYORDER.cs" />
+    <Compile Include="MODELS\SearchInfo.cs" />
+    <Compile Include="MODELS\StatusMsg.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="SAPWebService.asmx.cs">
+      <DependentUpon>SAPWebService.asmx</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Service References\MESSERVICES_SLDBZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\MESSERVICES_SLDB\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\MESSERVICES_XBSLCS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\MESSERVICES_XBSLZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\OAWORKFLOWSERVICESCS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\OAWORKFLOWSERVICES\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_108ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_110ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_110\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_115ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_116KF\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_116ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_117ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_66ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_92ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_94ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_95ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_96ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_97ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_98ZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_HWYKCS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_HWYKSC\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_HWYKZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_HWYK\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_PURCHASEZS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_PURCHASE\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_ZP1\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_116\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_92\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_94\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_95\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_96\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_98\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_ZP2\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_ZPZS1\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_ZPZS2\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SAPSERVICES_ZPZS3\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\Script\jquery-ui-1.8.20.js" />
+    <Content Include="Content\Styles\jquery-ui.css" />
+    <Content Include="Content\Styles\jquery.ui.base.css" />
+    <Content Include="Content\Styles\jquery.ui.button.css" />
+    <Content Include="GetData.html" />
+    <Content Include="Global.asax" />
+    <Content Include="Index.asmx" />
+    <Content Include="MESWebService.asmx" />
+    <Content Include="MODELS\XMLFile1.xml" />
+    <Content Include="SAPWebService.asmx" />
+    <Content Include="packages.config" />
+    <None Include="Properties\PublishProfiles\YGWebServices.pubxml" />
+    <Content Include="Content\Script\jquery-1.7.1.min.js" />
+    <Content Include="Content\Script\jquery.json.js" />
+    <None Include="Service References\MESSERVICES_SLDBZS\configuration91.svcinfo" />
+    <None Include="Service References\MESSERVICES_SLDBZS\configuration.svcinfo" />
+    <Content Include="Service References\MESSERVICES_SLDBZS\EOS.WebService.MESSERVICES_SLDBZS.executeLoadometerWeighingTransferResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\MESSERVICES_SLDBZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\MESSERVICES_SLDB\EOS.WebService.MESSERVICES_SLDB.executeLoadometerWeighingTransferResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\MESSERVICES_SLDBZS\LoadometerWeighingTransferWSService.wsdl" />
+    <None Include="Service References\MESSERVICES_SLDB\LoadometerWeighingTransferWSService.wsdl" />
+    <Content Include="Service References\MESSERVICES_XBSLCS\EOS.WebService.MESSERVICES_XBSLCS.doRawMaterialFeedingResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\MESSERVICES_XBSLCS\RawMaterialFeedingServiceWSService.wsdl" />
+    <Content Include="Service References\MESSERVICES_XBSLZS\EOS.WebService.MESSERVICES_XBSLZS.doRawMaterialFeedingResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\MESSERVICES_XBSLZS\RawMaterialFeedingServiceWSService.wsdl" />
+    <None Include="Service References\OAWORKFLOWSERVICESCS\configuration91.svcinfo" />
+    <None Include="Service References\OAWORKFLOWSERVICESCS\configuration.svcinfo" />
+    <Content Include="Service References\OAWORKFLOWSERVICESCS\EOS.WebService.OAWORKFLOWSERVICESCS.ArrayOfString.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OAWORKFLOWSERVICESCS\EOS.WebService.OAWORKFLOWSERVICESCS.WorkflowBaseInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OAWORKFLOWSERVICESCS\EOS.WebService.OAWORKFLOWSERVICESCS.WorkflowRequestInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OAWORKFLOWSERVICESCS\EOS.WebService.OAWORKFLOWSERVICESCS.WorkflowRequestLog.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\OAWORKFLOWSERVICESCS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\OAWORKFLOWSERVICES\EOS.WebService.OAWORKFLOWSERVICES.ArrayOfString.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OAWORKFLOWSERVICES\EOS.WebService.OAWORKFLOWSERVICES.WorkflowBaseInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OAWORKFLOWSERVICES\EOS.WebService.OAWORKFLOWSERVICES.WorkflowRequestInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OAWORKFLOWSERVICES\EOS.WebService.OAWORKFLOWSERVICES.WorkflowRequestLog.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\OAWORKFLOWSERVICESCS\WorkflowService.wsdl" />
+    <None Include="Service References\OAWORKFLOWSERVICES\WorkflowService.wsdl" />
+    <None Include="Service References\SAPSERVICES_108ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_108ZS\configuration.svcinfo" />
+    <None Include="Service References\MESSERVICES_XBSLCS\configuration91.svcinfo" />
+    <None Include="Service References\MESSERVICES_XBSLCS\configuration.svcinfo" />
+    <None Include="Service References\MESSERVICES_XBSLCS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\MESSERVICES_XBSLZS\configuration91.svcinfo" />
+    <None Include="Service References\MESSERVICES_XBSLZS\configuration.svcinfo" />
+    <None Include="Service References\MESSERVICES_XBSLZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\OAWORKFLOWSERVICES\configuration91.svcinfo" />
+    <None Include="Service References\OAWORKFLOWSERVICES\configuration.svcinfo" />
+    <None Include="Service References\OAWORKFLOWSERVICES\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_108ZS\EOS.WebService.SAPSERVICES_108ZS.ZFMM108Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_108ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_110ZS\EOS.WebService.SAPSERVICES_110ZS.ZFMM110Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_108ZS\SI_ZFMM108_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_110ZS\SI_ZFMM110_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_110\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_110\configuration.svcinfo" />
+    <None Include="Service References\MESSERVICES_SLDB\configuration91.svcinfo" />
+    <None Include="Service References\MESSERVICES_SLDB\configuration.svcinfo" />
+    <None Include="Service References\MESSERVICES_SLDB\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_110ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_110ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_110ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_110\EOS.WebService.SAPSERVICES_110.ZFMM110Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_110\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_115ZS\EOS.WebService.SAPSERVICES_115ZS.ZFMM115Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_115ZS\SI_ZFMM115_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_116KF\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_116KF\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_115ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_115ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_115ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_116KF\EOS.WebService.SAPSERVICES_116KF.ZFMM116Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_116KF\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_116ZS\EOS.WebService.SAPSERVICES_116ZS.ZFMM116Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_116KF\SI_ZFMM116_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_116ZS\SI_ZFMM116_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_116\SI_ZFMM116_OUT1.wsdl" />
+    <None Include="Service References\SAPSERVICES_117ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_117ZS\configuration.svcinfo" />
+    <Content Include="Service References\SAPSERVICES_117ZS\EOS.WebService.SAPSERVICES_117ZS.ZFMM117Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_117ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_66ZS\EOS.WebService.SAPSERVICES_66ZS.ZFMM066Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_117ZS\SI_ZFMM117_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_66ZS\SI_ZFMM066_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_92ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_92ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_66ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_66ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_66ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_92ZS\EOS.WebService.SAPSERVICES_92ZS.ZFMM092Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_92ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_94ZS\EOS.WebService.SAPSERVICES_94ZS.ZFMM094Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_92ZS\SI_ZFMM092_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_94ZS\SI_ZFMM094.wsdl" />
+    <None Include="Service References\SAPSERVICES_95ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_95ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_94ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_94ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_94ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_95ZS\EOS.WebService.SAPSERVICES_95ZS.ZFMM095Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_95ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_96ZS\EOS.WebService.SAPSERVICES_96ZS.ZFMM096Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_95ZS\SI_ZFMM095.wsdl" />
+    <None Include="Service References\SAPSERVICES_96ZS\SI_ZFMM096_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_97ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_97ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_96ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_96ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_96ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_97ZS\EOS.WebService.SAPSERVICES_97ZS.ZFMM097Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_97ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_98ZS\EOS.WebService.SAPSERVICES_98ZS.ZFMM098Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_97ZS\SI_ZFMM097_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_98ZS\SI_ZFMM098_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_HWYKCS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_HWYKCS\configuration.svcinfo" />
+    <Content Include="Service References\SAPSERVICES_HWYKCS\EOS.WebService.SAPSERVICES_HWYKCS.Z_GM_POST4Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_HWYKCS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_HWYKSC\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_HWYKSC\configuration.svcinfo" />
+    <Content Include="Service References\SAPSERVICES_HWYKSC\EOS.WebService.SAPSERVICES_HWYKSC.Z_GM_POST4Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_HWYKSC\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_HWYKZS\EOS.WebService.SAPSERVICES_HWYKZS.Z_GM_POSTResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_HWYKCS\SI_Z_GM_POST4_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_HWYKSC\SI_Z_GM_POST4_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_HWYKZS\SI_Z_GM_POST_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_HWYK\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_HWYK\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_116ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_116ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_116ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_98ZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_98ZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_98ZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_HWYKZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_HWYKZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_HWYKZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_HWYK\EOS.WebService.SAPSERVICES_HWYK.Z_GM_POSTResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_HWYK\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_PURCHASEZS\EOS.WebService.SAPSERVICES_PURCHASEZS.Z_ME_OAPURCHASEResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_PURCHASEZS\SI_Z_ME_OAPURCHASE.wsdl" />
+    <None Include="Service References\SAPSERVICES_PURCHASE\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_PURCHASE\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_PURCHASEZS\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_PURCHASEZS\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_PURCHASEZS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_PURCHASE\EOS.WebService.SAPSERVICES_PURCHASE.Z_ME_OAPURCHASEResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_PURCHASE\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_ZP1\EOS.WebService.SAPSERVICES_ZP1.Z_PO_POSTResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_110\SI_ZFMM110_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_HWYK\SI_Z_GM_POST_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_PURCHASE\SI_Z_ME_OAPURCHASE.wsdl" />
+    <None Include="Service References\SAPSERVICES_ZP1\SI_Z_PO_POST_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_116\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_116\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_ZP1\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_ZP1\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_ZP1\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_116\EOS.WebService.SAPSERVICES_116.ZFMM116Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_116\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_92\EOS.WebService.SAPSERVICES_92.ZFMM092Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_92\SI_ZFMM092_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_94\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_94\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_92\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_92\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_92\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_94\EOS.WebService.SAPSERVICES_94.ZFMM094Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_94\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_94\SI_ZFMM0941.wsdl" />
+    <None Include="Service References\SAPSERVICES_95\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_95\configuration.svcinfo" />
+    <Content Include="Service References\SAPSERVICES_95\EOS.WebService.SAPSERVICES_95.ZFMM095Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_95\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_96\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_96\configuration.svcinfo" />
+    <Content Include="Service References\SAPSERVICES_96\EOS.WebService.SAPSERVICES_96.ZFMM096Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_96\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_98\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_98\configuration.svcinfo" />
+    <Content Include="Service References\SAPSERVICES_98\EOS.WebService.SAPSERVICES_98.ZFMM098Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_98\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_ZP2\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_ZP2\configuration.svcinfo" />
+    <Content Include="Service References\SAPSERVICES_ZP2\EOS.WebService.SAPSERVICES_ZP2.Z_PO_POST2Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_ZP2\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_ZPZS1\EOS.WebService.SAPSERVICES_ZPZS1.Z_PO_POSTResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_ZPZS1\SI_Z_PO_POST_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_ZPZS2\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_ZPZS2\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_ZPZS1\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_ZPZS1\configuration.svcinfo" />
+    <None Include="Service References\SAPSERVICES_ZPZS1\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Service References\SAPSERVICES_ZPZS2\EOS.WebService.SAPSERVICES_ZPZS2.Z_PO_POST2Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_ZPZS2\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_ZPZS3\configuration91.svcinfo" />
+    <None Include="Service References\SAPSERVICES_ZPZS3\configuration.svcinfo" />
+    <Content Include="Service References\SAPSERVICES_ZPZS3\EOS.WebService.SAPSERVICES_ZPZS3.Z_PO_POST1Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Service References\SAPSERVICES_ZPZS3\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="XmlConfig\log4net.config" />
+    <Content Include="XmlConfig\system.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\PublishProfiles\ws.pubxml" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SAPSERVICES_95\SI_ZFMM095.wsdl" />
+    <None Include="Service References\SAPSERVICES_96\SI_ZFMM096_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_98\SI_ZFMM098_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_ZP2\SI_Z_PO_POST2_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_ZPZS2\SI_Z_PO_POST2_OUT.wsdl" />
+    <None Include="Service References\SAPSERVICES_ZPZS3\SI_Z_PO_POST1_OUT.wsdl" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferences Include="Web References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\MESSERVICES_SLDBZS\" />
+    <WCFMetadataStorage Include="Service References\MESSERVICES_SLDB\" />
+    <WCFMetadataStorage Include="Service References\MESSERVICES_XBSLCS\" />
+    <WCFMetadataStorage Include="Service References\MESSERVICES_XBSLZS\" />
+    <WCFMetadataStorage Include="Service References\OAWORKFLOWSERVICESCS\" />
+    <WCFMetadataStorage Include="Service References\OAWORKFLOWSERVICES\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_108ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_110ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_110\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_115ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_116KF\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_116ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_117ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_66ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_92ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_94ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_95ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_96ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_97ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_98ZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_HWYKCS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_HWYKSC\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_HWYKZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_HWYK\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_PURCHASEZS\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_PURCHASE\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_ZP1\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_116\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_92\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_94\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_95\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_96\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_98\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_ZP2\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_ZPZS1\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_ZPZS2\" />
+    <WCFMetadataStorage Include="Service References\SAPSERVICES_ZPZS3\" />
+  </ItemGroup>
+  <ItemGroup />
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>14422</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:14423/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

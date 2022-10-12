@@ -1,0 +1,170 @@
+﻿@{
+    ViewBag.Title = "其他销售发货";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+ var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var TaskNo = $("#BillNo").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/QTSENDMATERIA/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&TaskNo=' + TaskNo, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/QTSENDMATERIA/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [ 
+            { label: 'ID', name: 'ID',hidden: true},
+            { label: '过磅单号', name: 'BILLNO', index: 'BILLNO', width: 120, align: 'center' },
+            { label: '车号', name: 'CARS', index: 'CARS', width: 80, align: 'center' },
+            { label: '供应商', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 180, align: 'center' },
+            { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 130, align: 'center' },
+            { label: '业务状态', name: 'STATUSNAME', index: 'STATUSNAME', width: 60, align: 'center',
+             formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '0') 
+                    return "<span style='color:red;'>已登记</span>";
+                    if (cellvalue == '1')
+                    return "<span style='color: blue; font-weight: bold;'>已发货</span>";
+                    if (cellvalue == '2')
+                    return "<span style='color: black; font-weight: bold;'>已退货</span>";
+                } },
+            { label: '业务状态PK', name: 'STATUS', hidden: true },
+            { label: '数据来源', name: 'BILLFROM',index: 'BILLFROM', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1') 
+                    return "<span style='color:red;'>业务平台</span>";
+                    if (cellvalue == '2')
+                    return "<span style='color: blue; font-weight: bold;'>PDA设备</span>";
+                }
+             },
+            { label: '预提量(吨)', name: "PDAYF", index: 'PDAYF', width: 60, align: 'center'},
+            { label: '毛重(吨)', name: 'GROSS', index: 'GROSS', width:60, align: 'center' },
+            { label: '皮重(吨)', name: 'TARE', index: 'TARE', width:60, align: 'center' },
+            { label: '净重(吨)', name: 'SUTTLE', index: 'SUTTLE', width:60, align: 'center' },
+            { label: '发货仓库', name: "STORE", index: 'STORE', width: 150, align: 'center'},
+            { label: '登记人员', name: 'CREUSER', index: 'CREUSER', width:100, align: 'center' },
+            {  label: '登记时间', name: 'CRETIME', index: 'CRETIME', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },            
+            { label: '备注', name: 'MEMO', index: 'MEMO', width:150, align: 'center' } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true 
+        });
+        
+    }
+    //新增
+    function btn_add() {
+        AddTabMenu("QTBillSendFForm", "@Url.Content("~/ExampleModule/QTSENDMATERIA/QTBillSendFForm")?ModuleId="+ModuleId, "其他销售发货确认", "page_white_add.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var STATUS = GetJqGridRowValue("#gridTable", "STATUS");
+            if (STATUS == "1") {
+                tipDialog("此单据已确认发货,无法继续编辑！", 3, "");
+                return false;
+            }
+            else{
+                AddTabMenu("POBillRECFForm", "@Url.Content("~/ExampleModule/QTSENDMATERIA/QTBillSendFForm")?KeyValue=" + KeyValue+"&ModuleId="+ModuleId, "编辑销售发货", "page_white_edit.png", true, true, true);
+            }
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ExampleModule/PORECMATERIA/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("POBillRECFDetail", "@Url.Content("~/ExampleModule/QTSENDMATERIA/QTBillSendFDetail")?KeyValue=" + KeyValue, "其他销售发货详细", "page_white_edit.png", true, true, true);
+        }
+    }
+   //查询
+    function btn_query() {
+        QueryDialog("/ExampleModule/SODELMATERIA/SOBillDELFQuery", "SOBillDELFQuery", "查询过滤",350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/QTSENDMATERIA/GetSeOrderList")?" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    单号/车号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

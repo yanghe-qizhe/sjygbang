@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "按炉送钢卡片";
+    Layout = "~/Views/Shared/_LayoutReportIndex.cshtml";
+}
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <script type="text/javascript">
+        //var Company = "@ViewBag.Company";
+        var ReportName = "火运钢材磅单";
+        var Parm_Key_Value = GetQuery("Parm_Key_Value");
+        Parm_Key_Value = unescape(Parm_Key_Value);
+        //报表参数对应值
+        var Parameter = "title|String|" + ReportName;
+        $(function () {
+            UpdateToolbar("2");
+            setTimeout(function () {
+                //开启报表生成进度条显示
+                ReportViewer.Report.ShowProgressUI = true;
+                //启动运行
+                ReportViewer.Start();
+            }, 3000);
+
+        })
+    </script>
+    <style type="text/css">
+        html, body
+        {
+            margin: 0;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <script type="text/javascript">
+
+        var height = $(window).height() - 8;
+        NewMyCreateReport('@Url.Content("~/Content/GRF/SalesReport/HYWeightOut.grf")', '/ReportManager/PrintViewReport/HYWeightOutReport', escape(Parm_Key_Value), "100%", height + "px", false);
+        SetParameter(Parameter);
+ 
+    </script>
+</body>
+</html>

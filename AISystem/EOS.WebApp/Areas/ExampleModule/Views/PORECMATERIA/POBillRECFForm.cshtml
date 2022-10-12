@@ -1,0 +1,682 @@
+﻿@{
+    ViewBag.Title = "采购收货》新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        /*JQuery 限制文本框只能输入数字和小数点*/
+        //仓库
+        BindAutocomplete("STORE", "PK_STORE", "Store", "", "", "");
+        InitControl();
+    })
+    //卡号搜索
+    function btn_Search() {
+        var ICCARD = $("#ICCARD").val();
+        if (ICCARD != "") {
+            AjaxJson("/ExampleModule/PORECMATERIA/GetEntity", { KeyValue: ICCARD }, function (data) {
+                SetWebControls(data);
+            });
+        }
+        else {
+            top.TipMsg("请先输入卡面编号！", 4000, "error");
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/PORECMATERIA/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    //收货登记事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要收货登记操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    AjaxJson("/ExampleModule/PORECMATERIA/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        //ThisCloseTab();//关闭本页面
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        Replace(); //刷新本页面
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    //确认收货事件
+    function QuenRenOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要收货确认操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    AjaxJson("/ExampleModule/PORECMATERIA/QuerenOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        //ThisCloseTab();//关闭本页面
+                        Replace(); //刷新本页面
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    ///读卡方法
+    function readData(pie_arr) {
+        var iRet = CardOpen(); if (iRet == 0) { for (var i = 0; i < pie_arr.length; i++) { var pie = pie_arr[i]; if (iRet == 0) { getVal(pie); } } iRet = CardClose(); }
+    };
+    function getVal(pie) { }
+    //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            //$('#msg').text('打开读卡器失败');
+            top.TipMsg("打开读卡器失败！", 4000, "error");
+            $('#ICCARD').val('');
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            var CardNumber = MWRFATL.OpenCard(1);
+            if (CardNumber != "") {
+                SetCardNo(CardNumber);
+            }
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                top.TipMsg("IC卡未放在读卡器上", 4000, "error");
+                //$('#msg').text('IC卡没有放在读卡器上');
+                $('#ICCARD').val('');
+                MWRFATL.CloseReader();
+                iRet = MWRFATL.LastRet;
+            }
+            else {
+                res = 0;
+                //alert(CardNumber.toString());
+            }
+        }
+        //alert(res.toString());
+        return res;
+    }
+    //转卡号
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var ICNO = "";
+        var len = arr.length - 1;
+        for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        ICNO = parseInt(num, 16);
+        $('#ICCARD').val(ICNO.toString());
+        top.TipMsg("读卡成功", 4000, "error");
+        btn_Search();
+    }
+    //读卡方法
+    function ReadCard() {
+        var pie_arr = [0];
+        readData(pie_arr);
+    }
+    //关头IC卡
+    //res:1-关闭卡片失败,2-断开设备失败,0-成功。
+    function CardClose() {
+        var res = 100;
+        MWRFATL.CloseCard();
+        var iRet = MWRFATL.LastRet;
+        if (iRet != 0) {
+            res = 1
+            top.TipMsg("关闭卡片失败", 4000, "error");
+            //$('#msg').text('关闭卡片失败');
+            $('#ICCARD').val('');
+        }
+        MWRFATL.CloseReader();
+        iRet = MWRFATL.LastRet;
+        if (iRet != 0) {
+            res = 2;
+            top.TipMsg("断开设备失败", 4000, "error");
+            //$('#msg').text('断开设备失败');
+            $('#ICCARD').val('');
+        }
+        return iRet;
+    }
+
+    ///读身份证
+    function ReadIDCard() {
+        var ComPort = 1;
+        var Baud = 9600;
+        var Extport = 9;
+        var ret = ActivexTest.c_Dev_Connect(ComPort, Extport, Baud);
+        if (ret == 0) {
+            top.TipMsg("连接设备成功！", 4000, "info");
+        }
+        else {
+            top.TipMsg("连接设备失败！", 4000, "error");
+        }
+        var ret = -1;
+        ret = ActivexTest.c_IDCardReadSerialNum();
+        if (ret == 0) {
+            $("#ICCARD").val(ActivexTest.ID_SerialNum);
+            btn_Search();
+            $('#lbl_msg').text('读身份证物理ID成功！' + ActivexTest.ID_SerialNum);
+        }
+        else {
+            top.TipMsg("读身份证物理ID失败！", 4000, "error");
+        }
+        var ret = ActivexTest.c_Dev_Disconnect();
+        //if (ret == 0) {
+        //    //top.TipMsg("断开连接成功！", 4000, "info");
+        //}
+        //else {
+        //    //top.TipMsg("断开连接失败！", 4000, "error");
+        //}
+    }
+
+    function SelectOrder() {
+        var url = "/ExampleModule/PORECMATERIA/POSELECTBillRECF";
+        Dialog(url, "POSELECTBillRECF", "选取过磅单（双击表格添加）", 900, 400);
+    }
+
+    //订单明细换算+合计
+    function Conversion() {
+        //总件数
+        var TotalAMOUNT = 0;
+        var JSAMOUNT1 = 0, JSAMOUNT2 = 0, JSAMOUNT3 = 0;
+        JSAMOUNT1 = $("#JSAMOUNT1").val(); //件数1
+        TotalAMOUNT = FloatAdd(TotalAMOUNT, JSAMOUNT1);
+        JSAMOUNT2 = $("#JSAMOUNT2").val(); //件数2
+        TotalAMOUNT = FloatAdd(TotalAMOUNT, JSAMOUNT2);
+        JSAMOUNT3 = $("#JSAMOUNT3").val(); //件数3
+        TotalAMOUNT = FloatAdd(TotalAMOUNT, JSAMOUNT3);
+        $("#PDASSJS").val(TotalAMOUNT);
+        //统计合计
+        var TotalTARE = 0;
+        var TotalJTARE1 = 0, TotalJTARE2 = 0, TotalJTARE3 = 0;
+        var JTARE1 = $("#JTARE1").val(); //件皮1
+        TotalJTARE1 = FloatMul(JSAMOUNT1, JTARE1);
+        var JTARE2 = $("#JTARE2").val(); //件皮2
+        TotalJTARE2 = FloatMul(JSAMOUNT2, JTARE2);
+        var JTARE3 = $("#JTARE3").val(); //件皮3
+        TotalJTARE3 = FloatMul(JSAMOUNT3, JTARE3);
+
+        TotalTARE = FloatAdd(TotalTARE, TotalJTARE1);
+        TotalTARE = FloatAdd(TotalTARE, TotalJTARE2);
+        TotalTARE = FloatAdd(TotalTARE, TotalJTARE3);
+        $("#TOTALJTARE").val(TotalTARE);
+        //件净
+        var TotalJSUTTLE = 0;
+        var TotalJSUTTLE1 = 0, TotalJSUTTLE2 = 0, TotalJSUTTLE3 = 0;
+        var JSUTTLE1 = $("#JSUTTLE1").val(); //件净1
+        TotalJSUTTLE1 = FloatMul(JSAMOUNT1, JSUTTLE1);
+        var JSUTTLE2 = $("#JSUTTLE2").val(); //件净2
+        TotalJSUTTLE2 = FloatMul(JSAMOUNT2, JSUTTLE2);
+        var JSUTTLE3 = $("#JSUTTLE3").val(); //件净3
+        TotalJSUTTLE3 = FloatMul(JSAMOUNT3, JSUTTLE3);
+        TotalJSUTTLE = FloatAdd(TotalJSUTTLE, TotalJSUTTLE1);
+        TotalJSUTTLE = FloatAdd(TotalJSUTTLE, TotalJSUTTLE2);
+        TotalJSUTTLE = FloatAdd(TotalJSUTTLE, TotalJSUTTLE3);
+        $("#TOTALJSUTTLE").val(TotalJSUTTLE);
+    }
+
+
+
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+        data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+        classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3"></object>
+<object id="ActivexTest" style="display: none; width: 0px; height: 0px" classid="clsid:2107BAAF-3F79-4F87-8746-11F493236D00"
+        codebase="~/GHC_GetCardInfo/GHC_GetCardInfo.dll"></object>
+<form id="form1" style="margin: 1px">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a>
+        @*<a id="lr-query" title="查询(Ctrl+F)" onclick="btn_Search()" class="tools_btn">
+                <span>
+                    <b style="background: url(@Url.Content("~/Content/Images/Icon16/page_white_magnify.png")) 50% 4px no-repeat;">
+                        查询
+                    </b>
+                </span>
+            </a>
+            <a id="ai-read" title="读卡(Ctrl+R)" onclick="ReadCard()" class="tools_btn">
+                <span>
+                    <b style="background: url(@Url.Content("~/Content/Images/Icon16/script_binary.png")) 50% 4px no-repeat;">
+                        读卡
+                    </b>
+                </span>
+            </a>*@
+        @*<a id="ai-read" title="读身份证" onclick="ReadIDCard()" class="tools_btn">
+                <span>
+                    <b style="background: url(@Url.Content("~/Content/Images/Icon16/script_binary.png")) 50% 4px no-repeat;">
+                        读身份证
+                    </b>
+                </span>
+            </a>*@
+        <a id="button_Dengji_Save" title="收货登记" onclick="SubmitOrderForm()"
+           class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/application_form_edit.png")) 50% 4px no-repeat;">
+                    收货登记
+                </b>
+            </span>
+        </a><a id="button_QuenRen_Save" title="收货确认" onclick="QuenRenOrderForm()"
+               class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/application_form_edit.png")) 50% 4px no-repeat;">
+                    收货确认
+                </b>
+            </span>
+        </a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    @*<table class="form">
+            <tr>
+                <th class="formTitle">
+                    IC卡号：
+                </th>
+                <td class="formValue">
+                    <input id="ICCARD" type="text" class="txt" datacol="no" err="IC卡号" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    磅单号：
+                </th>
+                <td class="formValue">
+                    <input id="BILLNONAME" type="text" class="txt required" err="磅单号" maxlength="20"
+                           />
+                </td>
+            </tr>
+        </table>*@
+    @*<div class="bd" style="border-bottom: none; margin: 2px;">
+            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                <div class="tab_list_top" style="position: absolute">
+                    <div id="Tabbasic" class="tab_list bd actived" onclick="Tabchange('basic')">
+                        收料信息
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    @*<div class="ScrollBar" style="margin: 1px; overflow: hidden;">*@
+    <!--录入信息-->
+    <div id="basic" class="tabPanel">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    到货单号:
+                </th>
+                <td class="formValue">
+                    <input id="DEF3" type="hidden" />
+                    <input id="ID" type="text" class="txt" datacol="yes" err="到货单号" checkexpession="NotNull" onclick="SelectOrder();" />
+                </td>
+                <th class="formTitle">
+                    工厂：
+                </th>
+                <td class="formValue">
+                    <input id="PK_RECEIVEORG" type="hidden" />
+                    <input id="RECEIVEORG" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    发货单位：
+                </th>
+                <td class="formValue">
+                    <input id="PK_SENDORG" type="hidden" />
+                    <input id="SENDORG" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                           err="发货单位" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    磅单号:
+                </th>
+                <td class="formValue">
+                    <input id="BILLNO" type="text" class="txt readonly" />
+                </td>
+                <th class="formTitle">
+                    物料:
+                </th>
+                <td class="formValue">
+                    <input id="PK_MATERIAL" type="hidden" />
+                    <input id="MATERIAL" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                           err="物料" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    物料规格:
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALSPEC" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    车号：
+                </th>
+                <td class="formValue">
+                    <input id="PK_CARS" type="hidden" />
+                    <input id="CARS" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                           err="车号" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    毛重时间：
+                </th>
+                <td class="formValue">
+                    <input id="WEIGHTDATE" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    毛重:
+                </th>
+                <td class="formValue">
+                    <input id="GROSS" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    司机：
+                </th>
+                <td class="formValue">
+                    <input id="PK_DRIVERS" type="hidden" />
+                    <input id="DRIVERS" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+
+                <th class="formTitle">
+                    铅封号：
+                </th>
+                <td class="formValue">
+                    <input id="QFCODE" type="text" class="txt" />
+                </td>
+                <th class="formTitle">
+                    原箱号：
+                </th>
+                <td class="formValue">
+                    <input id="JZXCODE" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    现箱号：
+                </th>
+                <td class="formValue">
+                    <input id="JZXCODE1" type="text" class="txt" />
+                </td>
+                <th class="formTitle">
+                    原箱重量：
+                </th>
+                <td class="formValue">
+                    <input id="YXSUTTLE" type="text" class="txt" />
+                </td>
+                <th class="formTitle">
+                    现箱重量：
+                </th>
+                <td class="formValue">
+                    <input id="XXSUTTLE" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    卸货地址：
+                </th>
+                <td class="formValue">
+                    <input id="PK_STORE" type="hidden" datacol="yes" err="卸货地址,勿手动输入" checkexpession="NotNull" />
+                    <input id="STORE" type="text" class="txt icontree" datacol="yes" err="请选择卸货地址" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    原发量：
+                </th>
+                <td class="formValue">
+                    <input id="PDAYF" type="text" class="txt" class="txt" />
+                </td>
+                <th class="formTitle">
+                    扣重(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="PDAKZ1" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    件皮1(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JTARE1" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);"
+                           onchange="Conversion()" />
+                </td>
+                <th class="formTitle">
+                    件净1(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JSUTTLE1" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);"
+                           onchange="Conversion()" />
+                </td>
+                <th class="formTitle">
+                    件数1：
+                </th>
+                <td class="formValue">
+                    <input id="JSAMOUNT1" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);"
+                           onchange="Conversion()" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    件皮2(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JTARE2" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);"
+                           onchange="Conversion()" />
+                </td>
+                <th class="formTitle">
+                    件净2(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JSUTTLE2" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);"
+                           onchange="Conversion()" />
+                </td>
+                <th class="formTitle">
+                    件数2：
+                </th>
+                <td class="formValue">
+                    <input id="JSAMOUNT2" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);"
+                           onchange="Conversion()" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    件皮3(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JTARE3" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);"
+                           onchange="Conversion()" />
+                </td>
+                <th class="formTitle">
+                    件净3(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JSUTTLE3" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);"
+                           onchange="Conversion()" />
+                </td>
+                <th class="formTitle">
+                    件数3：
+                </th>
+                <td class="formValue">
+                    <input id="JSAMOUNT3" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);"
+                           onchange="Conversion()" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    总件皮(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="TOTALJTARE" type="text" class="txt" />
+                </td>
+                <th class="formTitle">
+                    总件净(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="TOTALJSUTTLE" type="text" class="txt" />
+                </td>
+                <th class="formTitle">
+                    总件数：
+                </th>
+                <td class="formValue">
+                    <input id="PDASSJS" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    包装个数1：
+                </th>
+                <td class="formValue">
+                    <input id="JBAMOUNT1" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);" />
+                </td>
+                <th class="formTitle">
+                    包装个数2：
+                </th>
+                <td class="formValue">
+                    <input id="JBAMOUNT2" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);" />
+                </td>
+                <th class="formTitle">
+                    包装个数3：
+                </th>
+                <td class="formValue">
+                    <input id="JBAMOUNT3" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    包装单重1(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JIABAN1" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);" />
+                </td>
+                <th class="formTitle">
+                    包装单重2(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JIABAN2" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);" />
+                </td>
+                <th class="formTitle">
+                    包装单重3(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JIABAN3" type="text" class="txt decimal" value="0" onfocus="IsMoney(this.id);" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    订单号:
+                </th>
+                <td class="formValue">
+                    <input id="VBILLCODE" type="text" class="txt readonly" />
+                </td>
+                <th class="formTitle">
+                    供应商系数：
+                </th>
+                <td class="formValue">
+                    <input id="PDAKZ7" type="text" class="txt" />
+                </td>
+                <th class="formTitle">
+                    扣重比例：
+                </th>
+                <td class="formValue">
+                    <input id="PDAKZ8" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    计算状态：
+                </th>
+                <td class="formValue">
+                    <select id="ISJS" name="ISJS" disabled="disabled" class="txtselect">
+                        <option value="0">未计算</option>
+                        <option value="1">已计算</option>
+                    </select>
+                </td>
+                <th class="formTitle">
+                    外观判定：
+                </th>
+                <td class="formValue">
+                    <select id="WGTYPE" name="WGTYPE" class="txtselect">
+                        <option value="外观合格" selected="selected">外观合格</option>
+                        <option value="内含杂质或不溶物">内含杂质或不溶物</option>
+                        <option value="颜色异常">颜色异常</option>
+                        <option value="外包装破损或样品外漏">外包装破损或样品外漏</option>
+                        <option value="有结块">有结块</option>
+                        <option value="实物与标准不符">实物与标准不符</option>
+                    </select>
+                </td>
+                <th class="formTitle">
+                    质检报告：
+                </th>
+                <td class="formValue">
+                    <select id="ISZJ" name="ISZJ" class="txtselect">
+                        <option value="有，字迹清晰" selected="selected">有，字迹清晰</option>
+                        <option value="有，字迹模糊">有，字迹模糊</option>
+                        <option value="无">无</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    单位：
+                </th>
+                <td class="formValue">
+                    <input id="JLUNIT1" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    IC卡号：
+                </th>
+                <td class="formValue">
+                    <input id="ICCARD" type="text" class="txt" datacol="no" err="IC卡号" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    备注：
+                </th>
+                <td class="formValue" >
+                    <input id="MEMO" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    <span class="ck_span">提醒：</span>
+                </th>
+                <td class="formValue" colspan="5">
+                    <span class="ck_span">
+                        <label id="lbl_msg">
+                            无
+                        </label>
+                    </span>
+                </td>
+            </tr>
+
+        </table>
+    </div>
+    @*</div>*@
+</form>

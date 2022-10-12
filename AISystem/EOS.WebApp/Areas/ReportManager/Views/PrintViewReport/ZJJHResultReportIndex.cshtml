@@ -1,0 +1,223 @@
+﻿@{
+    ViewBag.Title = "焦化质检报告";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var Company = "@ViewBag.Company";
+    $(function () {
+        $("#layoutA").splitter({
+            type: "v",
+            outline: true,
+            minLeft: 235, sizeLeft: 235, maxLeft: 235,
+            anchorToWindow: true,
+            accessKey: "L"
+        });
+        LoadReport();
+        $("#reporttype").change();
+        BindAutocomplete("RECEIVENAME", "RECEIVE", "Customer", "150", "150", "");
+    })
+
+    function LoadReport() {
+        if (!IsNull($("#PK_MARBASCLASS").val()) && !IsNull($("#PK_Material").val())) {
+            tipDialog("请选择物料", 2, 0);
+            return false;
+        } 
+
+        var Report = "";
+        var Data = "/ReportManager/PrintViewReport/ZJReport";
+        //报表显示查询条件
+        var Parm_Key_Name = GetParm_Key_Name();
+        var start_Date = $("#bdate").val();
+        var end_Date = $("#edate").val();
+        var ReportName = $("#reporttype").find("option:selected").text();
+        //报表参数对应值
+        var Parameter = "title,Query,start_Date,end_Date|String,String,String,String|" + Company + ReportName + "," + Parm_Key_Name + "," + start_Date + "," + end_Date;
+        //查询条件
+        var Parm_Key_Value = GetParm_Key_Value();
+
+        var ReportType = $("#reporttype").val();
+
+        Report = "ZJReport/ZJJHResult/ZJJHResultReport.grf";
+        Data = "/ReportManager/PrintViewReport/GetZJJHResultData";
+        var url = "ZJJHResultCreateIndex";
+
+        var path = "/ReportManager/PrintViewReport/" + url + "?Report=" + Report + "&Data=" + Data;
+        path += "&Parm_Key_Value=" + escape(Parm_Key_Value) + escape("reporttype☻" + ReportType + "☻true");
+        path += "&Parameter=" + escape(Parameter);
+        path += "&reporttype=" + escape($("#reporttype").val());
+        path += "&DataType=" + escape($("#DataType").val());
+        path += "&PCRAWTYPE=" + escape($("#PCRAWTYPE").val());
+        $("#iframeReport").attr("src", path);
+    }
+    //查询条件PK值
+    function GetParm_Key_Value() {
+        var Parm_Key_Value = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var pk_id = $(this).attr('id');
+            var pk_value = $("#" + pk_id).val();
+            if (pk_value != "") {
+                var like = $(this).attr('like');
+                Parm_Key_Value += pk_id + "☻" + (pk_value == null ? "" : pk_value) + "☻" + like + "≌";
+            }
+        });
+        return Parm_Key_Value
+    }
+    //查询条件名称值
+    function GetParm_Key_Name() {
+        var Parm_Key_Name = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var pk_id = $(this).attr('id');
+            var pk_value = $("#" + pk_id).val();
+            if (pk_value != "" && pk_value != undefined && pk_value != 'undefined' && pk_id != "bdate" && pk_id != "edate" && pk_id != "reporttype") {
+                if (Parm_Key_Name == "") {
+                    Parm_Key_Name += pk_value;
+                } else {
+                    Parm_Key_Name += "-" + pk_value;
+                }
+            }
+        });
+        return Parm_Key_Name;
+    }
+
+    function SelectMaterialType() {
+        $("#iframeReport").hide();
+        var url = "/ReportManager/PrintViewReport/SelectMaterialType";
+        openMyDialog(url, "Form11111", "选取物料分类信息", 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText();
+             });
+    }
+
+    function SelectMaterial() {
+        $("#iframeReport").hide();
+        var PK_MARBASCLASS = $("#PK_MARBASCLASS").val();
+        var url = "/ReportManager/PrintViewReport/SelectMaterialForZJ";
+        if (PK_MARBASCLASS != "") {
+            url += "?matclass=" + PK_MARBASCLASS;
+        }
+        openMyDialog(url, "Form11111", "选取物料信息", 800, 380,
+            function (iframe) {
+                top.frames[iframe].SelectText();
+            }, function (iframe) {
+                top.frames[iframe].ClearText();
+            });
+    }
+</script>
+<div id="layoutA" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="QueryArea">
+            <table border="0" class="form-find" style="height: 45px;">
+                <tr>
+                    <th>
+                        报表类型：
+                    </th>
+                    <td>
+                        <select id="reporttype" name="reporttype" class="select" style="width: 140px;" dbfield="true">
+                            <option value="900016">焦化质检报告</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        批号：
+                    </th>
+                    <td>
+                        <input id="MAINBILLNO" type="text" class="txt" style="width: 135px" dbfield="true"
+                            like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        客户：
+                    </th>
+                    <td>
+                        <input id="RECEIVE" type="hidden" dbfield="true" like="false" />
+                        <input id="RECEIVENAME" type="text" class="txt" style="width: 135px" />
+                    </td>
+                </tr>
+                @*<tr>
+                    <th>
+                        物料：
+                    </th>
+                    <td>
+                        <input id="Material" type="hidden" dbfield="true" like="false" />
+                        <input id="MaterialName" type="text" class="txt" style="width: 135px" />
+                    </td>
+                </tr>*@
+                <tr>
+                    <th>
+                        物料分类：
+                    </th>
+                    <td>
+                        <input id="PK_MARBASCLASS" type="hidden" dbfield="true" like="false" />
+                        <input id="PK_MARBASCLASSNAME" type="text" class="txt" style="width: 135px" onclick="SelectMaterialType();" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        物料：
+                    </th>
+                    <td>
+                        <input id="PK_Material" type="hidden" dbfield="true" like="false" />
+                        <input id="PK_MaterialName" type="text" class="txt" style="width: 135px" onclick="SelectMaterial();" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        时间方式：
+                    </th>
+                    <td>
+                        <select id="DataType" name="DataType" class="select" style="width: 140px;" dbfield="true">
+                            <option value="1" selected="selected">入厂时间</option>
+                            <option value="2">采样时间</option>
+                        </select>
+                    </td>
+                </tr>
+                @*<tr>
+                    <th>
+                        运输方式：
+                    </th>
+                    <td>
+                        <select id="PCRAWTYPE" name="DataType" class="select" style="width: 140px;" dbfield="true">
+                            <option value="0" selected="selected">汽运</option>
+                            <option value="1">火运</option>
+                        </select>
+                    </td>
+                </tr>*@
+                <tr>
+                    <th>
+                        开始时间：
+                    </th>
+                    <td>
+                        <input id="bdate" type="text" class="txt Wdate"  style="width: 135px" value="@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd 00:00:00")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd 00:00:00&#39;})" dbfield="true" like="false"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        结束时间：
+                    </th>
+                    <td>
+                        <input id="edate" type="text" class="txt Wdate" style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM-dd 23:59:59")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd 23:59:59&#39;})"dbfield="true" like="false"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                    </th>
+                    <td>
+                        <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="LoadReport()" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <iframe id="iframeReport" src="" scrolling="auto" frameborder="0" scrolling="no"
+            width="100%" height="100%"></iframe>
+    </div>
+</div>

@@ -1,0 +1,624 @@
+﻿@{
+    ViewBag.Title = "原料/化工采样新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+    var PCRAWTYPE = GetQuery("PCRAWTYPE");
+    $(function () {
+        $("#PCRAWTYPE").val(PCRAWTYPE);
+        if (PCRAWTYPE == "0") {
+            //原煤
+            $("#TYPE").val("1");
+            $("#ISZY").val("0");
+        }
+        else if (PCRAWTYPE == "1") {
+            //化工
+            $("#TYPE").val("1");
+            $("#ISZY").val("0");
+        }
+        else if (PCRAWTYPE == "2") {
+            //包材
+            $("#TYPE").val("1");
+            $("#ISZY").val("0");
+        }
+        else if (PCRAWTYPE == "3") {
+            //木浆
+            $("#TYPE").val("1");
+            $("#ISZY").val("0");
+        }
+        else if (PCRAWTYPE == "4") {
+            //原煤组批
+        }
+        else if (PCRAWTYPE == "5") {
+            //木片
+            $("#TYPE").val("1");
+            $("#ISZY").val("0");
+        } else if (PCRAWTYPE == "10") {
+            //原煤
+            $("#TYPE").val("1");
+            $("#ISZY").val("0");
+        }
+        setTimeout(function () {
+            GetGrid();
+            CYUSERAutocomplete();
+            CYUSERAutocomplete1();
+            var frameid = tabiframeId();
+            var $parentobj = top.frames[frameid];
+            var datas = $parentobj.SelectDatas();
+            InitGrid1(datas);
+        }, 300);
+    });
+
+    //采样人 
+    function CYUSERAutocomplete() {
+        var txtname = "CYUSER";
+        var $txtname = $("#CYUSER");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 1, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+
+    //采样人1
+    function CYUSERAutocomplete1() {
+        var txtname = "CYUSER1";
+        var $txtname = $("#CYUSER1");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 1, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 320,
+            autowidth: true,
+            colModel: [
+               { label: 'ID', name: 'ID', hidden: true },
+               { label: 'YBILLNO', name: 'YBILLNO', hidden: true },
+                 { label: '车号', name: 'CARSNAME', width: 120, sortable: false, align: 'center' },
+              { label: '通知单号[<font face="宋体">*</font>]', name: "PCID", width: 120, sortable: false, align: 'center' },
+              { label: '供应商', name: "SUPPLYNAME", width: 120, sortable: false, align: 'center' },
+              { label: '物料', name: "MATERIALNAME", width: 120, sortable: false, align: 'center' },
+              { label: '规格', name: "MATERIALSPEC", width: 120, sortable: false, align: 'center' },
+              { label: '扣杂', name: "KZ", width: 80, sortable: false, align: 'center' },
+             { label: '预估水分', name: "YKS", width: 80, sortable: false, align: 'center' },
+              { label: '毛重时间', name: "WEIGHTDATE", width: 120, sortable: false, align: 'center' },
+              { label: '毛重', name: "GROSS", width: 80, sortable: false, align: 'center' },
+              { label: '毛重磅房', name: "WEIGHTNAME", width: 80, sortable: false, align: 'center' },
+              { label: '订单编号', name: "DEF3", width: 120, sortable: false, align: 'center' },
+              { label: '日期', name: "CRETIME", width: 120, sortable: false, align: 'center' },
+              { label: '接收公司', name: "ORGNAME", width: 120, sortable: false, align: 'center' },
+               { label: '接收组织', name: "DEPTNAME", width: 120, sortable: false, align: 'center' },
+              { label: '承运商', name: "DEF8", width: 120, sortable: false, align: 'center' },
+              { label: '单位', name: "DEF2", width: 80, sortable: false, align: 'center' },
+                 { label: '入厂厂区', name: "CQDEFNAME1", width: 100, sortable: false, align: 'center' },
+              { label: '备注', name: "MEMO", width: 120, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计
+                $(this).footerData("set", {
+                    "PCID": "合计",
+                    "CARSNAME": "<span id='TotalCARSNUM'>0</span>",
+                    "KZ": "<span id='TotalKZ'>0.00</span>",
+                    "YKS": "<span id='TotalYKS'>0.00</span>"
+                });
+            }
+        });
+    }
+
+    function InitGrid1(JsonData) {
+        var rowindex = 1;
+        $.each(JsonData, function (i) {
+            var rowData = JsonData[i];
+            if ($("#gridTable").find("input[value='" + rowData.DETAILSID + "']").length <= 0) {
+                var DEFNAME1 = "";
+                if (rowData.DEF1 == "10001") {
+                    DEFNAME1 = "兖州厂区";
+                } else if (rowData.DEF1 == "10002") {
+                    DEFNAME1 = "邹城厂区";
+                } else if (rowData.DEF1 == "10003") {
+                    DEFNAME1 = "兴隆厂区";
+                }
+                var rowdata = {
+                    ID: '<input id="ID➩' + rowindex + '" type="hidden" value="" />',
+                    YBILLNO: '<input id="YBILLNO➩' + rowindex + '" type="hidden" value="' + rowData.CARSNAME + '" />',
+                    CARSNAME: '<input readonly id="CARSNAME➩' + rowindex + '" maxlength="10"  class="editable center" type="text" value="' + rowData.CARSNAME + '"/><input id="CARS➩' + rowindex + '" type="hidden" value="' + rowData.CARS + '" />',
+                    PCID: '<input readonly id="PCID➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.ID + '"/><input id="PCITEMID➩' + rowindex + '" type="hidden" value="' + rowData.DETAILSID + '" />',
+                    SUPPLYNAME: '<input readonly id="SUPPLYNAME➩' + rowindex + '" class="editable center" type="text" value="' + rowData.SUPPLIERNAME + '"/><input id="SUPPLY➩' + rowindex + '" type="hidden" value="' + rowData.PK_SUPPLIER + '" />',
+                    MATERIALNAME: '<input readonly id="MATERIALNAME➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.MATERIALNAME + '"/><input id="MATERIAL➩' + rowindex + '" type="hidden" value="' + rowData.PK_MATERIAL + '" />',
+                    MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.MATERIALSPEC + '"/>',
+                    KZ: '<input id="KZ➩' + rowindex + '" class="editable decimal center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="0"/>',
+                    YKS: '<input id="YKS➩' + rowindex + '" class="editable decimal center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="0"/>',
+
+
+                    WEIGHTDATE: '<input readonly id="WEIGHTDATE➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.WEIGHTDATE + '"/><input id="BILLNO➩' + rowindex + '" type="hidden" class="txt" value="' + rowData.BILLNO + '"/>',
+                    GROSS: '<input readonly id="GROSS➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.GROSS + '"/>',
+                    WEIGHTNAME: '<input readonly id="WEIGHTNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.WEIGHTNAME + '"/>',
+                    DEF3: '<input readonly id="DEF3➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.VBILLCODE + '"/><input id="DEF4➩' + rowindex + '" type="hidden" value="' + rowData.PK_ORDER + '" />',
+                    CRETIME: '<input readonly id="GROSS➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"/>',
+                    ORGNAME: '<input readonly id="ORGNAME➩' + rowindex + '" class="editable center" type="text" value="' + rowData.ORGNAME + '"/><input id="ORG➩' + rowindex + '" type="hidden" value="' + rowData.PK_ORG + '" />',
+                    DEPTNAME: '<input readonly id="DEPTNAME➩' + rowindex + '" class="editable center" type="text" value="' + rowData.DEPTNAME + '"/><input id="PK_DEPT➩' + rowindex + '" type="hidden" value="' + rowData.PK_DEPT + '" />',
+                    DEF8: '<input readonly id="DEF8➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.TRAFFICCOMPANYNAME + '"/><input id="DEF9➩' + rowindex + '" type="hidden" value="' + rowData.TRAFFICCOMPANY + '" /><input id="DEF7➩' + rowindex + '" type="hidden" value="' + rowData.ISJL + '" />',
+                    DEF2: '<input readonly id="DEF2➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.JLUNIT2 + '"/>',
+                    CQDEFNAME1: '<input readonly id="CQDEFNAME1➩' + rowindex + '" class="editable center" type="text" value="' + DEFNAME1 + '"/><input id="CQDEF1➩' + rowindex + '" type="hidden" value="' + rowData.DEF1 + '" />',
+                    MEMO: '<input id="MEMO➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value=""/>'
+                }
+                $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                if (rowindex == 1) {
+                    $("#MATERIAL").val(rowData.PK_MATERIAL);
+                    $("#MATERIALNAME").val(rowData.MATERIALNAME);
+                    $("#MATERIALSPEC").val(rowData.MATERIALSPEC);
+                    $("#SUPPLY").val(rowData.PK_SUPPLIER);
+                    $("#SUPPLYNAME").val(rowData.SUPPLIERNAME);
+                    $("#DEF19").val(rowData.PK_ORG);
+                    $("#DEF20").val(rowData.ORGNAME);
+                    $("#DEF9").val(rowData.TRAFFICCOMPANY);
+                    $("#DEF8").val(rowData.TRAFFICCOMPANYNAME);
+                    $("#CQDEF1").val(rowData.DEF1);
+                }
+                rowindex++;
+            }
+        });
+        Conversion(0);
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $('.jqgrid-rownum').attr('title', '双击删除一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var rowindex = $(this).text();
+            $('#gridTable').jqGrid('delRowData', rowindex);
+            Conversion(rowindex);
+        });
+        $("#gridTable").find('.decimal').focus(function () {
+            IsMoney(this.id)
+            var val = this.value;
+            if (val == "0" || val == "0.000" || val == "0.00") {
+                this.value = "";
+            } else {
+                $(this).select();
+            }
+        });
+        $("#gridTable").find('.decimal').blur(function () {
+            var val = this.value;
+            if (val == "") {
+                this.value = "0";
+            }
+        });
+    }
+
+    function Conversion(rowindex) {
+        //统计合计
+        var TotalCARSNUM = 0, TotalKZ = 0.0, TotalYKS = 0.0;
+        $("#gridTable tbody tr").each(function (i) {
+            var BILLNO = $(this).find('td:eq(3)').find('input').val();
+            if (BILLNO != "" && BILLNO != undefined) {
+                TotalCARSNUM = TotalCARSNUM + 1;
+            }
+            var KZ = $(this).find('td:eq(8)').find('input').val();
+            if (KZ != "" && KZ != undefined) {
+                TotalKZ += Number(KZ);
+            }
+            var YKS = $(this).find('td:eq(9)').find('input').val();
+            if (YKS != "" && YKS != undefined) {
+                TotalYKS += Number(YKS);
+            }
+
+        });
+
+        $("#CARSNUM").val(TotalCARSNUM);
+        $("#TotalCARSNUM").text(TotalCARSNUM);
+        $("#TotalKZ").text(FormatCurrency(TotalKZ));
+        $("#SUMKZ").val(TotalKZ);
+        $("#SUMYKS").val(TotalYKS);
+
+    }
+
+
+    function ClearText() {
+        closeDialog();
+    }
+
+
+
+    //保存事件  后关闭
+    function SubmitOrderFormClose() {
+        $("#DEF6").attr("datacol", "No");
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControlsForTrue("#tb_OrderFrom");
+            postData["PCRAWCYDetailJson"] = GetTableDataJson("#gridTable");
+            AjaxJson("/ZJManager/PCRawCY/PCRawCYSave1?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                var tabframeid = tabiframeId();
+                top.frames[tabframeid].windowload();
+                closeDialog();
+            });
+        }, 500);
+    }
+
+    //保存制卡事件  后关闭
+    function SubmitOrderFormClose1() {
+        $("#DEF6").attr("datacol", "yes");
+        ReadCard();
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControlsForTrue("#tb_OrderFrom");
+            postData["PCRAWCYDetailJson"] = GetTableDataJson("#gridTable");
+            AjaxJson("/ZJManager/PCRawCY/PCRawCYSave3?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                var tabframeid = tabiframeId();
+                top.frames[tabframeid].windowload();
+                closeDialog();
+            });
+        }, 500);
+    }
+
+
+    //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    var CardNumber = "";
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            tipDialog("打开读卡器失败！", 3, "");
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            // tipDialog(version, 3, "");
+            CardNumber = MWRFATL.OpenCard(1);
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                tipDialog("IC卡没有放在读卡器上！", 3, "");
+            }
+            else {
+                res = 0;
+                $('#msg').text(CardNumber);
+            }
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        return res;
+    }
+
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var len = arr.length - 1;
+        for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        var cid = parseInt(num, 16);
+        return cid;
+    }
+    function ReadCard() {
+        CardOpen();
+        var ICCard = "";
+        if (IsNullOrEmpty(CardNumber)) {
+            ICCard = SetCardNo(CardNumber);
+            $("#DEF6").val(ICCard);
+        }
+        if (ICCard == "") {
+            tipDialog("读IC卡失败，IC卡序号为空！", 3, "");
+            return false;
+        }
+    }
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderFormClose()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存 </b></span></a><a id="button_Commit_Save1" title="保存单据" onclick="SubmitOrderFormClose1()"
+                        class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                            保存制卡 </b></span></a><a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn">
+                                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                    离开 </b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            采样单号：
+        </th>
+        <td class="formValue">
+            <input id="ISZY" type="hidden" dbfield="true" value="0" />
+            <input id="TYPE" type="hidden" dbfield="true" value="1" />
+            <input id="PCRAWTYPE" type="hidden" dbfield="true" value="0" />
+            <input id="BILLNO" maxlength="50" type="text" dbfield="true" class="txt readonly"  readonly="readonly" datacol="yes" err="采样单号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+        </td>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input id="SUPPLY" type="hidden" dbfield="true" datacol="yes" err="供应商" checkexpession="NotNull" />
+            <input id="SUPPLYNAME" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                err="供应商" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" dbfield="true" datacol="yes" err="物料" checkexpession="NotNull" />
+            <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                err="物料" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            监督员：
+        </th>
+        <td class="formValue">
+            <input id="CYUSER" type="text" class="txt" dbfield="true" datacol="yes" err="采样人甲"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            采样人：
+        </th>
+        <td class="formValue">
+            <input id="CYUSER1" type="text" class="txt" dbfield="true" datacol="No" err="采样人乙"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPEC" type="text" dbfield="true" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            采样日期：
+        </th>
+        <td class="formValue">
+            <input id="CYDATE" type="text" class="txt Wdate" dbfield="true" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})"  datacol="yes" err="采样日期" checkexpession="NotNull"/>
+        </td>
+        <th class="formTitle">
+            采样车数：
+        </th>
+        <td class="formValue">
+            <input id="CARSNUM" type="text" class="txt readonly" readonly="readonly" dbfield="true"
+                datacol="yes" err="采样车数" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            班组：
+        </th>
+        <td class="formValue">
+            <select id="DEF1" class="txtselect" dbfield="true">
+                <option value="">请选择</option>
+                <option value="甲" selected="selected">甲</option>
+                <option value="乙">乙</option>
+                <option value="丙">丙</option>
+                <option value="丁">丁</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            接收公司：
+        </th>
+        <td class="formValue">
+            <input name="DEF19" id="DEF19" type="hidden" dbfield="true" />
+            <input id="DEF20" name="DEF20" type="text" dbfield="true" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            承运商：
+        </th>
+        <td class="formValue">
+            <input name="DEF9" id="DEF9" type="hidden" dbfield="true" />
+            <input id="DEF8" name="DEF8" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+        <th class="formTitle">
+            扣杂：
+        </th>
+        <td class="formValue">
+            <input id="SUMKZ" name="SUMKZ" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            采样类型：
+        </th>
+        <td class="formValue">
+            <select id="CYTYPE" class="txtselect" dbfield="true">
+                <option value="">请选择</option>
+                <option value="0" selected="selected">正常样</option>
+                <option value="1">平均样</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            入厂厂区：
+        </th>
+        <td class="formValue">
+            <select id="CQDEF1" class="txtselect" disabled="disabled" dbfield="true">
+                <option value="">---请选择---</option>
+                <option value="1000">阳光纸业</option>
+                <option value="6000">盛世热电</option>
+                <option value="7000">新迈纸业</option>
+                <option value="8000">阳光王子</option>
+                <option value="9000">华迈纸业</option>
+                <option value="9010">科迈制浆</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            预估水分：
+        </th>
+        <td class="formValue">
+            <input id="SUMYKS" name="SUMYKS" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREUSER" type="text" class="txt readonly" readonly="readonly" dbfield="true"
+                             datacol="yes"  err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+        </td>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CRETIME" type="text" class="txt readonly" readonly="readonly"
+                           datacol="yes"    err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+        </td>
+        <th class="formTitle">
+            异型卡序号：
+        </th>
+        <td class="formValue">
+            <input id="DEF6" type="text" class="txt" datacol="No" err="异型卡序号" checkexpession="NotNull"
+                dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="5">
+            <input id="MEMO" type="text" class="txt" err="描述" dbfield="true" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                明细信息</div>
+        </div>
+    </div>
+</div>
+<div class="line">
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

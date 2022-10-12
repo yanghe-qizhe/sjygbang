@@ -1,0 +1,122 @@
+﻿@{
+    ViewBag.Title = "采购过磅查询";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script>
+
+    $(function () {
+        BindAutocomplete("CarsName", "Cars", "Cars", "200", "150", "");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+
+        BindAutocomplete("ReceiveStoreName", "ReceiveStore", "Store", "150", "150", "");
+        BindAutocomplete("SendStoreName", "SendStore", "Store", "150", "150", "");
+    })
+    //获取条件
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#BillNo").val();
+        var ReceiveStore = $("#ReceiveStore").val();
+        var SendStore = $("#SendStore").val();
+        var CarsName = $("#CarsName").val();
+        var Material = $("#Material").val();
+        var COMPUTERTYPE = $("#COMPUTERTYPE").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&BillNo=" + BillNo;
+        url += "&ReceiveStore=" + ReceiveStore + "&SendStore=" + SendStore;
+        url += "&Cars=" + escape(CarsName) + "&Material=" + escape(Material);
+        url += "&Finish=" + Finish + "&COMPUTERTYPE=" + COMPUTERTYPE;
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                收货仓库：
+            </th>
+            <td>
+                <input id="ReceiveStore" type="hidden" />
+                <input id="ReceiveStoreName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                发货仓库：
+            </th>
+            <td>
+                <input id="SendStore" type="hidden" />
+                <input id="SendStoreName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                车号：
+            </th>
+            <td>
+                <input id="Cars" type="hidden" />
+                <input id="CarsName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                司机：
+            </th>
+            <td>
+                <input id="Drivers" type="hidden" />
+                <input id="DriversName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="Material" type="hidden" />
+                <input id="MaterialName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                过磅单号：
+            </th>
+            <td>
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                操作状态：
+            </th>
+            <td>
+                <select id="COMPUTERTYPE" name="COMPUTERTYPE" class="select" style="width: 205px;"
+                        dbfield="true" like="false">
+                    <option value="">---请选择---</option>
+                    <option value="99">作废</option>
+                    <option value="0">正常</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>

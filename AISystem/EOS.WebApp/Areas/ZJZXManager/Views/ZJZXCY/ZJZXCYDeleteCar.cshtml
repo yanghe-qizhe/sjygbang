@@ -1,0 +1,125 @@
+﻿@{
+    ViewBag.Title = "移除组批车辆明细";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript"> 
+    var FormID = GetQuery('FormID'); 
+    var KeyValue = GetQuery('KeyValue');  
+    var BILLNO = GetQuery('BILLNO');  
+    $(function () {  
+        $("#BILLNO").val(BILLNO);
+        setTimeout(function(){
+            GetGrid(); 
+        },100);
+    }) 
+
+    function btn_OK(){ 
+        var KeyList =  GetJqGridRowValue("#gridTable", "ID");
+        var delparm = 'KeyValue=' + escape(KeyValue)+"&KeyList="+escape(KeyList);
+        var url = '/ZJZXManager/ZJZXCY/PCZXCYDeleteItem';
+        if (IsNull(KeyValue)) {
+            confirmDialog("提示", "注：您确定要删除当前选中的组批明细记录吗？将会导致批次明细车辆信息数据删除,请谨慎操作", function (r) {
+                if (r) {
+                    Loading(true, "正在删除数据...");
+                    window.setTimeout(function () {
+                        AjaxJson(url, delparm, function (data) {
+                            tipDialog(data.Message, 3, data.Code);
+                            if (data.Code ==1) {
+                                btn_Search();
+                                if(IsNull(FormID)){
+                                    $parentobj = top.frames[FormID]; 
+                                } else{
+                                    $parentobj = top.frames[tabiframeId()];
+                                } 
+                                $parentobj.btn_Search(); 
+                            }
+                        });
+                    }, 200);
+                }
+            }); 
+        } else{
+            tipDialog('请至少选择一个车号明细', 4, 'warning');
+        }
+    }
+     
+    //搜索
+    function btn_Search() {  
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJZXManager/ZJZXCY/GetPCZXCYDeleteCarList")?KeyValue=" + escape(KeyValue) , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJZXManager/ZJZXCY/GetPCZXCYDeleteCarList")?KeyValue=" + escape(KeyValue)  ,
+            datatype: "json",
+            height: $(window).height() - 110,
+            autowidth: true,
+            colModel: [  
+            { label: 'ID', name: 'ID', index: 'ID', width: 100, align: 'left',hidden:true }, 
+            { label: '批号', name: 'MAINBILLNO', index: 'MAINBILLNO', width: 100, align: 'left' }, 
+            { label: '车号', name: "CARSNAME", index: 'CARSNAME', width: 100, sortable: false }, 
+            { label: '发货单位', name: 'LEADERDEPAS', index: 'LEADERDEPAS', width: 200, align: 'left' },
+            { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width:150, align: 'left' },  
+            { label: '重车日期', name: 'DEF14', index: 'DEF14', width: 130, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                }
+            },
+            { label: '采样日期', name: 'CRETIME', index: 'CRETIME', width: 130, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                }
+            }
+            ],
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true 
+        });
+        
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    从当前批号中移除：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt readonly" readonly="readonly" disabled="disabled"
+                        style="width: 120px" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                    <input id="btnOK" type="button" class="btnSearch" value="移 除" onclick="btn_OK()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

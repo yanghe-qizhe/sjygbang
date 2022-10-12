@@ -1,0 +1,169 @@
+﻿@{
+    ViewBag.Title = "选择采购订单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+       BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+       BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+        $("#keywords").focus();
+             setTimeout(function () {
+                GetGrid();
+            }, 300);
+        //绑定键盘按下事件  
+        $(document).keypress(function (e) {
+            // 回车键事件  
+            if (e.which == 13) {
+                $("#keywords").focus();
+                $("#keywords").select();
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    function btn_Search() {
+         var Supply = $("#Supply").val();
+        var Material = $("#Material").val();
+        var BillNo= $("#BillNo").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/POOrder/GetQYPOOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime   + '&Supply=' +   Supply+ '&Material=' +   Material+'&BillNo='+BillNo
+        }).trigger('reloadGrid');
+    }
+    //显示 
+    function GetGrid() {
+      var index = GetQuery('index');
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/POOrder/GetQYPOOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime ,
+            datatype: "json",
+            height:290,
+            width:890,
+            colModel: [
+                { label: '主键', name: 'PK_ORDER', width: 80, align: 'left', hidden: true },
+                { label: '子主键', name: 'PK_ORDER_B', width: 80, align: 'left',  hidden: true },
+                 { label: '订单来源', name: 'DATATYPE', width: 80, align: 'left' ,  hidden: true},
+                { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 130, align: 'center' },
+                 { label: '主键', name: 'PK_SUPPLIER', width: 80, align: 'left', hidden: true },
+                   { label: '供应商', name: 'PK_SUPPLIERNAME', index: 'PK_SUPPLIERNAME', width: 160, align: 'left' },
+                    { label: '主键', name: 'PK_MATERIAL', width: 80, align: 'left', hidden: true },
+                  { label: '物料', name: 'PK_MATERIALNAME', index: 'PK_MATERIALNAME', width: 100, align: 'left' },
+                    { label: '主键', name: 'MATERIALCODE', hidden: true },
+                    { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 120, align: 'left' },
+                     { label: '单价', name: 'NPRICE', index: 'NPRICE', width: 50, align: 'left' },
+                     { label: '主数量', name: 'NASTNUM', index: 'NASTNUM', width: 60, align: 'left' },
+                      { label: '辅数量', name: 'SECQUANTITY', index: 'SECQUANTITY', width: 60, align: 'left' },
+                     { label: '余量', name: 'YLNUM', index: 'YLNUM', width: 80, align: 'left' },
+                      { label: '主计量', name: 'PURUNITNAME', index: 'PURUNITNAME', width: 60, align: 'left' },
+                        { label: '辅计量', name: 'SECPURUNITNAME', index: 'SECPURUNITNAME', width: 60, align: 'left' },
+                 { label: '订单日期', name: 'DBILLDATE', index: 'DBILLDATE', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                  },
+                     { label: '合同号', name: 'VCONTRACTCODE', index: 'VCONTRACTCODE', width: 120, align: 'center' },
+  { label: 'HK木浆采购单号', name: 'HKCGBILLNO', index: 'HKCGBILLNO', width:120, align: 'center' },
+  { label: '到货港口', name: 'PORTARRIVAL', index: 'PORTARRIVAL', width: 120, align: 'center' },
+ { label: '加工贸易手册', name: 'REGISTERACCOUNT', index: 'REGISTERACCOUNT', width: 120, align: 'center' },
+  { label: '加工仓库', name: 'RECEIVESTORE', index: 'RECEIVESTORE', width: 120, align: 'center' },
+    { label: '结算方式', name: 'VBDEF4', index: 'VBDEF4', width: 60, align: 'center' },
+                     { label: '主键', name: 'RECCOMPANYID', width: 80, align: 'left', hidden: true },
+                            { label: '接收公司', name: 'RECCOMPANYNAME', index: 'RECCOMPANYNAME', width:150, align: 'left' },
+                             { label: '主键', name: 'RECORGID', width: 80, align: 'left', hidden: true },
+                             { label: '接收组织', name: 'RECORGNAME', index: 'RECORGNAME', width: 150, align: 'left' } 
+                         
+            ],
+            pager: "#gridPager",
+            sortname: 'DBILLDATE',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            //双击事件
+            ondblClickRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var $parentobj = top.frames[tabiframeId()];
+                  $parentobj.$("#PK_BILL").val(rowData.PK_ORDER);
+                    $parentobj.$("#PK_BILL_B").val(rowData.PK_ORDER_B);
+                $parentobj.$("#VBILLCODE").val(rowData.VBILLCODE);
+                $parentobj.$("#PK_RECEIVEORG" ).val(rowData.RECCOMPANYID);
+                $parentobj.$("#RECEIVEORG" ).val(rowData.RECCOMPANYNAME);
+                $parentobj.$("#SUPPLY" ).val(rowData.PK_SUPPLIER);
+                $parentobj.$("#SUPPLYNAME" ).val(rowData.PK_SUPPLIERNAME);
+                $parentobj.$("#MATERIAL" ).val(rowData.PK_MATERIAL);
+                $parentobj.$("#MATERIALNAME" ).val(rowData.PK_MATERIALNAME);
+                $parentobj.$("#MATERIALSPEC" ).val(rowData.MATERIALSPEC);
+                $parentobj.$("#PRICE" ).val(getFloat(rowData.NPRICE, 3)); 
+                 closeDialog();
+                 }
+        });
+
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="Supply" type="hidden" />
+                    <input id="SupplyName" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    订单编号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    订单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-40)" style="width: 100px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 100px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

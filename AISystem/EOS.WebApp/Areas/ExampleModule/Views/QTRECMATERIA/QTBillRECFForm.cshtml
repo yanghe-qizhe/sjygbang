@@ -1,0 +1,334 @@
+﻿@{
+    ViewBag.Title = "其他销售发货》新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        /*JQuery 限制文本框只能输入数字和小数点*/
+        $(".NumDecText").keyup(function () {
+            $(this).val($(this).val().replace(/[^0-9.]/g, ''));
+            var suttle = $('#SUTTLE').val();
+            var kbz = $('#PDAKBZ').val();
+            var kbzkz = ((kbz / 1000) * suttle).toFixed(4);
+            var kbzkzpd = $('#PDAKZ1').val(kbzkz);
+        }).bind("paste", function () {  //CTR+V事件处理    
+            $(this).val($(this).val().replace(/[^0-9.]/g, ''));
+        }).css("ime-mode", "disabled"); //CSS设置输入法不可用    
+        //仓库
+        BindAutocomplete("STORE", "PK_STORE", "Store", "", "", "");
+        InitControl();
+    })
+    //卡号搜索
+    function btn_Search() {
+        var IcCnumber = $("#ICNUMBER").val();
+        var IcCard = $("#ICCARD").val();
+
+        if (IcCnumber != "" || IcCard != "") {
+            AjaxJson("/ExampleModule/QTRECMATERIA/GetEntity", { KeyValue: IcCard, ModuleId: IcCnumber }, function (data) {
+                SetWebControls(data);
+                $("#BILLNONAME").val('');
+            });
+        }
+        else {
+            top.TipMsg("请先输入卡面编号！", 4000, "error");
+        }
+    }
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/QTRECMATERIA/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //确认收货事件
+    function QuenRenOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要收货确认操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    AjaxJson("/ExampleModule/QTRECMATERIA/QuerenOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        //ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    ///读卡方法
+    function readData(pie_arr) {
+        var iRet = CardOpen(); if (iRet == 0) { for (var i = 0; i < pie_arr.length; i++) { var pie = pie_arr[i]; if (iRet == 0) { getVal(pie); } } iRet = CardClose(); }
+    };
+    function getVal(pie) { }
+    //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            //$('#msg').text('打开读卡器失败');
+            top.TipMsg("打开读卡器失败！", 4000, "error");
+            $('#ICCARD').val('');
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            //alert(version.toString());
+            var CardNumber = MWRFATL.OpenCard(1);
+            if (CardNumber != "") {
+                SetCardNo(CardNumber);
+            }
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                top.TipMsg("IC卡未放在读卡器上", 4000, "error");
+                //$('#msg').text('IC卡没有放在读卡器上');
+                $('#ICCARD').val('');
+                MWRFATL.CloseReader();
+                iRet = MWRFATL.LastRet;
+            }
+            else {
+                res = 0;
+                //alert(CardNumber.toString());
+            }
+        }
+        //alert(res.toString());
+        return res;
+    }
+    //转卡号
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var ICNO = "";
+        var len = arr.length - 1;
+        for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        ICNO = parseInt(num, 16);
+        $('#ICCARD').val(ICNO.toString());
+        top.TipMsg("读卡成功", 4000, "error");
+        //$('#msg').text('读卡成功');
+        btn_Search();
+    }
+    //读卡方法
+    function ReadCard() {
+        var pie_arr = [0];
+        readData(pie_arr);
+    }
+    //关头IC卡
+    //res:1-关闭卡片失败,2-断开设备失败,0-成功。
+    function CardClose() {
+        var res = 100;
+        MWRFATL.CloseCard();
+        var iRet = MWRFATL.LastRet;
+        if (iRet != 0) {
+            res = 1
+            top.TipMsg("关闭卡片失败", 4000, "error");
+            //$('#msg').text('关闭卡片失败');
+            $('#ICCARD').val('');
+        }
+        MWRFATL.CloseReader();
+        iRet = MWRFATL.LastRet;
+        if (iRet != 0) {
+            res = 2;
+            top.TipMsg("断开设备失败", 4000, "error");
+            //$('#msg').text('断开设备失败');
+            $('#ICCARD').val('');
+        }
+        return iRet;
+    }
+    function SelectOrder() {
+        var url = "/ExampleModule/QTRECMATERIA/QTSELECTBillRECF";
+        Dialog(url, "QTSELECTBillRECF", "选取过磅单（双击表格添加）", 900, 400);
+    }
+    function SuanSjzl() {
+        var KBZ = $('#PDAKBZ').val();
+        $('#PDAKZ1').val(KBZ / 1000);
+    }
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="lr-query" title="查询(Ctrl+F)" onclick="btn_Search()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/page_white_magnify.png")) 50% 4px no-repeat;">
+                    查询</b></span></a> <a id="ai-read" title="读卡(Ctrl+R)" onclick="ReadCard()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/script_binary.png")) 50% 4px no-repeat;">
+                            读卡</b></span></a><a id="button_Commit_Save" title="保存单据" onclick="QuenRenOrderForm()"
+                                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/database_save.png")) 50% 4px no-repeat;">
+                                    收货确认</b></span></a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                            离开</b></span></a>
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            IC卡号：
+        </th>
+        <td class="formValue">
+            <input id="ICCARD" type="text" class="txt" datacol="no" err="IC卡号" checkexpession="NotNull" />
+            <input id="TYPE" type="hidden" value='4' />
+            <input id="BILLFROM" type="hidden" value='1' />
+            <input id="OPERTYPE" type="hidden" value='2' />
+        </td>
+        <th class="formTitle">
+            磅单号：
+        </th>
+        <td class="formValue">
+            <input id="BILLNONAME" type="text" class="txt required" err="磅单号" maxlength="20"
+                onclick="SelectOrder();" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Tabbasic" class="tab_list bd actived" onclick="Tabchange('basic')">
+                收料信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--录入信息-->
+    <div id="basic" class="tabPanel">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    磅单号:
+                </th>
+                <td class="formValue">
+                    <input id="ID" type="hidden" />
+                    <input id="BILLNO" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                        err="磅单号" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    供应商：
+                </th>
+                <td class="formValue">
+                    <input id="PK_SENDORG" type="hidden" />
+                    <input id="SENDORG" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                        err="供应商" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    物料:
+                </th>
+                <td class="formValue">
+                    <input id="PK_MATERIAL" type="hidden" />
+                    <input id="MATERIAL" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                        err="物料" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    物料规格:
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALKIND" type="text" class="txt readonly" readonly="readonly" datacol="no"
+                        err="物料规格" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    车号：
+                </th>
+                <td class="formValue">
+                    <input id="PK_CARS" type="hidden" />
+                    <input id="CARS" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                        err="车号" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    司机：
+                </th>
+                <td class="formValue">
+                    <input id="PK_DRIVERS" type="hidden" />
+                    <input id="DRIVERS" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                        err="司机" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    皮重时间：
+                </th>
+                <td class="formValue">
+                    <input id="LIGHTDATE" type="text" class="txt readonly" readonly="readonly" datacol="no"
+                        err="皮重时间" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    皮重(吨):
+                </th>
+                <td class="formValue">
+                    <input id="TARE" type="text" class="txt readonly" readonly="readonly" datacol="no"
+                        err="毛重" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    毛重时间：
+                </th>
+                <td class="formValue">
+                    <input id="WEIGHTDATE" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    毛重(吨):
+                </th>
+                <td class="formValue">
+                    <input id="GROSS" type="text" class="txt readonly" readonly="readonly" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    净重(吨)：
+                </th>
+                <td class="formValue">
+                    <input id="SUTTLE" type="text" class="txt readonly" readonly="readonly" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    原发量(吨)：
+                </th>
+                <td class="formValue">
+                    <input id="PDAYF" type="text" class="txt NumDecText" maxlength="5" err="原发量" datacol="yes"
+                        checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    仓库：
+                </th>
+                <td class="formValue">
+                    <input id="PK_STORE" type="hidden" datacol="yes" err="仓库,勿手动输入" checkexpession="NotNull" />
+                    <input id="STORE" type="text" class="txt icontree" datacol="yes" err="请选择仓库" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    备注：
+                </th>
+                <td class="formValue" colspan="5">
+                    <input id="MEMO" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    <span class="ck_span">提醒：</span>
+                </th>
+                <td class="formValue" colspan="7">
+                    <span class="ck_span">
+                        <label id="lbl_msg">
+                            无
+                        </label>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+</form>

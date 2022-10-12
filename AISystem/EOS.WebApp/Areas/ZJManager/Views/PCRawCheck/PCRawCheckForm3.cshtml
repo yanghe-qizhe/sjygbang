@@ -1,0 +1,202 @@
+﻿@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        setTimeout(function () {
+            GetGrid();
+            var frameid = tabiframeId();
+            var $parentobj = top.frames[frameid];
+            var datas = $parentobj.SelectDatas();
+            InitGrid1(datas);
+        }, 300);
+    })
+
+
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 80,
+            autowidth: true,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', width: 100, align: 'center', hidden: true },
+                { label: '计量委托', name: 'PCID', index: 'PCID', width: 110, align: 'center' },
+                { label: '过磅日期', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 110, align: 'center' },
+                { label: '过磅单号', name: 'JLBILLNO', index: 'JLBILLNO', width: 110, align: 'center' },
+                { label: 'CARS', name: 'CARS', index: 'CARS', width: 100, align: 'center', hidden: true },
+                { label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 60, align: 'center' },
+                { label: '物料编号', name: 'MATERIAL', index: 'MATERIAL', width: 120, align: 'center', hidden: true },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center' },
+                 { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'center' },
+                  { label: 'SUPPLY', name: 'SUPPLY', index: 'SUPPLY', width: 100, align: 'center', hidden: true },
+                  { label: '供应商', name: 'SUPPLYNAME', index: 'SUPPLYNAME', width: 150, align: 'center' },
+                  { label: '净重', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+                   { label: '扣杂', name: 'KS', index: 'KS', width: 60, align: 'center' },
+                { label: '制样码', name: 'PRINTCODE', index: 'PRINTCODE', width: 120, align: 'center' },
+                  { label: '检验结果', name: 'ZJRESULTMEMO', index: 'ZJRESULTMEMO', width: 160, align: 'center' },
+                 { label: 'ZJRESULT', name: 'ZJRESULT', index: 'ZJRESULT', width: 100, align: 'center', hidden: true },
+                {
+                    label: '合格判定', name: 'ZJRESULTNAME', index: 'ZJRESULTNAME', width: 80, align: 'center'
+                }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+    }
+
+    function InitGrid1(JsonData) {
+        var rowindex = 1;
+        $.each(JsonData, function (i) {
+            var rowData = JsonData[i];
+            var CZTYPE = rowData.CZTYPE;
+            var CZTYPENAME = "";
+            if (CZTYPE == '0') {
+                CZTYPENAME = '<input id="CZTYPENAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer;color:blue;font-size:15px;"  value="合格" />';
+            }
+            else if (CZTYPE == '1') {
+                CZTYPENAME = '<input id="CZTYPENAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer;color:green;font-size:15px;"  value="让步接收" />';
+            }
+            else if (CZTYPE == '2') {
+                CZTYPENAME = '<input id="CZTYPENAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer;color:blue;font-size:15px;"  value="退货" />';
+            }
+            else if (CZTYPE == '3') {
+                CZTYPENAME = '<input id="CZTYPENAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer;color:blue;font-size:15px;"  value="合格扣减" />';
+            }
+
+            var ZJRESULT = rowData.ZJRESULT;
+            var ZJRESULTNAME = "";
+            if (ZJRESULT == '0') {
+                ZJRESULTNAME = '<input readonly id="ZJRESULTNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer;color:blue;font-size:15px;"  value="检验合格" />';
+            }
+            if (ZJRESULT == '1') {
+                ZJRESULTNAME = '<input readonly id="ZJRESULTNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer;color:red;font-size:15px;"  value="检验不合格" />';
+            }
+
+            var rowdata = {
+                ID: '<input id="ID➩' + rowindex + '" type="hidden"  value="' + rowData.ID + '"/><input id="MAINID➩' + rowindex + '" type="hidden" value="' + rowData.MAINID + '"/>',
+                PCID: '<input readonly id="PCID➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.PCID + '"/>',
+                WEIGHTDATE: '<input readonly id="WEIGHTDATE➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.WEIGHTDATE + '" />',
+                JLBILLNO: '<input readonly id="JLBILLNO➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.JLBILLNO + '" />',
+                CARS: '<input id="CARS➩' + rowindex + '" type="hidden" value="' + rowData.CARS + '" />',
+                CARSNAME: '<input readonly id="CARSNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.CARSNAME + '" />',
+                MATERIAL: '<input id="MATERIAL➩' + rowindex + '" type="hidden" value="' + rowData.MATERIAL + '" />',
+                MATERIALNAME: '<input readonly id="MATERIALNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.MATERIALNAME + '" />',
+                MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.MATERIALSPEC + '" />',
+                SUPPLY: '<input id="SUPPLY➩' + rowindex + '" type="hidden" value="' + rowData.SUPPLY + '" />',
+                SUPPLYNAME: '<input readonly id="SUPPLYNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.SUPPLYNAME + '" />',
+                SUTTLE: '<input readonly id="SUTTLE➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.SUTTLE + '" />',
+                KS: '<input enter="1" id="KS➩' + rowindex + '" class="editable center decimal" type="text" style="cursor:pointer"  index=' + rowindex + ' value="' + rowData.KS + '" onkeydown="SetUpDown(' + rowindex + ')"/>',
+                PRINTCODE: '<input readonly id="PRINTCODE➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.PRINTCODE + '" />',
+                ZJRESULTMEMO: '<input readonly id="ZJRESULTMEMO➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.ZJRESULTMEMO + '" />',
+                ZJRESULT: '<input id="ZJRESULT➩' + rowindex + '" type="hidden" value="' + rowData.ZJRESULT + '" />',
+                ZJRESULTNAME: ZJRESULTNAME,
+                CZTYPE: '<input id="CZTYPE➩' + rowindex + '" type="hidden" value="' + rowData.CZTYPE + '" />',
+                CZTYPENAME: CZTYPENAME
+            }
+            $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+            rowindex++;
+        });
+        //$("#gridTable").find('.decimal').attr('onfocus', 'IsMoneySubtract(this.id)');
+
+        $("#gridTable").find('.center').css('text-align', 'center');
+        $("#gridTable").find('.decimal').focus(function () {
+            IsMoneySubtract(this.id);
+            var val = this.value;
+            if (val == "0" || val == "0.000" || val == "0.00") {
+                this.value = "";
+            } else {
+                $(this).select();
+            }
+        });
+        $("#gridTable").find('.decimal').blur(function () {
+            var val = this.value;
+            if (val == "") {
+                this.value = "0";
+            }
+        });
+    }
+
+
+    function SetUpDown(rowindex) {
+        var key = event.keyCode;
+        if (key == 38 || key == 40) {
+            var a = $(document.activeElement);
+            if ($(a).attr("enter") == "1") {
+                var maxcode = $(a).attr("index");
+                var maxcodenext = key == 38 ? FloatSub(maxcode, 1) : FloatAdd(maxcode, 1);
+                $("#gridTable").find("input[index='" + maxcodenext + "'][enter='1']").focus();
+                $("#gridTable").find("input[index='" + maxcodenext + "'][enter='1']").select();
+            }
+        }
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = {};
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/ZJManager/PCRawCheck/SubmitOrderFormKZ1?ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        closeDialog();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+ 
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn"><span>
+                        <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<table id="gridTable">
+</table>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+    
+    .ui-jqgrid tr.ui-row-ltr td
+    {
+        padding: 0px;
+        border-bottom: 1px solid #ccc;
+    }
+    
+    .ui-jqgrid .ui-jqgrid-htable th
+    {
+        line-height: 15px;
+    }
+    
+    .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+    {
+        background: none;
+    }
+    
+    .editable
+    {
+        height: 22px;
+        background-color: #fff;
+    }
+</style>
+</form>

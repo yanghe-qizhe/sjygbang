@@ -1,0 +1,323 @@
+﻿@{
+    ViewBag.Title = "汽运到货单明细";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("CarsName", "Cars", "Cars", "200", "150", "");
+        GetGrid();
+    })
+
+    //搜索
+    function btn_Search() {
+        var PK_ORDER = $("#PK_ORDER").val();
+        var BillNo = $("#BillNo").val();
+        var PZBILLNO = $("#PZBILLNO").val();
+        var MATERIALTYPE = $("#MATERIALTYPE").val();
+        var Supply = $("#Supply").val();
+        var Material = $("#Material").val();
+        var MATERIALTYPE = $("#MATERIALTYPE").val();
+        var Cars = $("#Cars").val();
+        var PSDNO = $("#PSDNO").val();
+        var CQDEF1 = $("#CQDEF1").val();
+        var UPLOAD = $("#UPLOAD").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/PCBillSOF/GetQYOrderList1")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&PK_ORDER=' + PK_ORDER + '&BILLNO=' + BillNo + '&PZBILLNO=' + PZBILLNO + "&Supply=" + Supply + "&Material=" + Material + "&MATERIALTYPE=" + MATERIALTYPE + "&Cars=" + Cars + "&PSDNO=" + PSDNO + "&CQDEF1=" + CQDEF1 + "&UPLOAD=" + UPLOAD, page: 1
+        }).trigger('reloadGrid');
+    }
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var MATERIALTYPE = $("#MATERIALTYPE").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/PCBillSOF/GetQYOrderList1")?StartTime=" + StartTime + '&EndTime=' + EndTime + "&MATERIALTYPE=" + MATERIALTYPE,
+            datatype: "json",
+            height: $(window).height() - 270,
+            autowidth: true,
+            colModel: [
+             { label: '过磅单号', name: 'BILLNO', index: 'BILLNO', width: 100, align: 'center' },
+             { label: '到货单号', name: 'PK_ORDER', index: 'PK_ORDER', width: 120, align: 'center' },
+            {
+                label: '状态', name: 'FINISH', index: 'FINISH', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '0')
+                        return "<span style='color:red;'>一次计量</span>";
+                    if (cellvalue == '1')
+                        return "<span style='color: blue; font-weight: bold;'>二次计量</span>";
+                }
+            },
+            {
+                label: '收货状态', name: 'UPLOAD', index: 'UPLOAD', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == "1")
+                        return "已收货";
+                    else
+                        return "未收货";
+                }
+            },
+            {
+                label: '过账状态', name: 'UPLOAD1', index: 'UPLOAD1', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == "1")
+                        return "已过账";
+                    else
+                        return "未过账";
+                }
+            },
+           { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 120, align: 'center' },
+            { label: '车号', name: 'CARS', index: 'CARS', width: 80, align: 'center' },
+            { label: '司机', name: 'DRIVERS', index: 'DRIVERS', width: 60, align: 'center' },
+            { label: '收货工厂', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 100, align: 'left' },
+            { label: '供应商', name: 'SENDORG', index: 'SENDORG', width: 200, align: 'left' },
+                      { label: '物料编码', name: 'PK_MATERIAL', index: 'PK_MATERIAL', width: 120, align: 'left' },
+            { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 120, align: 'left' },
+            { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'left' },
+            { label: '原发净重', name: "PDAYF", index: 'PDAYF', width: 60, align: 'left' },
+            { label: '毛重', name: "GROSS", index: 'GROSS', width: 60, align: 'left' },
+            { label: '皮重', name: "TARE", index: 'TARE', width: 60, align: 'left' },
+            { label: '净重', name: "SUTTLE", index: 'SUTTLE', width: 60, align: 'left' },
+             { label: '供应商系数', name: "PDAKZ7", index: 'PDAKZ7', width: 60, align: 'left' },
+            { label: '扣重比例', name: "KZAMOUNT", index: 'KZAMOUNT', width: 60, align: 'left' },
+            { label: '扣重', name: "PDAKZ2", index: 'PDAKZ2', width: 60, align: 'left' },
+            { label: '结算净重', name: "JZXSUTTLE", index: 'JZXSUTTLE', width: 60, align: 'left' },
+            { label: '承运商', name: 'TRAFFICCOMPANY', index: 'TRAFFICCOMPANY', width: 80, align: 'left' },
+            { label: '毛重时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width:120, align: 'left' },
+            { label: '送货单位', name: 'SENDADDRESS', index: 'SENDADDRESS', width: 100, align: 'center' },
+             { label: '批号', name: 'MATBATCHNO', index: 'MATBATCHNO', width: 120, align: 'center' },
+            { label: '检验批号', name: 'ZJBILLNO', index: 'ZJBILLNO', width: 120, align: 'center' },
+            { label: '收货凭证编号', name: 'PZBILLNO', index: 'PZBILLNO', width: 120, align: 'center' },
+            { label: '收货凭证时间', name: 'PZDATE', index: 'PZDATE', width: 120, align: 'center' },
+            //{ label: '过账凭证编号', name: 'PZBILLNO1', index: 'PZBILLNO1', width: 120, align: 'center' },
+            { label: '过账凭证时间', name: 'PZDATE1', index: 'PZDATE1', width: 120, align: 'center' },
+           { label: '外观判定', name: 'WGTYPE', index: 'WGTYPE', width: 100, align: 'center' },
+          { label: '质检报告', name: 'ISZJ', index: 'ISZJ', width: 100, align: 'center' },
+            {
+                label: '是否失败', name: 'ISERROR', index: 'ISERROR', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == "1")
+                        return "是";
+                    else
+                        return "否";
+                }
+            }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'WEIGHTDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            rownumbers: true,
+            gridview: true,
+            onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var KeyValue = rowData.BILLNO;
+                $("#gridETable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/PORECMATERIA/GetLogEntryList")?KeyValue=" + KeyValue, page: 1
+                }).trigger('reloadGrid');
+            }
+
+        });
+        $("#gridETable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/PORECMATERIA/GetLogEntryList")?KeyValue=",
+        datatype: "json",
+        height: 60,
+        width: $(window).width() - 5,
+        autowidth: true,
+        colModel: [
+            { label: '单据编号', name: 'BILL_NO', index: 'BILL_NO', width: 130, align: 'left' },
+            { label: '原因', name: "IF_MSG", index: 'IF_MSG', width: 500, align: 'left' },
+            {
+                label: '上传时间', name: 'BEGIN_TIME', index: 'BEGIN_TIME', width: 120, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                }
+            }
+        ],
+        viewrecords: true,
+        rowNum: 30,
+        sortname: 'VBIllCode',
+        sortorder: 'desc',
+        shrinkToFit: false,
+        rownumbers: true,
+        autoScroll: true,
+        gridview: true
+    });
+    }
+
+    function btn_HandOrder() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            var UPLOAD = GetJqGridRowValue("#gridTable", "UPLOAD");
+            if (UPLOAD == "已收货") {
+                tipDialog("数据已收货，不能进行收货操作！", 3, "");
+                return false;
+            }
+            confirmDialog('提示', '注：您确认要收货操作吗？', function (r) {
+                if (r) {
+                    var parm = "KeyValue=" + KeyValue;
+                    AjaxJson('/ExampleModule/PCBillSOF/HandOrder', parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    function btn_HandOrder1() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            var UPLOAD = GetJqGridRowValue("#gridTable", "UPLOAD");
+            if (UPLOAD == "已过账") {
+                tipDialog("数据已过账，不能进行过账操作！", 3, "");
+                return false;
+            }
+            confirmDialog('提示', '注：您确认要过账操作吗？', function (r) {
+                if (r) {
+                    var parm = "KeyValue=" + KeyValue;
+                    AjaxJson('/ExampleModule/PCBillSOF/HandOrder1', parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }
+            });
+        }
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(0)" style="width: 110px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 110px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    到货单号：
+                </th>
+                <td>
+                    <input id="PK_ORDER" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    过磅单号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 110px" />
+                </td>
+
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="Cars" type="hidden" />
+                    <input id="CarsName" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    身份证：
+                </th>
+                <td>
+                    <input id="PSDNO" type="text" class="txt" style="width: 110px" />
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="Supply" type="hidden" />
+                    <input id="SupplyName" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    凭证编号：
+                </th>
+                <td>
+                    <input id="PZBILLNO" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    类型：
+                </th>
+                <td>
+                    <select id="MATERIALTYPE" class="txt select" style="width: 110px">
+                        <option value="YG40">化工</option>
+                        <option value="YG60">包装物</option>
+                    </select>
+                </td>
+                <th>
+                    入厂厂区：
+                </th>
+                <td>
+                    <select id="CQDEF1" class="txt select" style="width: 110px">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        @*<option value="6000">盛世热电</option>
+                            <option value="7000">新迈纸业</option>
+                            <option value="8000">阳光王子</option>
+                            <option value="9000">华迈纸业</option>
+                            <option value="9010">科迈制浆</option>*@
+                    </select>
+                </td>
+                <th>
+                    是否收货：
+                </th>
+                <td>
+                    <select id="UPLOAD" class="txt select" style="width: 110px">
+                        <option value="">---请选择---</option>
+                        <option value="0">未收货</option>
+                        <option value="1">已收货</option>
+                    </select>
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div><table id="gridETable"></table>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,170 @@
+﻿@{
+    ViewBag.Title = "StoreSortForm";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var Type = GetQuery('Type');
+    $(function () {
+        GetGrid();
+    })
+
+    /*车皮明细begin=======================================*/
+    //订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 315,
+            autowidth: true,
+            colModel: [
+                { label: '物料[<font face="宋体">*</font>]', name: 'MATERIALNAME', width: 180, sortable: false, align: 'center' },
+                { label: '规格[<font face="宋体">*</font>]', name: 'MATERIALSPEC', width: 180, sortable: false, align: 'center' },
+                { label: '扣重[<font face="宋体">*</font>]', name: 'SUTTLE', width: 180, sortable: false, align: 'center' },
+                { label: '说明', name: "MEMO", width: 220, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+        //默认添加6行 空行
+        for (var i = 1; i < 100; i++) {
+            var rowdata = {
+                MATERIALNAME: '<input readonly id="MATERIALNAME➩' + i + '" class="editable disabled center" type="text" style="cursor:pointer" datacol="no" err="物料" checkexpession="NotNull" /><input id="MATERIAL➩' + i + '" type="hidden" /><input id="TYPE➩' + i + '" type="hidden" value="' + Type + '" />',
+                MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + i + '" class="editable disabled center" type="text" style="cursor:pointer"  />',
+                SUTTLE: '<input id="SUTTLE➩' + i + '" maxlength="10"  class="editable decimal center" type="text"  datacol="No" err="扣重" checkexpession="DoubleOrZero" value="0"/>',
+                MEMO: '<input id="MEMO➩' + i + '" class="editable disabled center" type="text" style="cursor:pointer"  />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        }
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center');
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var index = $(this).text();
+            $("#MATERIAL➩" + index).val("");
+            $("#MATERIALNAME➩" + index).val("");
+            $("#MATERIALSPEC➩" + index).val("");
+        });
+
+    }
+
+    var array = new Array();
+    function IsExistOrder(index, json) {
+        if (!ArrayOrderExists(array, json)) {
+            array[index] = json;
+            return false;
+        } else {
+            return true;
+        }
+    }
+    function ArrayOrderExists(arr, json) {
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] != null) {
+                if (arr[i].MATERIALNAME == json.MATERIALNAME && arr[i].MATERIALSPEC == json.MATERIALSPEC)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    function SelectMaterial() {
+        var title = "选取物料信息";
+
+        var url = "/BaseSet/ONEWEIGHTMATERIAL/SelectMaterial?type=2";
+        openMyDialog(url, "Form11111", title, 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText();
+             });
+    }
+
+    function InitGrid(rows) {
+        var rowindex = 1;
+        $.each(rows, function (i) {
+            var rowData = rows[i];
+            $("#MATERIAL➩" + rowindex).val(rowData.ID);
+            $("#MATERIALNAME➩" + rowindex).val(rowData.NAME);
+            $("#MATERIALSPEC➩" + rowindex).val(rowData.MATERIALSPEC);
+            $("#TYPE➩" + rowindex).val(Type);
+            $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').attr("datacol", "yes");
+            $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').removeClass("disabled").removeAttr('disabled');
+            rowindex++;
+        });
+    }
+
+
+    /*明细end=======================================*/
+    //保存事件
+    function SubmitOrderForm() {
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+            AjaxJson("/BaseSet/ONEWEIGHTMATERIAL/SubmitOrderAllForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                var tabframeid = "tabs_iframe_" + ModuleId;
+                top.frames[tabframeid].windowload();
+                ThisCloseTab();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a><a id="SelDSWeight" title="选单" onclick="SelectMaterial()" class="tools_btn"><span><b
+                         style="background: url(@Url.Content("~/Content/Images/Icon16/application_view_list.png")) 50% 4px no-repeat;">选物料</b></span></a>
+    <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+        离开</b></span></a>
+</div>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                物料信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--批量信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>

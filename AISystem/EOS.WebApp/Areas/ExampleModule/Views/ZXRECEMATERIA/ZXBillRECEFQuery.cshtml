@@ -1,0 +1,116 @@
+﻿@{
+    ViewBag.Title = "转序收货》查询";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    $(function () {
+        //车号
+        BindAutocomplete("CARS", "PK_CARS", "DCars", "", "", "");
+        BindAutocomplete("STORESEND", "PK_STORESEND", "Store", "", "", "");
+        BindAutocomplete("MATERIAL", "PK_MATERIAL", "Material", "", "", "");
+        BindAutocomplete("STORETAKE", "PK_STORETAKE", "Store", "", "", "");
+
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        //开始时间
+        var StartTime = $("#StartTime").val();
+        //结束时间
+        var EndTime = $("#EndTime").val();
+        //单号
+        var TaskNo = $("#BillNo").val();
+        //收货仓库
+        var StoreTake = $("#PK_STORETAKE").val();
+        //车号
+        var Cars = $("#CARS").val();
+
+        //物料
+        var Material = $("#PK_MATERIAL").val();
+        //发货仓库
+        var StoreSend = $("#PK_STORESEND").val();
+        //收货人员
+        var Operuser = $("#OPERUSERTAKE").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&TaskNo=" + TaskNo;
+        url += "&Cars=" + escape(Cars) + "&Material=" + Material + "&StoreTake=" + StoreTake;
+        url += "&StoreSend=" + StoreSend + "&Driver=" + Driver + "&ROperuser=" + escape(Operuser);
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                单 号：
+            </th>
+            <td>
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                发货仓库：
+            </th>
+            <td>
+                <input id="PK_STORESEND" type="hidden" />
+                <input id="STORESEND" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                收货仓库：
+            </th>
+            <td>
+                <input id="PK_STORETAKE" type="hidden" />
+                <input id="STORETAKE" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                车 号：
+            </th>
+            <td>
+                <input id="PK_CARS" type="hidden" />
+                <input id="CARS" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物 料：
+            </th>
+            <td>
+                <input id="PK_MATERIAL" type="hidden" />
+                <input id="MATERIAL" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                收货人员：
+            </th>
+            <td>
+                <input id="OPERUSERTAKE" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+    </table>
+</div>

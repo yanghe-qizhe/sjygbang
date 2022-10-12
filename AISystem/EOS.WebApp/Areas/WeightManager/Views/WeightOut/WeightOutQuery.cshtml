@@ -1,0 +1,152 @@
+﻿@{
+    ViewBag.Title = "销售计量单";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script>
+
+    $(function () {
+        BindAutocomplete("CarsName", "Cars", "Cars", "200", "150", "");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("CustomerName", "Customer", "Customer", "200", "150", "");
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#BillNo").val();
+        var VBillCode = $("#VBillCode").val();
+        var FHBillNo = $("#FHBillNo").val();
+        var Cars = $("#Cars").val();
+        var Material = $("#MaterialName").val();
+        var Customer = $("#Customer").val();
+        var Finish = $("#FINISH").val();
+        var COMPUTERTYPE = $("#COMPUTERTYPE").val();
+        var DEF11 = $("#DEF11").val();
+
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&BillNo=" + BillNo;
+        url += "&VBillCode=" + VBillCode + "&FHBillNo=" + FHBillNo + "&COMPUTERTYPE=" + COMPUTERTYPE;
+        url += "&Cars=" + escape(Cars) + "&Material=" + escape(Material);
+        url += "&Customer=" + escape(Customer) + "&Finish=" + Finish + "&DEF11=" + DEF11;
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                车号：
+            </th>
+            <td>
+                <input id="Cars" type="hidden" />
+                <input id="CarsName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="Material" type="hidden" />
+                <input id="MaterialName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                客户：
+            </th>
+            <td>
+                <input id="Customer" type="hidden" />
+                <input id="CustomerName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                过磅单号：
+            </th>
+            <td>
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                订单编号：
+            </th>
+            <td>
+                <input id="VBillCode" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                发货单号：
+            </th>
+            <td>
+                <input id="FHBillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                计量状态：
+            </th>
+            <td>
+                <select id="FINISH" name="FINISH" class="select" style="width: 205px;">
+                    <option value="">---请选择---</option>
+                    <option value="0">一次计量</option>
+                    <option value="1" selected="selected">二次计量</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                操作状态：
+            </th>
+            <td>
+                <select id="COMPUTERTYPE" name="COMPUTERTYPE" class="select" style="width: 205px;"
+                    dbfield="true" like="false">
+                    <option value="">---请选择---</option>
+                    <option value="99">作废</option>
+                    <option value="17">补增</option>
+                    <option value="12">正常</option>
+                    <option value="13">参照</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                发货厂区：
+            </th>
+            <td>
+                <select id="DEF11" class="txt select" style="width: 205px">
+                    <option value="">---请选择---</option>
+                    <option value="1000">阳光纸业</option>
+                    <option value="6000">盛世热电</option>
+                    <option value="7000">新迈纸业</option>
+                    <option value="8000">阳光王子</option>
+                    <option value="9000">华迈纸业</option>
+                    <option value="9010">科迈制浆</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>

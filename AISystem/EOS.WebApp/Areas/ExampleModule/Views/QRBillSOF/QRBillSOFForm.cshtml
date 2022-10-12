@@ -1,0 +1,392 @@
+﻿@{
+    ViewBag.Title = "其它入库通知单";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("ORGNAME", "PK_ORG", "Company", "200", "150", "");
+        BindAutocomplete("SUPPLIERNAME", "PK_SUPPLIER", "Supply", "", "", "");
+        BindAutocomplete("TRAFFICCOMPANYNAME", "TRAFFICCOMPANY", "TrafficCompany", "", "", "");
+        BindAutocomplete("STORENAME", "PK_STORE", "Store", "", "", "");
+        MaterialAutocomplete();
+        CarsAutocomplete();
+        DriversAutocomplete();
+        InitControl();
+    })
+
+
+    function MaterialAutocomplete() {
+        var txtname = "MATERIALNAME";
+        var $txtid = $("#PK_MATERIAL");
+        var $txtname = $("#MATERIALNAME");
+        var $txtcode = $("#MATERIALCODE");
+        var $txtspec = $("#MATERIALSPEC");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                var parm = "keywords=" + escape(keyvalue);
+                if (keyvalue.length >= 2) {
+                    var istype = $(this).attr("istype");  // 
+                    if (istype != null && istype != "") {
+                        parm += "&istype=" + istype;
+                    }
+                    DataSource(parm);
+                }
+                if (keyvalue.length == 0) {
+                    $txtid.val("");
+                    $txtcode.val("");
+                }
+
+            }
+        }).focus(function () {
+            $(this).select();
+            var parm = "keywords=";
+            var istype = $(this).attr("istype");  //绑定列类型
+            if (istype != null && istype != "") {
+                parm += "&istype=" + istype;
+            }
+            DataSource(parm);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtcode.val(data.code);
+            $txtspec.val(data.materialspec);
+        });
+        //获取数据源
+        function DataSource(parm) {
+            AjaxJson("/AutoData/Material", parm, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="materialspec" style="display: none;">' + DataJson[i].materialspec + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtcode.val(data.code);
+                    $txtspec.val(data.materialspec);
+                });
+            });
+        }
+    }
+
+    function CarsAutocomplete() {
+        var txtname = "CARSNAME";
+        var $txtid = $("#CARS");
+        var $txtname = $("#CARSNAME");
+        var $txtcard = $("#CARDNO");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtcard.val(data.epccode);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Cars", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="epccode" style="display: none;">' + DataJson[i].epccode + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtcard.val(data.epccode);
+                    SetRFCard(data.epccode);
+                });
+            });
+        }
+    }
+    function SetRFCard(val) {
+        if (IsNullOrEmpty(val)) {
+            $("#CARDNO").val(val);
+            $("#span_drivers").text("司机：");
+            $("#span_drivers").removeClass("ck_span");
+            $("#span_cardnumber").text("身份证号：");
+            $("#span_cardnumber").removeClass("ck_span");
+            $("#span_rfid").text("RFID[*]：");
+            $("#span_rfid").addClass("ck_span");
+            $("#DRIVERS").attr("datacol", "No");
+            $("#DRIVERSNAME").attr("datacol", "No");
+            $("#PSDNO").attr("datacol", "No");
+        }
+        else {
+            $("#CARDNO").val(val);
+            $("#span_drivers").text("司机[*]：");
+            $("#span_drivers").addClass("ck_span");
+            $("#span_cardnumber").text("身份证号[*]：");
+            $("#span_cardnumber").addClass("ck_span");
+
+            $("#span_rfid").text("RFID：");
+            $("#span_rfid").removeClass("ck_span");
+            $("#DRIVERS").attr("datacol", "yes");
+            $("#DRIVERSNAME").attr("datacol", "yes");
+            $("#PSDNO").attr("datacol", "yes");
+        }
+    }
+    function DriversAutocomplete() {
+        var txtname = "DRIVERSNAME";
+        var $txtid = $("#DRIVERS");
+        var $txtname = $("#DRIVERSNAME");
+        var $txtpsd = $("#PSDNO");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 3) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtpsd.val(data.idnum);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Drivers", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="idnum" style="display: none;">' + DataJson[i].idnum + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtpsd.val(data.idnum);
+                });
+            });
+        }
+    }
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/QRBillSOF/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    AjaxJson("/ExampleModule/QRBillSOF/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+ 
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            通知单号：
+        </th>
+        <td class="formValue">
+            <input id="ID" maxlength="50" type="text" readonly="readonly" class="txt readonly" datacol="yes"
+                    err="发货单号" checkexpession="NotNull"  value="@ViewBag.BillNo" />
+        </td>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input id="PK_SUPPLIER" type="hidden" dbfield="true" value="" />
+            <input id="SUPPLIERNAME" maxlength="50" type="text" class="txt required" datacol="yes"
+                err="供应商" checkexpession="NotNull" value="" />
+        </td>
+        <th class="formTitle">
+            仓库：
+        </th>
+        <td class="formValue">
+            <input id="PK_STORE" type="hidden" dbfield="true" />
+            <input id="STORENAME" maxlength="50" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input name="PK_MATERIAL" id="PK_MATERIAL" type="hidden" dbfield="true" value="" />
+            <input id="MATERIALCODE" type="hidden" dbfield="true" value="" />
+            <input id="MATERIALNAME" maxlength="50" type="text" class="txt required" datacol="yes"
+                err="物料" checkexpession="NotNull" value="" istype="7" />
+        </td>
+        <th class="formTitle">
+            规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPEC" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            承运商：
+        </th>
+        <td class="formValue">
+            <input id="TRAFFICCOMPANY" type="hidden" />
+            <input id="TRAFFICCOMPANYNAME" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            <span class="ck_span">车号[*]：</span>
+        </th>
+        <td class="formValue">
+            <input id="CARS" type="hidden" datacol="yes" err="车号" checkexpession="NotNull" />
+            <input id="CARSNAME" type="text" class="txt iconsearch" datacol="yes" err="车号" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            <span class="ck_span" id="span_rfid">RFID[*]：</span>
+        </th>
+        <td class="formValue">
+            <input id="CARDNO" type="text" class="txt readonly" readonly="readonly" datacol="No"
+                err="RFID" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            数量：
+        </th>
+        <td class="formValue">
+            <input id="NASTNUM" type="text" class="txt required" datacol="yes" err="数量" checkexpession="NotNull"
+                value="0" onfocus="IsMoney(this.id);" maxlength="5" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            操作人：
+        </th>
+        <td class="formValue">
+            <input id="CREATEUSER" type="text" class="txt readonly" readonly="readonly" datacol="yes" err="操作人" checkexpession="NotNull"  value="@ViewBag.CreateUserName" />
+        </td>
+        <th class="formTitle">
+            <span id="span_drivers">司机：</span>
+        </th>
+        <td class="formValue">
+            <input id="DRIVERS" type="hidden" datacol="yes" err="司机" checkexpession="NotNull" />
+            <input id="DRIVERSNAME" type="text" class="txt iconsearch" datacol="yes" err="司机"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            <span id="span_cardnumber">身份证号：</span>
+        </th>
+        <td class="formValue">
+            <input id="PSDNO" type="text" class="txt readonly" readonly="readonly" datacol="No"
+                err="身份证号" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            操作日期：
+        </th>
+        <td class="formValue">
+            <input id="CREATEDATE" type="text" class="txt readonly" readonly="readonly" datacol="yes" err="操作日期" checkexpession="NotNull" readonly=readonly value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"  />
+        </td>
+        <th class="formTitle">
+            接收公司：
+        </th>
+        <td class="formValue">
+            <input id="PK_ORG" type="hidden" />
+            <input id="ORGNAME" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue">
+            <input id="SY" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            <span class="ck_span">提醒：</span>
+        </th>
+        <td class="formValue" colspan="5">
+            <span class="ck_span">
+                <label id="lbl_msg">
+                    无
+                </label>
+            </span>
+        </td>
+    </tr>
+</table>
+</form>

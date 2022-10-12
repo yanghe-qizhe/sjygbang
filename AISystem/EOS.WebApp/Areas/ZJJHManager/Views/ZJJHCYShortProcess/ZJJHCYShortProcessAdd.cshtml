@@ -1,0 +1,156 @@
+﻿@{
+    ViewBag.Title = "制样化验流程";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        Bind();
+        InitControl();
+    })
+    function Bind() {
+        $("#FANAME").bind("click", function () {
+            SelectZJFA();
+        })
+        $("#DEF5").bind("change", function () {
+            $(this).val($(this).val().toUpperCase());
+            $("#BILLNO").val($("#DEF4").val() + $(this).val());
+        });
+    }
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJJHManager/ZJJHCYShortProcess/SetForm", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    function SelectZJFA() {
+        var url = "/SelectValue/Select/SelectZJFA?ZJForType=3da088c2-344b-4f41-a20a-ebdd0ba3cd3c&Type=0&FormID=@ViewBag.FormID&Code=FANO,FANAME,MATERIALID,MATERIALNAME&DEF1=4";
+        Dialog(url, "SelectZJFA", "选取质检方案信息", 900, 400);
+    }
+    function CallBackEventFANO(rowData) {
+        $("#ZJFA").val(rowData.FANO);
+        $("#FANAME").val(rowData.FANAME);
+        $("#MATERIAL").val(rowData.MATERIALID);
+        $("#MATERIALNAME").val(rowData.MATERIALNAME);
+    }
+
+    function Dialog(url, _id, _title, _width, _height) {
+        Loading(true);
+        top.$.dialog({
+            id: _id,
+            width: _width,
+            height: _height,
+            max: false,
+            lock: false,
+            title: _title,
+            content: 'url:' + RootPath() + url
+        });
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/ZJJHManager/ZJJHCYShortProcess/ZJJHShortProcessSave?KeyValue=" + GetQuery('KeyValue'), postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (IsNull(FormID)) {
+                    $parentobj = top.frames[FormID];
+                } else {
+                    $parentobj = top.frames[tabiframeId()];
+                }
+                $parentobj.CallBackEventCY();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> @*<a id="button_ZPFinish" title="完成" onclick="ZPFinish()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/relationships.png")) 50% 4px no-repeat;">
+                            完成</b></span></a>*@ <a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn">
+                                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                    离开</b></span></a>
+</div>
+<table class="form">
+    <tr style="display: none">
+        <td>
+            <input id="PCRAWTYPE" type="hidden" datacol="yes" value="1" dbfield="true" />
+            <input id="BILLNO" maxlength="50" type="text" class="txt required" datacol="yes"
+                dbfield="true" err="批号" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            批号：
+        </th>
+        <td class="formValue">
+            <input id="DEF4" maxlength="50" type="text" class="txt readonly" style="float: left;
+                        width: 10%" readonly="readonly" datacol="yes" dbfield="true" value="@DateTime.Now.Year.ToString().Substring(2, 2)" />
+            <input id="DEF5" maxlength="50" type="text" class="txt required" style="float: left;
+                width: 89%" datacol="yes" dbfield="true" err="批号" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            日期：
+        </th>
+        <td class="formValue">
+            <input id="TYPE" type="hidden" dbfield="true" value="2" />
+            <input id="CYDATE" maxlength="50" type="text" class="txt Wdate" datacol="yes" value="@EOS.Utilities.DateTimeHelper.GetToday()" dbfield="true"
+                    onfocus="var CYDATE=$dp.$('CYDATE');WdatePicker({onpicked:function(){CYDATE.focus();},maxDate:'#F{$dp.$D(\'CYDATE\')}'})"
+                        err="日期" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            质检方案：
+        </th>
+        <td class="formValue">
+            <input id="ZJFA" type="hidden" dbfield="true" checkexpession="NotNull" err="质检方案"
+                datacol="yes" />
+            <input id="FANAME" type="text" class="txt" err="质检方案" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" dbfield="true" checkexpession="NotNull" err="物料"
+                datacol="yes" />
+            <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" err="物料" />
+        </td>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+        </td>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="5">
+            <input id="MEMO" type="text" class="txt" err="描述" dbfield="true" />
+        </td>
+    </tr>
+</table>
+</form>

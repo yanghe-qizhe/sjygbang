@@ -1,0 +1,137 @@
+﻿@{
+    ViewBag.Title = "APP版本";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+            BindAutocomplete("CarsName", "Cars", "Cars", "", "", "");
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+            var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var Cars = $("#Cars").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/BaseSet/APPVERSION/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&Cars=' +escape(Cars), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/APPVERSION/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime  ,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '编号', name: 'ID',index: 'ID', width: 100, align: 'center'  }, 
+                { label: '内码', name: 'VERSIONCODE', index: 'VERSIONCODE', width: 100, align: 'center' },
+                       {
+                    label: '类型', name: 'TYPE', index: 'TYPE', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "客商APP";
+                        if (cellvalue == '2') return "手持机";
+                    }
+                },
+                 { label: '版本号', name: 'VERSIONNAME', index: 'VERSIONNAME', width: 120, align: 'center' },
+         
+               { label: '名称', name: 'VERSIONUNIQUECODE', index: 'VERSIONUNIQUECODE', width: 150, align: 'center' },
+                      { label: '路径', name: 'SERVERURL', index: 'SERVERURL', width: 300, align: 'left' },
+        
+              {
+                    label: '创建日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 130, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                } ,
+                   { label: '说明', name: 'VERSIONMESSAGE', index: 'VERSIONMESSAGE', width: 300, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CREATEDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+ 
+        });
+        
+    }
+         //新增
+    function btn_add() {
+        var url = "/BaseSet/APPVERSION/Form?ModuleId="+ModuleId;
+        openDialog(url, "Form11111", "新增APP版本", 650, 380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+     //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/APPVERSION/Form?KeyValue=" + KeyValue+"&ModuleId="+ModuleId;
+            openDialog(url, "Form11111", "编辑APP版本", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+
+       //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue ;
+            delConfig('/BaseSet/APPVERSION/Delete', delparm, KeyValue.split(",").length);
+        }
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div>
+    <div class="tools_bar e-page-eo">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <div class="queryWhite">
+            <table border="0" class="form-find">
+                <tr>
+                    <th>
+                        名称：
+                    </th>
+                    <td>
+                        <input id="NAME" type="text" class="txt" style="width: 120px" />
+                    </td>
+                    <th>
+                        制单日期：
+                    </th>
+                    <td>
+                        <input id="StartTime" type="text" class="txt Wdate" value="" style="width: 120px"
+                               onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                    </td>
+                    <td>
+                        -
+                    </td>
+                    <td>
+                        <input id="EndTime" type="text" class="txt Wdate" value="" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                    </td>
+                    <td>
+                        <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div>
+    </div>
+    </div>

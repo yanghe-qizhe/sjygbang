@@ -1,0 +1,109 @@
+﻿@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/APPVERSION/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/APPVERSION/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1">
+<div id="message" style="display: none">
+</div>
+<div class="formBox">
+    <table class="form">
+        <tr>
+            <th class="formTitle">
+                编号：
+            </th>
+            <td class="formValue">
+                <input id="ID" type="text" class="txt" datacol="yes" err="编号" checkexpession="NotNull" value="@ViewBag.Code" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                <font id="VERSIONCODE_font" face="宋体">*</font>
+                内码：
+            </th>
+            <td class="formValue">
+                <input id="VERSIONCODE" type="text" class="txt" datacol="yes" err="内码" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                <font id="VERSIONNAME_font" face="宋体">*</font>
+                版本号：
+            </th>
+            <td class="formValue">
+                <input id="VERSIONNAME" type="text" class="txt" datacol="yes" err="版本号"
+                       checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                <font id="SERVERURL_font" face="宋体">*</font>
+                路径：
+            </th>
+            <td class="formValue">
+                <input id="SERVERURL" type="text" class="txt" datacol="yes" err="路径" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                <font id="VERSIONUNIQUECODE_font" face="宋体">*</font>
+                名称：
+            </th>
+            <td class="formValue">
+                <input id="VERSIONUNIQUECODE" type="text" class="txt" datacol="yes" err="名称"
+                       checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                类型：
+            </th>
+            <td class="formValue">
+                <div class="selectXiala">
+                    <select id="TYPE" class="txtselect">
+                        <option value="1">客商APP</option>
+                        <option value="2">手持机</option>
+                    </select>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                说明：
+            </th>
+            <td class="formValue">
+                <textarea id="VERSIONMESSAGE" name="VERSIONMESSAGE" maxlength="300" class="txtArea" rows="5"></textarea>
+            </td>
+        </tr>
+    </table>
+</div>
+</form>

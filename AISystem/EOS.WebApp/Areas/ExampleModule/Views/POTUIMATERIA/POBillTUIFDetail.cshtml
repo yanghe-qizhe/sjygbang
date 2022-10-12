@@ -1,0 +1,324 @@
+﻿@{
+    ViewBag.Title = "采购收货》详细";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    $(function () {
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/PORECMATERIA/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+   
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开</b></span></a>
+</div>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Tabbasic" class="tab_list bd actived" onclick="Tabchange('basic')">
+                详细信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--录入信息-->
+    <div id="basic" class="tabPanel">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    退货单号:
+                </th>
+                <td class="formValue">
+                    <input id="ID" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    磅单号:
+                </th>
+                <td class="formValue">
+                    <input id="BILLNO" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    发货单位：
+                </th>
+                <td class="formValue">
+                    <input id="PK_SENDORG" type="hidden" />
+                    <input id="SENDORG" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    车号：
+                </th>
+                <td class="formValue">
+                    <input id="PK_CARS" type="hidden" />
+                    <input id="CARS" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    物料:
+                </th>
+                <td class="formValue">
+                    <input id="PK_MATERIAL" type="hidden" />
+                    <input id="MATERIAL" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    规格:
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALSPEC" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <tr>
+                    <th class="formTitle">
+                        司机：
+                    </th>
+                    <td class="formValue">
+                        <input id="DRIVERS" type="text" class="txt" readonly="readonly" />
+                    </td>
+                    <th class="formTitle">
+                        毛重时间：
+                    </th>
+                    <td class="formValue">
+                        <input id="WEIGHTDATE" type="text" class="txt" readonly="readonly" />
+                    </td>
+                    <th class="formTitle">
+                        皮重时间：
+                    </th>
+                    <td class="formValue">
+                        <input id="LIGHTDATE" type="text" class="txt" readonly="readonly" />
+                    </td>
+                </tr>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    毛重：
+                </th>
+                <td class="formValue">
+                    <input id="GROSS" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    皮重：
+                </th>
+                <td class="formValue">
+                    <input id="TARE" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    净重：
+                </th>
+                <td class="formValue">
+                    <input id="SUTTLE" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    卸货地址：
+                </th>
+                <td class="formValue">
+                    <input id="PK_STORE" type="hidden" />
+                    <input id="STORE" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    原发量：
+                </th>
+                <td class="formValue">
+                    <input id="PDAYF" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    扣重：
+                </th>
+                <td class="formValue">
+                    <input id="PDAKZ1" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    收料人：
+                </th>
+                <td class="formValue">
+                    <input id="CREUSER" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    收料时间：
+                </th>
+                <td class="formValue">
+                    <input id="CRETIME" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    手持机编号：
+                </th>
+                <td class="formValue">
+                    <input id="PDANO" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    件皮1(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JTARE1" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    件净1(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JSUTTLE1" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    件数1：
+                </th>
+                <td class="formValue">
+                    <input id="JSAMOUNT1" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    件皮2(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JTARE2" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    件净2(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JSUTTLE2" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    件数2：
+                </th>
+                <td class="formValue">
+                    <input id="JSAMOUNT2" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    件皮3(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JTARE3" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    件净3(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JSUTTLE3" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    件数3：
+                </th>
+                <td class="formValue">
+                    <input id="JSAMOUNT3" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    总件皮(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="TOTALJTARE" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    总件净(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="TOTALJSUTTLE" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    总件数：
+                </th>
+                <td class="formValue">
+                    <input id="PDASSJS" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    夹板件数1：
+                </th>
+                <td class="formValue">
+                    <input id="JBAMOUNT1" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    夹板件数2：
+                </th>
+                <td class="formValue">
+                    <input id="JBAMOUNT2" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    夹板件数3：
+                </th>
+                <td class="formValue">
+                    <input id="JBAMOUNT3" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    夹板单重1(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JIABAN1" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    夹板单重2(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JIABAN2" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    夹板单重3(kg)：
+                </th>
+                <td class="formValue">
+                    <input id="JIABAN3" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    夹板总数：
+                </th>
+                <td class="formValue">
+                    <input id="TOTALJBAMOUNT" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    夹板重量：
+                </th>
+                <td class="formValue">
+                    <input id="TOTALJIABAN" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    单位：
+                </th>
+                <td class="formValue">
+                    <input id="JLUNIT1" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    集装箱号：
+                </th>
+                <td class="formValue">
+                    <input id="JZXCODE" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    备注：
+                </th>
+                <td class="formValue" colspan="3">
+                    <input id="MEMO" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+</form>

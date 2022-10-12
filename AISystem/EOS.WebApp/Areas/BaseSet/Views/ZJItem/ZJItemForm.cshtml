@@ -1,0 +1,143 @@
+﻿@{
+    ViewBag.Title = "质检项目管理》表单页面";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+
+        InitControl();
+
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/ZJItem/SetForm", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    function Bind() {
+        BindDropItemForID("#TYPE", "ZJItemType", "==请选择="); //质检项目分类
+
+
+    }
+
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/ZJItem/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            编号：
+        </th>
+        <td class="formValue">
+            <input id="ITEMNO" type="text" class="txt required readonly" readonly="readonly"
+                datacol="yes" err="编号" checkexpession="NotNull" value="@ViewBag.ITEMNO" />
+        </td>
+        <th class="formTitle">
+            名称：
+        </th>
+        <td class="formValue">
+            <input id="ITEMNAME" type="text" class="txt required" datacol="yes" err="名称" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            英文名称：
+        </th>
+        <td class="formValue">
+            <input id="ENNAME" type="text" class="txt" datacol="No" err="英文名称" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            单位：
+        </th>
+        <td class="formValue">
+            <input id="UNIT" type="text" class="txt" datacol="no" err="单位" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            质检项目类型：
+        </th>
+        <td class="formValue">
+            <select id="TYPE" class="txtselect required" datacol="yes" err="质检项目类型" checkexpession="NotNull">
+                <option value="1">采购项目</option>
+                <option value="2">过程项目</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            质检成分类型：
+        </th>
+        <td class="formValue">
+            <select id="ZJTYPE" class="txtselect" datacol="yes" err="质检成分类型" checkexpession="NotNull">
+                <option value="1">化学</option>
+                <option value="2">物理</option>
+                <option value="3">表检</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            值类型：
+        </th>
+        <td class="formValue">
+            <select id="ZJVALUETYPE" class="txtselect required" datacol="yes" err="值类型" checkexpession="NotNull">
+                <option value="1">数值型</option>
+                <option value="2">文本型</option>
+                <option value="3">其它</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            数据格式：
+        </th>
+        <td class="formValue">
+            <input id="FORMAT" type="text" class="txt required" datacol="no" err="数据格式" value="0.00" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue" colspan="3">
+            <input type="checkbox" name="checkbox" checked="checked" id="ENABLED" />
+            <label for="ENABLED">
+                有效</label>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="3">
+            <textarea id="MEMO" name="MEMO" maxlength="200" class="txtArea" rows="5"></textarea>
+        </td>
+    </tr>
+    <tr>
+        <th>
+        </th>
+        <td colspan="3">
+            <label style="vertical-align: middle; color: red;">
+                注意： 数据格式，数值型0、0.0、0.00，文本型/其他可为空。</label>
+        </td>
+    </tr>
+</table>
+</form>

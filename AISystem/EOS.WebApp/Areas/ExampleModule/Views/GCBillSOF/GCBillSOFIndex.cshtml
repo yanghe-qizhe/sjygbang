@@ -1,0 +1,345 @@
+﻿@{
+    ViewBag.Title = "工程车辆通知单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+ var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var BillNo = $("#BillNo").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/GCBillSOF/GetQYOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&BillNo=' + BillNo, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/GCBillSOF/GetQYOrderList")?StartTime=&EndTime=",
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [ 
+                { label: '主键', name: 'ID', index: 'ID', width: 100, align: 'center',hidden:true },
+                 { label: '通知单号', name: 'BILLNO', index: 'BILLNO', width: 100, align: 'center' },
+                { label: '主键', name: 'STATUS',    hidden: true },
+                { label: '审批', name: 'STATUSNAME', index: 'STATUSNAME', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '0') 
+                    return "<span style='color:red;'>未审批</span>";
+                   if (cellvalue == '1')
+                            return "<span style='color: blue; font-weight: bold;'>已审批</span>";
+                }
+                },         
+           { label: '主键', name: 'ISUSE',    hidden: true }, 
+            { label: '状态', name: 'ISUSENAME', index: 'ISUSENAME', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "1")
+                             return "<span style='color:blue;'>未入厂</span>";
+                         else if (cellvalue == "4")
+                             return "<span style='color: red; font-weight: bold;'>作废</span>";
+                         else if (cellvalue == "5")
+                             return "<span style='color: blue; font-weight: bold;'>发卡</span>";
+                         else if (cellvalue == "6")
+                             return "<span style='color: blue; font-weight: bold;'>出厂</span>";
+                         else if (cellvalue == "7")
+                             return "<span style='color: blue; font-weight: bold;'>入厂</span>";
+                         else
+                             return "<span style='color: blue; font-weight: bold;'>其它</span>";
+                }
+            },
+            { label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 80, align: 'center' },
+            { label: '司机', name: 'DRIVERSNAME', index: 'DRIVERSNAME', width: 60, align: 'center' },
+                        { label: '身份证号', name: 'PSDNO', index: 'PSDNO', width: 130, align: 'left' },
+                {  label: '制单日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 100, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+               { label: '制单人', name: "CREATEUSER", width: 100, sortable: false, align: 'center' },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width:100, align: 'left' } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CreateDate',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true 
+        });
+        
+ 
+    }
+    //新增
+    function btn_add() {
+        AddTabMenu("GCBillSOFForm", "@Url.Content("~/ExampleModule/GCBillSOF/GCBillSOFForm")?ModuleId="+ModuleId, "新增工程车辆通知单", "page_white_add.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var STATUS = GetJqGridRowValue("#gridTable", "STATUS");
+            if (STATUS == "1") {
+                tipDialog("此数据已审批,无法继续编辑！", 3, "");
+                return false;
+            }
+            var ISUSE = GetJqGridRowValue("#gridTable", "ISUSE");
+            if(ISUSE=="1"){
+                AddTabMenu("GCBillSOFForm", "@Url.Content("~/ExampleModule/GCBillSOF/GCBillSOFForm")?KeyValue=" + KeyValue+"&ModuleId="+ModuleId, "编辑工程车辆通知单", "page_white_edit.png", true, true, true);
+            }else{
+                tipDialog("当前数据已使用,无法编辑！", 3, ""); return false;
+            } 
+        }
+    }
+    //作废
+    function btn_Invalid(){
+      var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+           if (isuse == "4") {
+                tipDialog("数据已作废，不能进行作废操作！", 3, "");
+                return false;
+            }
+          
+            if (isuse == "5") {
+                tipDialog("数据已发卡，不能进行作废操作！", 3,"");
+                return false;
+            }
+
+             if (isuse == "6") {
+                tipDialog("数据已出厂，不能进行作废操作！", 3,"");
+                return false;
+            }
+            if (isuse == "7") {
+                tipDialog("数据已入厂，不能进行作废操作！", 3, "");
+                return false;
+            }
+         
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GCBillSOF/InvalidOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+    //出厂
+    function btn_Out() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (isuse == "4") {
+                tipDialog("数据已作废，不能进行出厂操作！", 3, "");
+                return false;
+            }
+            if (isuse == "6") {
+                tipDialog("数据已出厂，不能进行出厂操作！", 3,"");
+                return false;
+            }
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GCBillSOF/OutOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+
+
+    function btn_Check(){
+       var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+
+         var STATUS = GetJqGridRowValue("#gridTable", "STATUS");
+          if (STATUS == "1") {
+                     tipDialog("此数据已审批,无法继续审批！", 3, ""); 
+                    return false;
+                }
+                var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+                if (isuse == "5") {
+                    tipDialog("此数据已发卡,无法审批操作！", 3, "");
+                    return false;
+                }
+                if (isuse == "6") {
+                 tipDialog("此数据已出厂,无法审批操作！", 3, ""); 
+                    return false;
+                }
+                if (isuse == "7") {
+                 tipDialog("此数据已入厂,无法审批操作！", 3, "");  
+                 return false;
+                }
+                
+                if (isuse == "4") {
+                  tipDialog("此数据已作废,无法审批操作！", 3, "");  
+                               return false;
+                }
+                
+           
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GCBillSOF/CheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+
+    function btn_UnCheck(){
+      var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+
+         var STATUS = GetJqGridRowValue("#gridTable", "STATUS");
+          if (STATUS == "0") {
+                     tipDialog("此数据未审批,无法继续反审！", 3, ""); 
+                    return false;
+                }
+                var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+                if (isuse == "5") {
+                    tipDialog("此数据已发卡,无法反审操作！", 3, "");
+                    return false;
+                }
+                if (isuse == "6") {
+                 tipDialog("此数据已出厂,无法反审操作！", 3, ""); 
+                    return false;
+                }
+                if (isuse == "7") {
+                 tipDialog("此数据已入厂,无法反审操作！", 3, "");  
+                 return false;
+                }
+                
+                if (isuse == "4") {
+                  tipDialog("此数据已作废,无法反审操作！", 3, "");  
+                               return false;
+                }
+               
+           
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GCBillSOF/UnCheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+
+
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (isuse == "1") {
+                tipDialog("数据未入厂，请作废后删除数据！", 3,"");
+                return false;
+            }
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ExampleModule/GCBillSOF/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("PCBillSOFDetail", "@Url.Content("~/ExampleModule/GCBillSOF/GCBillSOFDetail")?KeyValue=" + KeyValue, "工程车辆通知单详细", "page_white_edit.png", true, true, true);
+        }
+    }
+
+       //查询
+    function btn_query() {
+        QueryDialog("/ExampleModule/GCBillSOF/GCBillSOFQuery", "PCBillSOFQuery", "查询过滤",350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/GCBillSOF/GetQYOrderList")?DTYPE=1" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+              $("#gridETable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        @*   <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>*@
+        <div class="PartialButton">
+            <a id="lr-query" class="tools_btn" title="高级查找、多条件查询" onclick="btn_query()"><span><b
+                style="background: url(../../Content/Images/Icon16/page_white_magnify.png) no-repeat 50% 4px">
+                查找</b></span></a><a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span><b
+                    style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">刷新</b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="lr-add" class="tools_btn" title="新增订单" onclick="btn_add()"><span><b style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">
+                新增</b></span></a><a id="lr-edit" class="tools_btn" title="变更订单" onclick="btn_edit()"><span><b
+                    style="background: url(../../Content/Images/Icon16/edit.gif) no-repeat 50% 4px">编辑</b></span></a><a
+                        id="lr-delete" class="tools_btn" title="删除订单" onclick="btn_delete()"><span><b style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">删除</b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="lr-Invalid" class="tools_btn" title="订单作废" onclick="btn_Invalid()"><span><b
+                style="background: url(../../Content/Images/Icon16/document_white_torn.png) no-repeat 50% 4px">
+                作废</b></span></a><a id="lr-out" class="tools_btn" title="订单作废" onclick="btn_Out()"><span><b
+                    style="background: url(../../Content/Images/Icon16/car.png) no-repeat 50% 4px">强制出厂</b></span></a><a
+                        id="ui-Invalid" class="tools_btn" onclick="btn_Check()"><span><b style="background: url(../../Content/Images/Icon16/spellcheck.png) no-repeat 50% 4px">审批</b></span></a><a
+                            id="ai-uncheck" class="tools_btn" onclick="btn_UnCheck()"><span><b style="background: url(../../Content/Images/Icon16/spellcheck.png) no-repeat 50% 4px">反审</b></span></a><a
+                                id="lr-detail" class="tools_btn" title="详细信息(Ctrl+X)" onclick="btn_detail()"><span><b
+                                    style="background: url(../../Content/Images/Icon16/application_view_detail.png) no-repeat 50% 4px">详细</b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()"><span><b
+                style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                离开</b></span></a></div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    通知单号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

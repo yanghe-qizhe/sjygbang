@@ -1,0 +1,706 @@
+﻿Object Report
+	Version='6.7.5.6'
+	Title='转序逐车明细'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		LeftMargin=1
+		TopMargin=0.5
+		RightMargin=1
+		BottomMargin=0.5
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=CZGT2017es;User ID=c##czgtmqis;Data Source=192.168.7.18/orclczgt'
+			QuerySQL='select BillNo,RECEIVESTORE,SENDSTORE,MATERIAL,CARS,DRIVERS,YFSUTTLE,\r\n  GROSS,TARE,SUTTLE,WEIGHTDATE,LIGHTDATE,WEIGHTNO,LIGHTNO,MATERIALKIND,LEADERDEPAS,LEADERDEPAT,SLDEF2,SLDEF3,SLDEF4,SLDEF5,SLDEF6,SLMEMO from vwb_weightbs_zx\r\n  where finish=1 and suttle>0   order by  billno desc'
+			Items Field
+				Item
+					Name='ROWNO'
+					Type=Integer
+				End
+				Item
+					Name='PCCARSNAME'
+				End
+				Item
+					Name='SUTTLE'
+					Type=Float
+				End
+				Item
+					Name='JSSUTTLE'
+				End
+				Item
+					Name='QXBC'
+				End
+				Item
+					Name='SENDSTORE'
+				End
+				Item
+					Name='CRETIME'
+					Type=DateTime
+					Format='yyyy-MM-dd HH:mm:ss'
+				End
+					End
+	End
+	Items Column
+		Item
+			Name='ROWNO'
+			Width=1.16417
+		End
+		Item
+			Name='PCCARSNAME'
+			Width=2.01083
+		End
+		Item
+			Name='SUTTLE'
+			Width=2.2225
+		End
+		Item
+			Name='JSSUTTLE'
+			Width=2.19604
+		End
+		Item
+			Name='YJTIME'
+			Width=2.16958
+		End
+		Item
+			Name='DEF4'
+			Width=1.40229
+		End
+		Item
+			Name='SENDSTORE'
+			Width=4.20688
+		End
+		Item
+			Name='CRETIME'
+			Width=3.20146
+		End
+	End
+Object ColumnContent
+	CanGrow=T
+	Height=0.608542
+	Object Font
+		Name='宋体'
+		Size=90000,0
+		Weight=400
+		Charset=134
+	End
+	Items ColumnContentCell
+		Item
+			Column='ROWNO'
+			TextAlign=MiddleRight
+			DataField='ROWNO'
+		End
+		Item
+			Column='PCCARSNAME'
+			DataField='PCCARSNAME'
+		End
+		Item
+			Column='SUTTLE'
+			TextAlign=MiddleCenter
+			DataField='SUTTLE'
+		End
+		Item
+			Column='JSSUTTLE'
+			DataField='JSSUTTLE'
+		End
+		Item
+			Column='YJTIME'
+			FreeCell=T
+			Items Control
+				Item
+					Type=MemoBox
+					Name='MemoBox3'
+					Dock=Fill
+					Text='[#CRETIME:HH:mm:ss#]'
+				End
+					End
+	End
+	Item
+		Column='DEF4'
+		DataField='QXBC'
+	End
+	Item
+		Column='SENDSTORE'
+		TextAlign=MiddleCenter
+		DataField='SENDSTORE'
+	End
+	Item
+		Column='CRETIME'
+		FreeCell=T
+		Items Control
+			Item
+				Type=MemoBox
+				Name='MemoBox4'
+				Dock=Fill
+				Text='[#CRETIME:yyyy/MM/dd#]'
+			End
+			End
+End
+End
+End
+Object ColumnTitle
+	Height=0.608542
+	Object Font
+		Name='宋体'
+		Size=90000,0
+		Bold=T
+		Charset=134
+	End
+	Items ColumnTitleCell
+		Item
+			GroupTitle=F
+			Column='ROWNO'
+			TextAlign=MiddleCenter
+			Text='序号'
+		End
+		Item
+			GroupTitle=F
+			Column='PCCARSNAME'
+			TextAlign=MiddleCenter
+			Text='车号'
+		End
+		Item
+			GroupTitle=F
+			Column='SUTTLE'
+			TextAlign=MiddleCenter
+			Text='净重'
+		End
+		Item
+			GroupTitle=F
+			Column='JSSUTTLE'
+			TextAlign=MiddleCenter
+			Text='结算净重'
+		End
+		Item
+			GroupTitle=F
+			Column='YJTIME'
+			TextAlign=MiddleCenter
+			Text='验级时间'
+		End
+		Item
+			GroupTitle=F
+			Column='DEF4'
+			TextAlign=MiddleCenter
+			Text='班组'
+		End
+		Item
+			GroupTitle=F
+			Column='SENDSTORE'
+			TextAlign=MiddleCenter
+			Text='车间'
+		End
+		Item
+			GroupTitle=F
+			Column='CRETIME'
+			TextAlign=MiddleCenter
+			Text='验级日期'
+		End
+	End
+End
+Items Group
+	Item
+		Name='Group1'
+		SortAsc=T
+		Object GroupHeader
+			Height=0
+		End
+		Object GroupFooter
+			Height=0.65
+			Object Font
+				Name='宋体'
+				Size=75000,0
+				Bold=T
+				Charset=134
+			End
+			Items Control
+				Item
+					Type=SummaryBox
+					Name='SummaryBox9'
+					AlignColumn='JSSUTTLE'
+					Left=5.37104
+					Width=2.2225
+					Height=0.85
+					Object Border
+						Styles=[DrawLeft|DrawRight]
+					End
+					Object Font
+						Name='宋体'
+						Size=75000,0
+						Weight=400
+						Charset=134
+					End
+					TextAlign=MiddleRight
+					DataField='JSSUTTLE'
+					Format='0.00'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox42'
+					AlignColumn='SUTTLE'
+					Left=3.14854
+					Width=2.24896
+					Height=0.85
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=90000,0
+						Weight=400
+						Charset=134
+					End
+					TextAlign=MiddleRight
+					DataField='SUTTLE'
+					Format='0.00'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox43'
+					AlignColumn='CRETIME'
+					Left=15.3723
+					Width=3.20146
+					Height=0.79375
+					Object Border
+						Styles=[DrawRight|DrawBottom]
+					End
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox39'
+					AlignColumn='CRETIME'
+					Left=15.3723
+					Width=3.20146
+					Height=0.79375
+					Object Border
+						Styles=[DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=120000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+				End
+					End
+	End
+End
+Item
+	Name='Group2'
+	ByFields='SENDSTORE'
+	Object GroupHeader
+		Height=0
+	End
+	Object GroupFooter
+		Height=0
+		Items Control
+			Item
+				Type=StaticBox
+				Name='StaticBox20'
+				Left=11.7475
+				Width=3.62479
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=120000,0
+					Bold=T
+					Charset=134
+				End
+				TextAlign=MiddleCenter
+				Text='小   计：'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox26'
+				AlignColumn='CRETIME'
+				Left=15.3723
+				Width=3.20146
+				Height=0.79375
+				Object Border
+					Styles=[DrawRight|DrawBottom]
+				End
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox27'
+				Left=3.54542
+				Width=2.24896
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				SummaryFun=Count
+				Format='0'
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox32'
+				Left=11.7475
+				Width=1.71979
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				Format='0.00'
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox34'
+				Left=11.7475
+				Width=1.71979
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				Format='0.00'
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox29'
+				AlignColumn='SUTTLE'
+				Left=3.14854
+				Width=2.24896
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				DataField='SUTTLE'
+				Format='0.00'
+			End
+			End
+End
+End
+End
+End
+Object PageHeader
+	Height=0
+End
+Object PageFooter
+	Height=0.6
+	Items Control
+		Item
+			Type=MemoBox
+			Name='MemoBox2'
+			Anchor=[Top|Right]
+			Left=15.1871
+			Width=3.59833
+			Height=0.608542
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+		End
+	End
+End
+Items Parameter
+	Item
+		Name='title'
+	End
+	Item
+		Name='start_Date'
+	End
+	Item
+		Name='end_Date'
+	End
+	Item
+		Name='Query'
+	End
+End
+Items ReportHeader
+	Item
+		Height=2.40771
+		Items Control
+			Item
+				Type=MemoBox
+				Name='至'
+				Left=3.54542
+				Top=1.05833
+				Width=0.582083
+				Height=0.582083
+				Text='至'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox4'
+				Top=1.05833
+				Width=3.41313
+				Height=0.608542
+				Parameter='start_Date'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox5'
+				Left=4.1275
+				Top=1.05833
+				Width=4.39208
+				Height=0.635
+				Parameter='end_Date'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox6'
+				Left=1.19063
+				Top=1.71979
+				Width=17.1979
+				Height=0.608542
+				Text='StaticBox6'
+				Parameter='Query'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox7'
+				Top=1.71979
+				Width=1.19063
+				Height=0.608542
+				Text='条件：'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox14'
+				Left=-0.582083
+				Top=0.211667
+				Width=19.1823
+				Height=0.79375
+				Object Font
+					Name='宋体'
+					Size=180000,0
+					Bold=T
+					Charset=134
+				End
+				TextAlign=MiddleCenter
+				Text='逐车明细表'
+				Parameter='title'
+			End
+			End
+	RepeatOnPage=T
+End
+End
+Items ReportFooter
+	Item
+		Name='ReportFooter2'
+		Height=0
+		Items Control
+			Item
+				Type=SummaryBox
+				Name='SummaryBox14'
+				Left=46.8577
+				Width=2.83104
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=75000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				Format='0.00'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox16'
+				Left=44.6881
+				Width=2.2225
+				Height=0.85
+				Object Border
+					Styles=[DrawBottom]
+				End
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox17'
+				Left=49.6888
+				Width=8.17563
+				Height=0.85
+				Object Border
+					Styles=[DrawRight|DrawBottom]
+				End
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox25'
+				Left=11.774
+				Width=3.62479
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=120000,0
+					Bold=T
+					Charset=134
+				End
+				TextAlign=MiddleCenter
+				Text='合   计：'
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox35'
+				Left=3.57188
+				Width=2.24896
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				SummaryFun=Count
+				Format='0'
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox36'
+				Left=11.774
+				Width=1.71979
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				Format='0.00'
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox37'
+				Left=11.774
+				Width=1.71979
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				Format='0.00'
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox38'
+				AlignColumn='SUTTLE'
+				Left=3.175
+				Width=2.24896
+				Height=0.85
+				Object Border
+					Styles=[DrawLeft|DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				DataField='SUTTLE'
+				Format='0.00'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox37'
+				AlignColumn='CRETIME'
+				Left=15.3988
+				Width=3.20146
+				Height=0.85
+				Object Border
+					Styles=[DrawRight|DrawBottom]
+				End
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox38'
+				Left=22.3573
+				Width=1.50813
+				Height=0.85
+				Object Border
+					Styles=[DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=120000,0
+					Bold=T
+					Charset=134
+				End
+				TextAlign=MiddleCenter
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox40'
+				Left=30.0567
+				Width=5.08
+				Height=0.85
+				Object Border
+					Styles=[DrawRight|DrawBottom]
+				End
+				Object Font
+					Name='宋体'
+					Size=120000,0
+					Bold=T
+					Charset=134
+				End
+				TextAlign=MiddleCenter
+			End
+			End
+End
+End
+End

@@ -1,0 +1,181 @@
+﻿@{
+    ViewBag.Title = "SALEORDERSDetail";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    $(function () {
+        GetGrid();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ExampleModule/SALEORDERS/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    $("#PK_MATERIAL➩" + rowindex).val(rowData.CMATERIALID);
+                    $("#MATERIALNAME➩" + rowindex).val(rowData.MATERIALNAME);
+                    $("#MATERIALCODE➩" + rowindex).val(rowData.MATERIALCODE);
+                    $("#MATERIALSPEC➩" + rowindex).val(rowData.MATERIALSPEC);
+                    $("#PK_ORG➩" + rowindex).val(rowData.PK_ORG);
+                    $("#PK_ORGNAME➩" + rowindex).val(rowData.PK_ORGNAME);
+                    $("#NASTNUM➩" + rowindex).val(rowData.NASTNUM);
+                    $("#VROWNOTE➩" + rowindex).val(rowData.VROWNOTE);
+                    rowindex++;
+                });
+            });
+        }
+    })
+    /*车皮明细begin=======================================*/
+    //订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 290,
+            autowidth: true,
+            colModel: [
+                { label: '物料', name: "MATERIALNAME", width: 150, sortable: false, align: 'center' },
+                { label: '规格', name: "MATERIALSPEC", width: 150, sortable: false, align: 'center' },
+                { label: '订单数量', name: "NASTNUM", width: 70, sortable: false, align: 'center' },
+               { label: '发货公司', name: 'PK_ORGNAME', index: 'PK_ORGNAME', width: 200, align: 'center' },
+                { label: '备注', name: "VROWNOTE", width: 100, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+        //默认添加6行 空行
+        for (var i = 1; i < 2; i++) {
+            var rowdata = {
+                MATERIALNAME: '<input readonly id="MATERIALNAME➩' + i + '" class="editable " type="text" style="cursor:pointer"  /><input id="PK_MATERIAL➩' + i + '" type="hidden" />',
+                MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + i + '" class="editable " type="text" style="cursor:pointer"  /><input id="MATERIALCODE➩' + i + '" type="hidden" />',
+                NASTNUM: '<input readonly id="NASTNUM➩' + i + '" class="editable center" type="text"  />',
+                PK_ORGNAME: '<input id="PK_ORGNAME➩' + i + '"  class="editable center" type="text" value=""/><input id="PK_ORG➩' + i + '" type="hidden" value="" />',
+                VROWNOTE: '<input readonly id="VROWNOTE➩' + i + '" class="editable center" type="text"  />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        }
+        $("#gridTable").find('.center').css('text-align', 'center')
+    }
+
+    /*明细end=======================================*/
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/SALEORDERS/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+   
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开</b></span></a>
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            订单编号：
+        </th>
+        <td class="formValue">
+            <input id="BILLSOFTYPE" type="hidden" value="NORMAL" />
+            <input id="DATATYPE" type="hidden" value="0" />
+            <input id="CSALEORDERID" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            客户：
+        </th>
+        <td class="formValue">
+            <input name="CCUSTOMERID" id="CCUSTOMERID" type="hidden" />
+            <input id="CCUSTOMERNAME" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREATOR" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            生效时间：
+        </th>
+        <td class="formValue">
+            <input id="ACTUALVALIDATE" type="text" dbfield="true" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            终止时间：
+        </th>
+        <td class="formValue">
+            <input id="ACTUALINVALIDATE" type="text" dbfield="true" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            制单时间：
+        </th>
+        <td class="formValue">
+            <input id="CREATIONTIME" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue" colspan="5">
+            <input id="VNOTE" type="text" class="txt" />
+            <input id="FSTATUSFLAG" type="hidden" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                明细信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

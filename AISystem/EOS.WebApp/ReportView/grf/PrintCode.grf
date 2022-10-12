@@ -1,0 +1,72 @@
+﻿Object Report
+	Version='6.0.0.6'
+	Title='1g.条形码与二维码'
+	Author='锐浪报表软件'
+	Description='演示条形码。\r\n\r\n在报表中插入条形码部件框即可实现条形码的显示与打印，在明细网格中的条形码可以关联字段，条形码数据将来自于关联的字段值。'
+	Object Font
+		Name='宋体'
+		Size=90000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		Size=256
+		Width=4
+		Height=2.8
+		LeftMargin=0
+		TopMargin=0
+		RightMargin=0
+		BottomMargin=0
+	End
+	Items Parameter
+		Item
+			Name='billno'
+			Value='1605210001.'
+		End
+		Item
+			Name='material'
+		End
+	End
+	Items ReportHeader
+		Item
+			Name='ReportHeader1'
+			Height=2.8
+			Object Font
+				Name='宋体'
+				Size=120000,0
+				Weight=400
+				Charset=134
+			End
+			Items Control
+				Item
+					Type=Barcode
+					Name='Barcode2'
+					Center=Horizontal
+					Left=0.185208
+					Top=0.396875
+					Width=3.6
+					Height=1.5
+					BarcodeType=Code128Auto
+					Text='[#{billno}#]'
+					Object Font
+						Name='宋体'
+						Size=105000,0
+						Weight=400
+						Charset=134
+					End
+				End
+				Item
+					Type=MemoBox
+					Name='MemoBox1'
+					Center=Horizontal
+					Left=0.105833
+					Top=2.01083
+					Width=3.76
+					Height=0.61
+					TextAlign=MiddleCenter
+					Text='[#{material}#]'
+				End
+			End
+		End
+	End
+End

@@ -1,0 +1,107 @@
+﻿@{
+    ViewBag.Title = "工程车辆通知单详细信息";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/GCBillSOF/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+
+ 
+ 
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开</b></span></a>
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            通知单号：
+        </th>
+        <td class="formValue">
+            <input id="BILLNO" maxlength="50" type="text" class="txt" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            单位：
+        </th>
+        <td class="formValue">
+            <input name="PK_ORG" id="PK_ORG" type="hidden" dbfield="true" />
+            <input id="ORGNAME" maxlength="50" type="text" class="txt" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input name="MATERIAL" id="MATERIAL" type="hidden" dbfield="true" />
+            <input id="MATERIALNAME" maxlength="50" type="text" class="txt" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            车号： 
+        </th>
+        <td class="formValue">
+            <input id="CARS" type="hidden" />
+            <input id="CARSNAME" type="text" class="txt" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            <span id="span_drivers">司机：</span>
+        </th>
+        <td class="formValue">
+            <input id="DRIVERS" type="hidden" />
+            <input id="DRIVERSNAME" type="text" class="txt" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            <span id="span_cardnumber">身份证号：</span>
+        </th>
+        <td class="formValue">
+            <input id="PSDNO" type="text" class="txt" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            RFID： 
+        </th>
+        <td class="formValue">
+            <input id="CARDNO" type="text" class="txt" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            操作人：
+        </th>
+        <td class="formValue">
+            <input id="CREATEUSER" type="text" class="txt " readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            操作日期：
+        </th>
+        <td class="formValue">
+            <input id="CREATEDATE" type="text" class="txt" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue" colspan="5">
+            <input id="SY" type="text" class="txt" readonly="readonly" />
+        </td>
+    </tr>
+</table>
+</form>

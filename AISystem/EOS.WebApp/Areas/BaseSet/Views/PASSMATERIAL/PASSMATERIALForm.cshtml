@@ -1,0 +1,130 @@
+﻿@{
+    ViewBag.Title = "出门物料";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        InitControl();
+        MaterialAutocomplete();
+    })
+    function MaterialAutocomplete() {
+        var txtname = "MATERIAL";
+        var $txtid = $("#PK_MATERIAL");
+        var $txtname = $("#MATERIAL");
+
+        var width = "200";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                });
+            });
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/PASSMATERIAL/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/PASSMATERIAL/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+ 
+</script>
+<form id="form1">
+<div id="message" style="display: none; padding: 1px; padding-bottom: 0px;">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            单据编号：
+        </th>
+        <td class="formValue">
+            <input id="ID" type="text"  class="txt readonly" datacol="yes" err="内码" checkexpession="NotNull" value="@ViewBag.Code" readonly="readonly"/>
+        </td>
+        <th class="formTitle">
+            类型：
+        </th>
+        <td class="formValue">
+            <select id="MTYPE" class="txtselect">
+                <option value="1" selected="selected">废旧物资</option>
+                <option value="2">垃圾</option>
+                <option value="3">副产品</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            物料名称：
+        </th>
+        <td class="formValue">
+            <input id="PK_MATERIAL" type="hidden" />
+            <input id="MATERIAL" type="text" class="txt required" datacol="yes" err="物料名称" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input id="ISUSE" name="ISUSE" type="checkbox" checked="checked" style="vertical-align: middle;" />
+                <label for="ISUSE" style="vertical-align: middle;">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            说明：
+        </th>
+        <td class="formValue" colspan="3">
+            <textarea id="MEMO" class="txtArea" rows="6"></textarea>
+        </td>
+    </tr>
+</table>

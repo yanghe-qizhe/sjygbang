@@ -1,0 +1,406 @@
+﻿@{
+    ViewBag.Title = "上料磅单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var type = GetQuery("type");
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("RECEIVESTORE", "PK_RECEIVESTORE", "Store", "", "", "");
+        BindAutocomplete("CarsName", "Cars", "Cars", "150", "150", "");
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var CarsName = $("#CarsName").val();
+        var PK_ORDER_B = $("#PK_ORDER_B").val();
+        var BATHNO = $("#BATHNO").val();
+        var Material = $("#Material").val();
+        var ReceiveStore = $("#PK_RECEIVESTORE").val();
+        var PCCARSNAME = $("#PCCARSNAME").val();
+        var UPLOAD1 = $("#UPLOAD1").val();
+        var DEF4 = $("#DEF4").val();
+        var COMPUTERTYPE = $("#COMPUTERTYPE").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/WeightManager/WeightXB/GetOrderList1")?Type=3&StartTime=" + StartTime + '&EndTime=' + EndTime + '&Cars=' + escape(CarsName) + "&PK_ORDER_B=" + PK_ORDER_B + "&MaterialName=" + escape(Material) + "&ReceiveStore=" + ReceiveStore + "&BATHNO=" + BATHNO + "&UPLOAD1=" + UPLOAD1 + "&DEF4=" + escape(DEF4) + "&COMPUTERTYPE=" + COMPUTERTYPE + "&PCCARSNAME=" + escape(PCCARSNAME), page: 1
+        }).trigger('reloadGrid');
+    }
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/WeightManager/WeightXB/GetOrderList1")?Type=3&StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 270,
+            autowidth: true,
+            colModel: [
+                { label: '过磅单号', name: 'BILLNO', width: 130, align: 'left' },
+                //{ label: '到货单号', name: 'PK_ORDER', width: 130, align: 'left' },
+                { label: '到货单号', name: 'PK_ORDER_B', width: 130, align: 'left' },
+                { label: '车号', name: 'PCCARSNAME', width: 60, align: 'left' },
+                {
+                    label: '移库状态', name: 'UPLOAD1', index: 'UPLOAD1', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "1")
+                            return "已移库";
+                        else
+                            return "未移库";
+                    }
+                },
+              { label: '小磅车号', name: 'CARS', index: 'CARS', width: 100, align: 'center' },
+             { label: '站点', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 120, align: 'left' },
+                 //{ label: '车间', name: 'SENDSTORE', index: 'SENDSTORE', width: 150, align: 'left' },
+                { label: '收货仓库', name: 'RECEIVESTORE1', index: 'RECEIVESTORE1', width: 150, align: 'left' },
+                { label: '现批号', name: 'RECBATCHNO', index: 'RECBATCHNO', width: 60, align: 'left' },
+                 { label: '发货库位', name: 'RECEIVESTORE', index: 'RECEIVESTORE', width: 120, align: 'left' },
+                { label: '原批号', name: 'BATHNO', index: 'BATHNO', width: 100, align: 'left' },
+                // { label: '发货单位', name: 'SENDORG', index: 'SENDORG', width: 150, align: 'left' },
+                { label: '上料类型', name: 'STORE', index: 'STORE', width: 60, align: 'left' },
+                   { label: '物料编号', name: 'PK_MATERIAL', index: 'PK_MATERIAL', width: 120, align: 'left' },
+                { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 120, align: 'left' },
+                //{ label: '规格', name: 'MATERIALKIND', index: 'MATERIALKIND', width: 80, align: 'left' },
+                 { label: '班组', name: 'DEF4', index: 'DEF4', width: 60, align: 'center' },
+                { label: '毛重', name: 'GROSS', index: 'GROSS', width: 60, align: 'center' },
+                 { label: '皮重', name: 'TARE', index: 'TARE', width: 60, align: 'center' },
+                { label: '净重', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+                { label: '结算重量', name: 'JSSUTTLE', index: 'JSSUTTLE', width: 60, align: 'center' },
+                { label: '垃圾', name: 'PDAKZ5', index: 'PDAKZ5', width: 60, align: 'center' },
+            { label: '花纸', name: 'PDAKZ4', index: 'PDAKZ4', width: 60, align: 'center' },
+           { label: '水份', name: 'PDAKZ3', index: 'PDAKZ3', width: 60, align: 'center' },
+              { label: '其它', name: 'PDAKZ6', index: 'PDAKZ6', width: 60, align: 'center' },
+                {
+                    label: '重车时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+               { label: '移库凭证编号', name: 'PZBILLNO1', index: 'PZBILLNO1', width: 100, align: 'left' },
+               { label: '移库凭证时间', name: 'PZDATE1', index: 'PZDATE1', width: 120, align: 'left' },
+                //{
+                //    label: '轻车时间', name: 'LIGHTDATE', index: 'LIGHTDATE', width: 120, align: 'left',
+                //    formatter: function (cellvalue, options, rowObject) {
+                //        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                //    }
+                //},
+                 { label: '创建时间', name: 'CREATEDATE', index: 'CREATEDATE', width: 120, align: 'center' },
+                  { label: '过磅员', name: 'INGBUSER', index: 'INGBUSER', width: 60, align: 'center' },
+                        {
+                            label: '单据类型', name: 'TYPE', index: 'TYPE', width: 60, align: 'center',
+                            formatter: function (cellvalue, options, rowObject) {
+                                if (cellvalue == "1")
+                                    return "上料计量";
+                                else
+                                    return "抽包计量";
+                            }
+                        },
+                              {
+                                  label: '是否失败', name: 'ISERROR1', index: 'ISERROR1', width: 60, align: 'center',
+                                  formatter: function (cellvalue, options, rowObject) {
+                                      if (cellvalue == "1")
+                                          return "是";
+                                      else
+                                          return "否";
+                                  }
+                              },
+                  { label: '备注', name: 'MEMO', index: 'MEMO', width: 60, align: 'center' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'WEIGHTDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            rownumbers: true,
+            gridview: true,
+            subGrid: false,
+            onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var KeyValue = rowData.BILLNO;
+                $("#gridETable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/PORECMATERIA/GetLogEntryList")?KeyValue=" + KeyValue, page: 1
+                }).trigger('reloadGrid');
+            }
+        });
+        $("#gridETable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/PORECMATERIA/GetLogEntryList")?KeyValue=",
+            datatype: "json",
+            height: 60,
+            width: $(window).width() - 5,
+            autowidth: true,
+            colModel: [
+                { label: '单据编号', name: 'BILL_NO', index: 'BILL_NO', width: 130, align: 'left' },
+                { label: '原因', name: "IF_MSG", index: 'IF_MSG', width: 500, align: 'left' },
+                {
+                    label: '上传时间', name: 'BEGIN_TIME', index: 'BEGIN_TIME', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            sortname: 'BEGIN_TIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            rownumbers: true,
+            autoScroll: true,
+            gridview: true
+        });
+    }
+    //复制
+    function btn_copy() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("WeightInForm", "@Url.Content("~/WeightManager/WeightXB/WeightXBForm")?op=copy&KeyValue=" + KeyValue + "&&ModuleId=" + ModuleId, "新增化验包计量单", "page_white_add.png", true, true, true);
+        }
+    }
+    //新增
+    function btn_add() {
+        AddTabMenu("WeightXBForm1", "@Url.Content("~/WeightManager/WeightXB/WeightXBForm1")?op=add&ModuleId=" + ModuleId + "&type=" + type, "新增化验包计量单", "page_white_add.png", true, true, true);
+    }
+
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("WeightXBForm1", "@Url.Content("~/WeightManager/WeightXB/WeightXBForm1")?op=edit&KeyValue=" + KeyValue + "&type=&ModuleId=" + ModuleId, "编辑化验包计量单", "page_white_edit.png", true, true, true);
+        }
+    }
+
+    //删除
+    function btn_delete() {
+        confirmDialog('提示', '注：您确认要作废此操作吗？', function (r) {
+            if (r) {
+                var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+                if (IsChecked(KeyValue)) {
+                    var parm = 'KeyValue=' + KeyValue;
+                    AjaxJson('/WeightManager/WeightXB/DeleteOrder', parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    //作废
+    function btn_Invalid() {
+        confirmDialog('提示', '注：您确认要作废此操作吗？', function (r) {
+            if (r) {
+                var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+                if (IsChecked(KeyValue)) {
+                    var parm = 'KeyValue=' + KeyValue;
+                    AjaxJson('/WeightManager/WeightXB/InvalidOrder', parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+
+    function btn_HandOrder() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            confirmDialog('提示', '注：您确认要移库操作吗？', function (r) {
+                if (r) {
+                    var parm = "KeyValue=" + KeyValue + "&Type=1";
+                    AjaxJson('/WeightManager/WeightXB/HandOrder1', parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    function btn_UNHandOrder() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            confirmDialog('提示', '注：您确认要取消移库操作吗？', function (r) {
+                if (r) {
+                    var parm = "KeyValue=" + KeyValue + "&Type=1";
+                    AjaxJson('/WeightManager/WeightXB/UNHandOrder1', parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("WeightZXDetail", "@Url.Content("~/WeightManager/WeightXB/WeightXBDetail")?KeyValue=" + KeyValue, "上料计量单详细", "page_white_edit.png", true, true, true);
+        }
+    }
+    function btn_query() {
+        QueryDialog("/WeightManager/WeightXB/WeightXBQuery", "WeightXBQuery", "查询过滤", 350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/WeightManager/WeightXB/GetOrderList1")?action=query" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+
+
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    @*<div style="margin-top: 1px; margin-bottom: 0px" class="tools_bar">
+            <div class="PartialButton">
+                <a id="lr-query" class="tools_btn" title="查找" onclick="btn_query()"><span><b style="background: url(../../Content/Images/Icon16/page_white_magnify.png) no-repeat 50% 4px">
+                    查找</b></span></a> <a id="ai-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+                        <span><b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                            刷新</b></span></a>
+                <div class="tools_separator">
+                </div>
+                <a id="lr-add" class="tools_btn" title="补增" onclick="CheckAdd()"><span><b style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">
+                    补增</b></span> </a><a id="lr-copy" class="tools_btn" title="复制" onclick="CheckCopy()">
+                        <span><b style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">
+                            复制</b></span> </a><a id="lr-edit" class="tools_btn" title="参照" onclick="CheckEdit()">
+                                <span><b style="background: url(../../Content/Images/Icon16/edit.gif) no-repeat 50% 4px">
+                                    参照</b></span></a> <a id="lr-delete" class="tools_btn" title="作废(Ctrl+S)" onclick="btn_Invalid()">
+                                        <span><b style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">
+                                            作废</b></span></a><a title="打印" class="tools_btn" id="ai-print" onclick="BDPrint()"
+                                                ids="f8747178-2754-45fb-a61a-39116787dc92"><span><b style='background: url("../../Content/Images/Icon16/printer.png") no-repeat 50% 4px;'>
+                                                    打印</b></span></a><a id="lr-detail" class="tools_btn" title="详细信息(Ctrl+X)" onclick="btn_detail()"><span><b
+                                                        style="background: url(../../Content/Images/Icon16/application_view_detail.png) no-repeat 50% 4px">详细</b></span></a>
+                <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()"><span><b
+                    style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                    离开</b></span></a></div>
+        </div>*@
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    创建日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(0)" style="width: 100px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 100px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    到货单号：
+                </th>
+                <td>
+                    <input id="PK_ORDER_B" type="text" class="txt" style="width: 100px" />
+                </td>
+
+                <th>
+                    原批号：
+                </th>
+                <td>
+                    <input id="BATHNO" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    是否移库：
+                </th>
+                <td>
+                    <select id="UPLOAD1" name="UPLOAD1" class="select" style="width: 100px;">
+                        <option value="">---请选择---</option>
+                        <option value="0">否</option>
+                        <option value="1">是</option>
+                    </select>
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="PCCARSNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    小磅车号：
+                </th>
+                <td>
+                    <input id="Cars" type="hidden" />
+                    <input id="CarsName" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    发货仓库：
+                </th>
+                <td>
+                    <input id="PK_RECEIVESTORE" type="hidden" />
+                    <input id="RECEIVESTORE" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    班组：
+                </th>
+                <td>
+                    <select id="DEF4" name="DEF4" class="select" style="width: 100px;">
+                        <option value="">---请选择---</option>
+                        <option value="夜班">夜班</option>
+                        <option value="白班">白班</option>
+                        <option value="中班">中班</option>
+                    </select>
+                </td>
+                <th>
+                    操作状态：
+                </th>
+                <td>
+                    <select id="COMPUTERTYPE" name="COMPUTERTYPE" class="select" style="width: 100px;"
+                            dbfield="true" like="false">
+                        <option value="">---请选择---</option>
+                        <option value="99">作废</option>
+                        <option value="0">正常</option>
+                    </select>
+                </td>
+                <th></th>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div><table id="gridETable"></table>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

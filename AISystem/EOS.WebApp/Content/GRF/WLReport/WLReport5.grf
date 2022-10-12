@@ -1,0 +1,293 @@
+﻿Object Report
+	Version='6.5.0.0'
+	Title='采购收货逐车明细'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		Size=256
+		Width=42
+		Height=150
+		Oriention=Landscape
+		LeftMargin=0.5
+		TopMargin=1
+		RightMargin=91.8104
+		BottomMargin=1
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		IsCrossTab=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=eosine123;User ID=EOSTYZY;Data Source=192.168.31.83/orcl'
+			QuerySQL='select * from (select substr(lastdate,0,10) lastdate,to_char(BRANDMODEL) BRANDMODEL,'车量' type,count(1) carsnum,0 que from vwb_weight_bin_report a left join vbd_material b on a.MATERIALCODE=b.code where b.istype='3' and suttle>0  and LIGHTDATE>='2020-03-02 00:00:00'and LIGHTDATE<='2020-03-09 23:59:59'  group by substr(lastdate,0,10), BRANDMODEL union all select substr(lastdate,0,10) lastdate,to_char(BRANDMODEL) BRANDMODEL,'数量' type,sum(suttle) carsnum,0 que from vwb_weight_bin_report a left join vbd_material b on a.MATERIALCODE=b.code where b.istype='3' and suttle>0  and LIGHTDATE>='2020-03-02 00:00:00'and LIGHTDATE<='2020-03-09 23:59:59' group by substr(lastdate,0,10),BRANDMODEL union all select substr(lastdate,0,10) lastdate,'合计' BRANDMODEL,'车量' type,count(1) carsnum,1 que from vwb_weight_bin_report a left join vbd_material b on a.MATERIALCODE=b.code where b.istype='3' and suttle>0   and LIGHTDATE>='2020-03-02 00:00:00'and LIGHTDATE<='2020-03-09 23:59:59'  group by substr(lastdate,0,10) union all select substr(lastdate,0,10) lastdate,'合计' BRANDMODEL,'数量' type,sum(suttle) carsnum,1 que from vwb_weight_bin_report a left join vbd_material b on a.MATERIALCODE=b.code where b.istype='3' and suttle>0   and LIGHTDATE>='2020-03-02 00:00:00'and LIGHTDATE<='2020-03-09 23:59:59' group by substr(lastdate,0,10)  ) order by lastdate,que,BRANDMODEL,type'
+			Items Field
+				Item
+					Name='LASTDATE'
+				End
+				Item
+					Name='RECEIVEORG'
+				End
+				Item
+					Name='BRANDMODEL'
+				End
+				Item
+					Name='TYPE'
+				End
+				Item
+					Name='CARSNUM'
+					Type=Float
+				End
+				Item
+					Name='QUE'
+				End
+			End
+		End
+		Items Column
+			Item
+				Name='BRANDMODEL'
+			End
+			Item
+				Name='LASTDATE'
+			End
+			Item
+				Name='CARSNUM'
+			End
+		End
+		Object ColumnContent
+			CanGrow=T
+			Height=0.608542
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Items ColumnContentCell
+				Item
+					Column='BRANDMODEL'
+					DataField='BRANDMODEL'
+				End
+				Item
+					Column='LASTDATE'
+					DataField='TYPE'
+				End
+				Item
+					Column='CARSNUM'
+					TextAlign=MiddleRight
+					DataField='CARSNUM'
+				End
+			End
+		End
+		Object ColumnTitle
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Bold=T
+				Charset=134
+			End
+			Items ColumnTitleCell
+				Item
+					GroupTitle=F
+					Column='BRANDMODEL'
+					FreeCell=T
+					Items Control
+						Item
+							Type=StaticBox
+							Name='StaticBox15'
+							Dock=Fill
+							TextAlign=MiddleCenter
+							Text='项目'
+						End
+					End
+					BorderCustom=T
+					Object Border
+						Styles=[DrawBottom]
+						Object InnerPen
+							Width=0
+						End
+					End
+				End
+				Item
+					GroupTitle=F
+					Column='LASTDATE'
+					TextAlign=MiddleCenter
+					PaddingLeft=0
+					PaddingRight=0
+					PaddingTop=0
+					PaddingBottom=0
+					BorderCustom=T
+					Object Border
+						Object InnerPen
+							Width=0
+						End
+					End
+				End
+				Item
+					GroupTitle=F
+					Column='CARSNUM'
+					FreeCell=T
+					Items Control
+						Item
+							Type=FieldBox
+							Name='FieldBox1'
+							Dock=Fill
+							PaddingLeft=0
+							PaddingRight=0
+							PaddingTop=0
+							PaddingBottom=0
+							Object Border
+								Object Pen
+									Width=0
+								End
+							End
+							TextAlign=MiddleCenter
+							DataField='LASTDATE'
+						End
+					End
+					BorderCustom=T
+				End
+			End
+		End
+		Items Group
+			Item
+				Name='Group1'
+				ByFields='BRANDMODEL'
+				Object GroupHeader
+					Height=0
+					OccupyColumn=T
+					OccupiedColumns='BRANDMODEL'
+				End
+				Object GroupFooter
+					Height=0
+				End
+			End
+		End
+		Object CrossTab
+			PercentFormat='0.##%'
+			HCrossFields='LASTDATE'
+			VCrossFields='QUE;BRANDMODEL;TYPE'
+			ListCols=2
+		End
+	End
+	Object PageHeader
+		Height=0
+	End
+	Object PageFooter
+		Height=0.396875
+		Items Control
+			Item
+				Type=MemoBox
+				Name='MemoBox2'
+				Anchor=[Top|Right]
+				Left=-48.1013
+				Width=3.73063
+				Height=0.608542
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+			End
+		End
+	End
+	Items Parameter
+		Item
+			Name='title'
+		End
+		Item
+			Name='start_Date'
+		End
+		Item
+			Name='end_Date'
+		End
+		Item
+			Name='Query'
+		End
+	End
+	Items ReportHeader
+		Item
+			Height=2.40771
+			Items Control
+				Item
+					Type=MemoBox
+					Name='至'
+					Left=4.20688
+					Top=1.05833
+					Width=0.582083
+					Height=0.529167
+					Text='至'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox4'
+					Left=-0.0264583
+					Top=1.05833
+					Width=2.77813
+					Height=0.608542
+					Parameter='start_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox5'
+					Left=5.00063
+					Top=1.05833
+					Width=4.39208
+					Height=0.635
+					Parameter='end_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox6'
+					Left=1.19063
+					Top=1.71979
+					Width=23.4156
+					Height=0.608542
+					Text='StaticBox6'
+					Parameter='Query'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox7'
+					Top=1.71979
+					Width=1.19063
+					Height=0.608542
+					Text='条件：'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox14'
+					Left=0.608542
+					Top=0.211667
+					Width=39.5817
+					Height=0.79375
+					Object Font
+						Name='宋体'
+						Size=180000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Text='逐车明细表'
+					Parameter='title'
+				End
+			End
+		End
+	End
+	Items ReportFooter
+		Item
+			Name='ReportFooter2'
+			Height=0.608542
+		End
+	End
+End

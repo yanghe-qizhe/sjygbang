@@ -1,0 +1,348 @@
+﻿Object Report
+	Version='6.0.0.6'
+	Title='采购收货逐车明细'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		Size=256
+		Width=40
+		Height=110
+		Oriention=Landscape
+		LeftMargin=0.5
+		TopMargin=1
+		RightMargin=0.5
+		BottomMargin=1
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		IsCrossTab=T
+		PrintAdaptMethod=ToNewPageEx
+		Object Recordset
+			ConnectionString='Provider=SQLOLEDB.1;Password=sa123;Persist Security Info=True;User ID=sa;Initial Catalog=TDCC_2011_35;Data Source=.;Use Procedure for Prepare=1;Auto Translate=True;Packet Size=4096;Workstation ID=DESKTOP-84KFL3H;Use Encryption for Data=False;Tag with column collation when possible=False'
+			QuerySQL='select * from w1 order by material,sendorg,companyname,opdate,reportdate'
+			Items Field
+				Item
+					Name='REPORTDATE'
+					Type=DateTime
+					Format='MM月d日'
+				End
+				Item
+					Name='STATIONID'
+				End
+				Item
+					Name='MAINCODE'
+				End
+				Item
+					Name='MTNAME'
+				End
+				Item
+					Name='MSNAME'
+				End
+				Item
+					Name='LENGTH'
+				End
+				Item
+					Name='SUTTLE'
+					Type=Float
+				End
+				Item
+					Name='OPDATE'
+				End
+			End
+		End
+		Items Column
+			Item
+				Name='STATIONID'
+				Width=3.175
+			End
+			Item
+				Name='MAINCODE'
+				Width=2.59292
+			End
+			Item
+				Name='MTNAME'
+				Width=2.59292
+			End
+			Item
+				Name='MSNAME'
+				Width=2.80458
+			End
+			Item
+				Name='LENGTH'
+				Width=2.80458
+			End
+			Item
+				Name='SUTTLE'
+				Width=2.2225
+			End
+		End
+		Object ColumnContent
+			CanGrow=T
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Items ColumnContentCell
+				Item
+					Column='STATIONID'
+					DataField='STATIONID'
+				End
+				Item
+					Column='MAINCODE'
+					DataField='MAINCODE'
+				End
+				Item
+					Column='MTNAME'
+					DataField='MTNAME'
+				End
+				Item
+					Column='MSNAME'
+					DataField='MSNAME'
+				End
+				Item
+					Column='LENGTH'
+					DataField='LENGTH'
+				End
+				Item
+					Column='SUTTLE'
+					TextAlign=MiddleRight
+					DataField='SUTTLE'
+				End
+			End
+		End
+		Object ColumnTitle
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Bold=T
+				Charset=134
+			End
+			Items ColumnTitleCell
+				Item
+					GroupTitle=F
+					Column='STATIONID'
+					TextAlign=MiddleCenter
+					Text='计量称点'
+				End
+				Item
+					GroupTitle=F
+					Column='MAINCODE'
+					TextAlign=MiddleCenter
+					Text='牌号'
+				End
+				Item
+					GroupTitle=F
+					Column='MTNAME'
+					TextAlign=MiddleCenter
+					Text='物料'
+				End
+				Item
+					GroupTitle=F
+					Column='MSNAME'
+					TextAlign=MiddleCenter
+					Text='规格'
+				End
+				Item
+					GroupTitle=F
+					Column='LENGTH'
+					TextAlign=MiddleCenter
+					Text='长度'
+				End
+				Item
+					GroupTitle=F
+					Column='SUTTLE'
+					FreeCell=T
+					Items Control
+						Item
+							Type=FieldBox
+							Name='FieldBox1'
+							Dock=Fill
+							Center=Horizontal
+							TextAlign=MiddleCenter
+							DataField='REPORTDATE'
+						End
+					End
+				End
+			End
+		End
+		Items Group
+			Item
+				Name='Group1'
+				Object GroupHeader
+					Height=0
+				End
+				Object GroupFooter
+					Height=0.608542
+					Object Font
+						Name='微软雅黑'
+						Size=105000,0
+						Bold=T
+						Charset=134
+					End
+					Items Control
+						Item
+							Type=StaticBox
+							Name='StaticBox15'
+							AlignColumn='STATIONID'
+							AlignColumnEx='LENGTH'
+							Left=-0.0264583
+							Width=13.9965
+							Height=0.608542
+							Object Border
+								Styles=[DrawLeft|DrawRight]
+							End
+							TextAlign=MiddleRight
+							Text='合计'
+						End
+					End
+				End
+			End
+			Item
+				Name='Group2'
+				ByFields='STATIONID'
+				Object GroupHeader
+					Height=0
+					OccupyColumn=T
+					IncludeFooter=T
+					OccupiedColumns='STATIONID'
+					VAlign=Middle
+				End
+				Object GroupFooter
+					Height=0
+				End
+			End
+			Item
+				Name='Group3'
+				ByFields='MAINCODE'
+				Object GroupHeader
+					Height=0
+					OccupyColumn=T
+					OccupiedColumns='MAINCODE'
+					VAlign=Middle
+				End
+				Object GroupFooter
+					Height=0
+				End
+			End
+			Item
+				Name='Group4'
+				ByFields='MTNAME'
+				Object GroupHeader
+					Height=0
+					OccupyColumn=T
+					OccupiedColumns='MTNAME'
+					VAlign=Middle
+				End
+				Object GroupFooter
+					Height=0
+				End
+			End
+			Item
+				Name='Group5'
+				ByFields='MSNAME'
+				Object GroupHeader
+					Height=0
+					OccupyColumn=T
+					OccupiedColumns='MSNAME'
+					VAlign=Middle
+				End
+				Object GroupFooter
+					Height=0
+				End
+			End
+			Item
+				Name='Group6'
+				ByFields='LENGTH'
+				Object GroupHeader
+					Height=0
+					OccupyColumn=T
+					OccupiedColumns='LENGTH'
+					VAlign=Middle
+				End
+				Object GroupFooter
+					Height=0
+				End
+			End
+		End
+		Object CrossTab
+			PercentFormat='0.##%'
+			HCrossFields='REPORTDATE'
+			VCrossFields='STATIONID;MAINCODE;MTNAME;MSNAME;LENGTH'
+			ListCols=5
+		End
+	End
+	Object PageHeader
+		Height=0
+	End
+	Object PageFooter
+		Height=0.211667
+		Items Control
+			Item
+				Type=MemoBox
+				Name='MemoBox2'
+				Anchor=[Top|Right]
+				Left=105.172
+				Width=3.59833
+				Height=0.79375
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+			End
+		End
+	End
+	Items Parameter
+		Item
+			Name='title'
+		End
+		Item
+			Name='start_Date'
+		End
+		Item
+			Name='end_Date'
+		End
+		Item
+			Name='Query'
+		End
+	End
+	Items ReportHeader
+		Item
+			Height=1.5875
+			Items Control
+				Item
+					Type=StaticBox
+					Name='StaticBox14'
+					Left=0.608542
+					Top=0.211667
+					Width=39.5817
+					Height=0.79375
+					Object Font
+						Name='宋体'
+						Size=180000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Text='逐车明细表'
+					Parameter='title'
+				End
+			End
+			RepeatOnPage=T
+		End
+	End
+End

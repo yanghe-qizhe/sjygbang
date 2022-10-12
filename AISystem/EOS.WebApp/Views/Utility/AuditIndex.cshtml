@@ -1,0 +1,212 @@
+﻿@{
+    ViewBag.Title = "审核处理页面";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<!--jqgrid表格组件start-->
+<script src="~/Content/Scripts/jqgrid/jquery-ui-custom.min.js"></script>
+<script src="~/Content/Scripts/jqgrid/grid.locale-cn.js"></script>
+<link href="~/Content/Scripts/jqgrid/css/jqgrid.css" rel="stylesheet" />
+<script src="~/Content/Scripts/jqgrid/jqGrid.js"></script>
+<!--表格组件end-->
+<!--流程步骤组件start-->
+<link href="~/Content/Scripts/ystep/ystep.css" rel="stylesheet" />
+<script src="~/Content/Scripts/ystep/ystep.js"></script>
+<!--流程步骤组件end-->
+<script>
+    var taskId = GetQuery('taskId');//唯一标识
+    var frmTitle = GetQuery('frmTitle');//流程标题
+    var buttonId = GetQuery('buttonId');//按钮Id
+    $(function () {
+        GetGrid();
+    })
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/Utility/GetAuditRecordListJson")?TaskId=" + taskId,
+            datatype: "json",
+            height: 160,
+            autowidth: true,
+            colModel: [
+                { label: '节点名称', name: 'flowstep', index: 'flowstep', width: 100, align: 'left' },
+                { label: '审核人员', name: 'realname', index: 'realname', width: 100, align: 'center' },
+                {
+                    label: '审核时间', name: 'excutetime', index: 'excutetime', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy/MM/dd hh:mm');
+                    }
+                },
+                {
+                    label: '审核结果', name: 'excuteresult', index: 'excuteresult', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '不通过') {
+                            return "<span style='color:red'>不通过</span>";
+                        } else if (cellvalue == '通过') {
+                            return "<span style='color:blue'>通过</span>";
+                        } else {
+                            return "待处理";
+                        }
+                    }
+                },
+                { label: '审核意见', name: 'remark', index: 'remark', width: 200, align: 'left' }
+            ],
+            pager: "false",
+            rowNum: 100,
+            rownumbers: true,
+            shrinkToFit: false,
+            altRows: false
+        });
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width() - 4);
+        });
+    }
+    //保存事件
+    var ExcuteResult = "";
+    function AcceptClick() {
+        if (ExcuteResult == "") {
+            top.TipMsg("审核结果不能为空，请选择一项", 5000, 'error');
+            return false;
+        }
+        var ExcuteResultName = "";
+        if (ExcuteResult == 1) {
+            ExcuteResultName = "同意";
+        } else if (ExcuteResult == -1) {
+            ExcuteResultName = "结束流程";
+        } else {
+            ExcuteResultName = "不同意";
+        }
+        if (confirm('注：您确定要【' + ExcuteResultName + '】审核结果吗?')) {
+            window.setTimeout(function () {
+                var postData = {
+                    taskId: taskId,
+                    buttonId: buttonId,
+                    executyType: ExcuteResult,
+                    HandSuggest: $("#HandSuggest").val(),
+                    frmTitle: frmTitle
+                }
+                AjaxJson("/Utility/ExcuteFlow", postData, function (data) {
+                    tipDialog(data[1], 5, data[0]);
+                    if (parseInt(data[0]) > 0) {
+                        top.frames[tabiframeId()].windowload();
+                        closeDialog();
+                    }
+                });
+            }, 200);
+        }
+    }
+</script>
+<form id="form1" style="margin: 1px">
+    <div class="bd" style="border-bottom: none; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">审核信息</div>
+            </div>
+        </div>
+    </div>
+    <table class="form">
+        <tr>
+            <th class="formTitle">审核人员：
+            </th>
+            <td class="formValue">
+                @EOS.Utilities.ManageProvider.Provider.Current().UserName
+            </td>
+            <th class="formTitle">审核时间：
+            </th>
+            <td class="formValue">
+                @EOS.Utilities.DateTimeHelper.ShortDateTime
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">审核结果：
+            </th>
+            <td class="formValue" colspan="3">
+                <span class="item">
+                    <input id="AuditStatustrue" name="radiobutton" type="radio" onclick="ExcuteResult = 1" style="vertical-align: middle;" />
+                    <label for="AuditStatustrue" style="vertical-align: middle; cursor: pointer; color: Blue">通过</label>
+                    &nbsp;&nbsp;
+                </span>
+                <span class="item">
+                    <input id="AuditStatusfale" name="radiobutton" type="radio" onclick="ExcuteResult = 3" style="vertical-align: middle;" />
+                    <label for="AuditStatusfale" style="vertical-align: middle; cursor: pointer; color: red">不通过</label>
+                    &nbsp;&nbsp;
+                </span>
+                <span class="item">
+                    <input id="IsCanOver" name="radiobutton" type="radio" onclick="ExcuteResult = -1" style="vertical-align: middle;" />
+                    <label for="IsCanOver" style="vertical-align: middle; cursor: pointer; color: red">结束流程</label>
+                    &nbsp;&nbsp;
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">审核意见：
+            </th>
+            <td class="formValue" colspan="3">
+                <textarea id="HandSuggest" maxlength="200" class="txtArea" rows="6"></textarea>
+            </td>
+        </tr>
+    </table>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived" onclick="thisTabchange(this,'NodeStep')">处理步骤</div>
+                <div class="tab_list bd" onclick="thisTabchange(this,'NodeLog')">处理记录</div>
+            </div>
+        </div>
+        <div style="height: 196px; overflow: auto;">
+            <div id="NodeStep" class="tabPanel" style="text-align: center;">
+                <br />
+                <br />
+                <br />
+                <br />
+                <div class="ystep"></div>
+                <script>
+                    $(function () {
+                        AjaxJson("/Utility/GetAuditNodeJson", { TaskId: taskId }, function (data) {
+                            var steps = [];
+                            var index = 0;
+                            for (var i = 0; i < data.length; i++) {
+                                var row = {
+                                    title: data[i][0],
+                                    content: ""
+                                }
+                                steps.push(row);
+                                if (parseInt(data[i][1]) == 0) {
+                                    index = i + 1
+                                }
+                            }
+                            if (index == 0) {
+                                index = steps.length;
+                            }
+                            $(".ystep").loadStep({
+                                size: "large",
+                                color: "green",
+                                steps: steps
+                            });
+                            $(".ystep").setStep(index);
+                        });
+                    })
+
+                </script>
+            </div>
+            <div id="NodeLog" class="tabPanel" style="display: none; margin-top: 1px;">
+                <table id="gridTable"></table>
+            </div>
+        </div>
+    </div>
+</form>
+<style>
+    .ui-widget-content {
+        border-top: 1px solid #ccc;
+        border-left: none;
+        border-bottom: none;
+    }
+
+    .ui-jqgrid tr.ui-row-ltr td {
+        padding: 0px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .ui-jqgrid .ui-jqgrid-btable {
+        padding: 0px;
+        border-bottom: none;
+    }
+</style>

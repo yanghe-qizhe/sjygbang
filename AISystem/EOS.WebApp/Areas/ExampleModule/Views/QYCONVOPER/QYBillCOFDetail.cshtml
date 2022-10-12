@@ -1,0 +1,72 @@
+﻿@{
+    ViewBag.Title = "汽运转序任务单》详细";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    $(function () {
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/QYCONVOPER/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+   
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开</b></span></a>
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            单据编号：
+        </th>
+        <td class="formValue">
+            <input id="TASKNO" type="text" class="txt" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            车号：
+        </th>
+        <td class="formValue">
+            <input id="CARS" type="hidden" />
+            <input id="CARSNAME" type="text" class="txt" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            <span id="span_rfid">RFID：</span>
+        </th>
+        <td class="formValue">
+            <input id="CARDNO" type="text" class="txt" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            开始时间：
+        </th>
+        <td class="formValue">
+            <input id="StartTime" type="text" class="txt" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            结束时间：
+        </th>
+        <td class="formValue">
+            <input id="EndTime" type="text" class="txt" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue">
+            <input id="MEMO" type="text" class="txt" readonly="readonly" />
+        </td>
+    </tr>
+</table>
+</form>

@@ -1,0 +1,250 @@
+﻿Object Report
+	Version='6.8.2.3'
+	Title='采购收货逐车明细'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		Oriention=Landscape
+		LeftMargin=0.5
+		TopMargin=1
+		RightMargin=0.5
+		BottomMargin=1
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=eosine123;User ID=EOSTYZY;Data Source=192.168.31.83/orcl'
+			QuerySQL='select rownum as ROWNO,BILLNO as 单据编号,PK_ORDER  as 派车单号,case when FINISH=0 then '未完成' else '完成' end  as 磅单状态,CARS as 车号,BRANDMODEL as 车型,\r\nPK_CONTRACT_B as 订单编号,PK_SENDORG as 供应商编码,SENDORG as 供应商名称,MATERIALCODE as 物料编码,MATERIAL as 物料名称,MATERIALKIND as 规格,DEF1 计量单位,\r\nGROSS 毛重,TARE 皮重,SUTTLE 净重,YFPIWEIGHT as 净料,YFSUTTLE 应收数量,nvl(JBAMOUNT1,0)+nvl(JBAMOUNT2,0)+nvl(JBAMOUNT3,0) 夹板数,\r\nnvl(JIABAN1,0)+nvl(JIABAN2,0)+nvl(JIABAN3,0) 夹板重量,TOTALJTARE  件皮,TOTALJSUTTLE 件净,PDASSJS 件数,KDL as 亏吨率,TRAFFICCHARGE 亏吨量,DEF17 as 涨亏吨数,\r\nKDPRICE 亏吨单价,TRAFFICCHARGE*KDPRICE 亏吨金额,RECEIVESTORE 卸货地点,PDAUSER 仓库确认人,WEIGHTNAME 毛重磅房,LIGHTNAME 皮重磅房,\r\nLIGHTDATE 出厂时间,WEIGHTDATE 入厂时间,HANDMEMO 卸货确认备注,RECEIVEORG 接收公司,TRAFFICCOMPANYCODE 承运商编号,TRAFFICCOMPANY 承运商,\r\nsourcearea 来源地区,HZUSERNAME 货主,jzxcode as 集装箱号,NPRICE 订单价格,DRIVERS 司机,JJSUTTLE 采购部扣重,ZJSUTTLE 质检扣重,TZSUTTLE 加扣,BDSUTTLE 水分补点,JSSUTTLE 结算重量,KJRESULTMEMO 扣减结果,\r\nPK_PSORDER as 检斤单号,case when nvl(iscy,0)=0 then '否' else '是' end 是否采样,MAINBILLNO 采样单号,WGKZ 采购部检斤扣重,case when nvl(AUDITSTATUS,0)=0 then '否' else '是' end as 扣重审批,\r\nAUDITMEMO 否决原因,AUDITUSER 审核人,AUDITDATE 审核时间, ZJRESULTMEMO 检验结果\r\nfrom VWB_WEIGHT_BIN_REPORT where rownum<300'
+			Items Field
+				Item
+					Name='状态'
+				End
+				Item
+					Name='序号'
+				End
+				Item
+					Name='工厂名称'
+				End
+				Item
+					Name='物料'
+				End
+				Item
+					Name='物料编号'
+				End
+				Item
+					Name='物料分类'
+				End
+				Item
+					Name='规格'
+				End
+				Item
+					Name='单价'
+				End
+				Item
+					Name='执行时间'
+				End
+				Item
+					Name='创建人'
+				End
+				Item
+					Name='创建日期'
+				End
+				Item
+					Name='备注'
+				End
+				Item
+					Name='工厂编号'
+				End
+				Item
+					Name='执行结束时间'
+				End
+					End
+	End
+	Items Column
+		Item
+			Name='物料编号'
+		End
+		Item
+			Name='物料描述'
+		End
+		Item
+			Name='单价'
+		End
+		Item
+			Name='执行时间'
+		End
+		Item
+			Name='执行结束时间'
+		End
+		Item
+			Name='工厂编号'
+		End
+		Item
+			Name='工厂名称'
+		End
+	End
+Object ColumnContent
+	CanGrow=T
+	Height=0.608542
+	Object Font
+		Name='宋体'
+		Size=90000,0
+		Weight=400
+		Charset=134
+	End
+	Items ColumnContentCell
+		Item
+			Column='物料编号'
+			DataField='物料编号'
+		End
+		Item
+			Column='物料描述'
+			DataField='物料'
+		End
+		Item
+			Column='单价'
+			DataField='单价'
+		End
+		Item
+			Column='执行时间'
+			DataField='执行时间'
+		End
+		Item
+			Column='执行结束时间'
+			DataField='执行结束时间'
+		End
+		Item
+			Column='工厂编号'
+			DataField='工厂编号'
+		End
+		Item
+			Column='工厂名称'
+			DataField='工厂名称'
+		End
+	End
+End
+Object ColumnTitle
+	Height=0.608542
+	Object Font
+		Name='宋体'
+		Size=90000,0
+		Bold=T
+		Charset=134
+	End
+	Items ColumnTitleCell
+		Item
+			GroupTitle=F
+			Column='物料编号'
+			TextAlign=MiddleCenter
+			Text='物料编号'
+		End
+		Item
+			GroupTitle=F
+			Column='物料描述'
+			TextAlign=MiddleCenter
+			Text='物料描述'
+		End
+		Item
+			GroupTitle=F
+			Column='单价'
+			TextAlign=MiddleCenter
+			Text='单价'
+		End
+		Item
+			GroupTitle=F
+			Column='执行时间'
+			TextAlign=MiddleCenter
+			Text='执行时间'
+		End
+		Item
+			GroupTitle=F
+			Column='执行结束时间'
+			TextAlign=MiddleCenter
+			Text='执行结束时间'
+		End
+		Item
+			GroupTitle=F
+			Column='工厂编号'
+			TextAlign=MiddleCenter
+			Text='工厂编号'
+		End
+		Item
+			GroupTitle=F
+			Column='工厂名称'
+			TextAlign=MiddleCenter
+			Text='工厂名称'
+		End
+	End
+End
+End
+Object PageHeader
+	Height=0
+End
+Object PageFooter
+	Height=0.396875
+	Items Control
+		Item
+			Type=MemoBox
+			Name='MemoBox2'
+			Anchor=[Top|Right]
+			Left=24.7915
+			Width=3.59833
+			Height=0.608542
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+		End
+	End
+End
+Items Parameter
+	Item
+		Name='title'
+	End
+	Item
+		Name='start_Date'
+	End
+	Item
+		Name='end_Date'
+	End
+	Item
+		Name='Query'
+	End
+End
+Items ReportHeader
+	Item
+		Height=2.40771
+		Items Control
+			Item
+				Type=StaticBox
+				Name='StaticBox14'
+				Left=0.211667
+				Top=0.211667
+				Width=35.5865
+				Height=0.79375
+				Object Font
+					Name='宋体'
+					Size=180000,0
+					Bold=T
+					Charset=134
+				End
+				TextAlign=MiddleCenter
+				Text='逐车明细表'
+				Parameter='title'
+			End
+			End
+End
+End
+End

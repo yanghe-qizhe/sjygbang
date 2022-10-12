@@ -1,0 +1,503 @@
+﻿@{
+    ViewBag.Title = "采样信息选择";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var FormID = GetQuery('FormID');
+      CreateReport("Report");
+    $(function () {
+          $("#Report").css("display", "none");
+        SUSERAutocomplete();
+        RUSERAutocomplete();
+        SUSERAutocomplete1();
+        RUSERAutocomplete1();
+        setTimeout(function () {
+            Report.LoadFromURL(RootPath() + "/ReportView/grf/PrintCode1.grf");
+            GetGrid();
+        }, 500);
+    });
+
+
+    //交样制样
+    function Finish() {
+        var JYUSER = $("#JYUSER").val();//交样人
+        var SYUSER = $("#SYUSER").val();//接样人
+
+        var JYUSER1 = $("#JYUSER1").val();//交样人
+        var SYUSER1 = $("#SYUSER1").val();//接样人
+        if (JYUSER == "" || JYUSER1 == "") {
+            top.TipMsg("请您先选择交样人！", 4000, "error");
+            return false;
+        }
+        if (SYUSER == "" || SYUSER1 == "") {
+            top.TipMsg("请您先选择接样人！", 4000, "error");
+            return false;
+        }
+ 
+                var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+               
+                if (IsNull(KeyValue)) {
+                    confirmDialog("提示", "注：您确定要对当前选中记录做交接制样操作吗？", function (r) {
+                        if (r) {
+                            window.setTimeout(function () {
+                                AjaxJson("/ZJGCManager/ZJGCZY/ZJGCZYSaveFinish?KeyValue=" + escape(KeyValue) + "&JYUSER=" + escape(JYUSER) + "&SYUSER=" + escape(SYUSER) + "&JYUSER1=" + escape(JYUSER1) + "&SYUSER1=" + escape(SYUSER1)+"&ModuleId="+ModuleId, "", function (data) {
+                                    top.frames[tabiframeId()].windowload();
+                                    windowload();
+                                    Print(KeyValue);
+                                });
+                            }, 200);
+                        }
+                    });
+           
+            } else {
+                tipDialog("只有采样状态可以交接样,无法交接样!", 3, 0);
+            }
+  
+    }
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var ICCARD = $("#ICCARD").val();
+        var MATERIALNAME = $("#MATERIALNAME").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJGCManager/ZJGCCY/GetOrderList")?ISZK=1&TYPE=1&StartTime=" + StartTime + '&EndTime=' + EndTime + '&MATERIALNAME=' + escape(MATERIALNAME) + '&ICCARD=' + ICCARD, page: 1
+        }).trigger('reloadGrid');
+    }
+    //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    var CardNumber = "";
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            $('#msg').text('打开读卡器失败！');
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            $('#msg').text(version);
+            CardNumber = MWRFATL.OpenCard(1);
+
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                $('#msg').text('IC卡没有放在读卡器上！');
+            }
+            else {
+                res = 0;
+                $('#msg').text(CardNumber);
+            }
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        return res;
+    }
+
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var len = arr.length - 1;
+        for (i = 0; i <= len; i = i + 2) {
+            num += arr[i] + arr[i + 1];
+        }
+        var cid = parseInt(num, 16);
+        return cid;
+    }
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJGCManager/ZJGCCY/GetOrderList")?ISZK=1&TYPE=1&StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 180,
+            autowidth: true,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', hidden: true },
+                { label: '采样单号', name: 'BILLNO', index: 'BILLNO', width: 130, align: 'left', align: 'center' },
+                  { label: 'TYPE', name: 'TYPE', index: 'TYPE', hidden: true },
+                 {
+                     label: '状态', name: 'TYPENAME', index: 'TYPENAME', width:80, align: 'center',
+                     formatter: function (cellvalue, options, rowObject) {
+                         if (cellvalue == '1') return "<span style='color:red;font-size:18px'>采样</span>";
+                         if (cellvalue == '2') return "<span style='color:blue;font-size:18px'>交接样</span>";
+                         if (cellvalue == '3') return "<span style='color:blue;font-size:18px'>接样</span>";
+                         if (cellvalue == '4') return "<span style='color:green;font-size:18px'>制样</span>";
+                     }
+                 }, {
+                     label: '制卡', name: 'ISZK', index: 'ISZK', width: 60, align: 'center',
+                     formatter: function (cellvalue, options, rowObject) {
+                         if (cellvalue == '0') return "<span style='color:red;font-size:18px'>否</span>";
+                         if (cellvalue == '1') return "<span style='color:blue;font-size:18px'>是</span>";
+                     }
+                 },
+                { label: '物料', name: 'MATERIALSHORTNAME', index: 'MATERIALSHORTNAME', width: 120, align: 'center' },
+                { label: '采样车数', name: 'CARSNUM', index: 'CARSNUM', width:60, align: 'center' },
+                { label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center'   },
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 110, align: 'center' },
+                  { label: '采样人甲', name: 'CYUSER', index: 'CYUSER', width: 80, align: 'center' },
+                 { label: '采样人乙', name: 'CYUSER1', index: 'CYUSER1', width: 80, align: 'center' },
+                { label: '异型卡号', name: 'ICCARD', index: 'ICCARD', width: 110, align: 'center' },
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 100, align: 'center' },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            multiselect: false,
+            viewrecords: true,
+            rowNum: 50,
+            rownumbers: true,
+            rowList: [50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+        });
+        columnModelData("#gridTable");
+    }
+
+    var rowindex = 1;
+    function ReadCardAddRow() {
+        CardOpen();
+        var ICCard = "";
+        if (IsNullOrEmpty(CardNumber)) {
+            ICCard = SetCardNo(CardNumber);
+            var url = "/ZJManager/PCRawCY/GetICCardEntryList";
+            AjaxJson(url, { KeyValue: ICCard }, function (data) {
+              
+                if (rowindex == 1) {
+                    $("#gridTable").jqGrid("clearGridData");
+                }
+                $.each(data.rows, function (i, o) {
+                    var s = 0;
+                    var dataRow = {
+                        ID: o.ID,
+                        BILLNO: o.BILLNO,
+                        TYPE: o.TYPE,
+                        TYPENAME: o.TYPENAME,
+                        ISZK: o.ISZK,
+                        MATERIALSHORTNAME: o.MATERIALSHORTNAME,
+                        CARSNUM: o.CARSNUM,
+                        CYDATE: o.CYDATE,
+                        DEF6: o.DEF6,
+                        CREUSER: o.CREUSER,
+                        CRETIME: o.CRETIME,
+                        MEMO: ''
+                    };
+                    //将新添加的行插入到第一列
+                    $("#gridTable").jqGrid("addRowData", rowindex, dataRow, "first");
+                    rowindex++;
+                })
+
+            });
+
+        }
+        if (ICCard == "") {
+            tipDialog("读IC卡失败，IC卡序号为空！", 3, "");
+            return false;
+        }
+     
+    }
+
+    function ReadCard() {
+        CardOpen();
+        var ICCard = "";
+        if (IsNullOrEmpty(CardNumber)) {
+            ICCard = SetCardNo(CardNumber);
+            $("#ICCARD").val(ICCard);
+            btn_Search();
+        }
+        if (ICCard == "") {
+            tipDialog("读IC卡失败，IC卡序号为空！", 3, "");
+            return false;
+        }
+    }
+    //交样
+    function SUSERAutocomplete() {
+        var txtname = "JYUSER";
+        var $txtname = $("#JYUSER");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type:1,keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+    //交样
+    function SUSERAutocomplete1() {
+        var txtname = "JYUSER1";
+        var $txtname = $("#JYUSER1");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", {type:1, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+    //接样
+    function RUSERAutocomplete() {
+        var txtname = "SYUSER";
+        var $txtname = $("#SYUSER");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type:2,keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+    //接样
+    function RUSERAutocomplete1() {
+        var txtname = "SYUSER1";
+        var $txtname = $("#SYUSER1");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type:2, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+      //打印条码
+    function Print(KeyValue) {
+       if (IsChecked(KeyValue)) {
+            Report.LoadDataFromURL("/ZJGCManager/ZJGCZY/ZYPrintCode?KeyValue=" +KeyValue);
+                    //Report.Print(true);
+            Report.PrintPreview(true);
+        }
+    }
+        
+ 
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_Commit_Save" title="读卡" onclick="ReadCard()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    读卡 </b></span></a><a id="btn_ReadAddRow" title="交接制样" onclick="Finish()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                            交接制样 </b></span></a><a title="关闭当前窗口(Esc)" onclick="closeDialog();" class="tools_btn">
+                                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                    离开</b></span></a>
+</div>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th class="formTitle">
+                    交样人甲：
+                </th>
+                <td class="formValue">
+                    <input id="JYUSER" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th class="formTitle">
+                    交样人乙：
+                </th>
+                <td class="formValue">
+                    <input id="JYUSER1" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th class="formTitle">
+                    接样人甲：
+                </th>
+                <td class="formValue">
+                    <input id="SYUSER" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th class="formTitle">
+                    接样人乙：
+                </th>
+                <td class="formValue">
+                    <input id="SYUSER1" type="text" class="txt" style="width: 110px" />
+                </td>
+                <td>
+                    @* <input id="btnOK" type="button" class="btnSearch" value="交接制样" onclick="Finish()" />*@
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    异型卡号：
+                </th>
+                <td>
+                    <input id="ICCARD" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 110px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 110px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

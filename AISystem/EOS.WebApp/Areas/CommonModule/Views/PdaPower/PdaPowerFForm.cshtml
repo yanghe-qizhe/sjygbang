@@ -1,0 +1,408 @@
+﻿@{
+    ViewBag.Title = "手持机用户》新增";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var TASKNO = GetQuery('TASKNO'); //任务单号
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        //  GetGrid();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+        }
+        BindAutocomplete("USERGROUPNAME", "USERGROUP", "Dictionary", "", "", "");//用户组
+        ///获取用户信息
+        UserAutocomplete();
+    })
+
+    ///获取用户信息
+    function UserAutocomplete() {
+        var txtname = "NAME";
+        var $txtid = $("#ID");
+        var $txtname = $("#NAME");
+        var $txtwlgg = $("#ACCOUNT");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.userid);
+            $txtname.val(data.realname);
+            $txtwlgg.val(data.account);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/User", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.userid);
+                    $txtname.val(data.realname);
+                    $txtwlgg.val(data.account);
+                });
+            });
+        }
+    }
+
+
+    ///仓库信息
+    function StoreAutocomplete(txtname, txtid, index) {
+        var txtname = txtname;
+        var $txtid = $("#" + txtid);
+        var $txtname = $("#" + txtname);
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            if (!IsExistStore(index, data.id)) {
+                $txtid.val(data.id);
+                $txtname.val(data.name);
+                index++;
+                $("#gridTable tbody tr:eq(" + index + ")").find('input').removeAttr('disabled');
+                $("#gridTable").find('.disabled').attr("disabled", "disabled");
+                $("#CARSNAME➩" + index).focus();
+            } else {
+                top.TipMsg("仓库已存在,不能重复添加", 4000, "error");
+            }
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Store", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    if (!IsExistStore(index, data.id)) {
+                        $txtid.val(data.id);
+                        $txtname.val(data.name);
+                        index++;
+                        $("#gridTable tbody tr:eq(" + index + ")").find('input').removeAttr('disabled');
+                        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+                        $("#CARSNAME➩" + index).focus();
+                    } else {
+                        top.TipMsg("仓库已存在,不能重复添加", 4000, "error");
+                    }
+                });
+            });
+        }
+    }
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/CommonModule/PdaPower/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+                var storeidlist = $("#DEF1").val();
+                var storenamelist = $("#DEF2").val();
+                var arr_id = storeidlist.split(',');
+                var arr_name = storenamelist.split(',');
+                var rowindex = 1;
+                $.each(arr_name, function (i) {
+                    var id = arr_id[i];
+                    var name = arr_name[i];
+                    if (name != "") {
+                        $("#PK_STORDOC➩" + rowindex).val(id);
+                        $("#STORDOCNAME➩" + rowindex).val(name);
+                        $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').attr("datacol", "yes");
+                        rowindex++;
+                        $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').removeAttr('disabled');
+                        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+                    }
+                });
+            });
+        }
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_HYBillSOF");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/CommonModule/PdaPower/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    /*车皮明细begin=======================================*/
+    //销售订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 290,
+            autowidth: true,
+            colModel: [
+                { label: '仓库[<font face="宋体">*</font>]', name: "STORDOCNAME", width: 180, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: false
+        });
+
+        var ii = 10000;
+        //默认添加20行 空行
+        for (var i = 1; i < 51; i++) {
+            ++ii;
+            var rowdata = {
+                STORDOCNAME: '<input id="STORDOCNAME➩' + i + '"  class="editable center" type="text" style="cursor:pointer" /><input id="PK_STORDOC➩' + i + '" type="hidden" />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+            StoreAutocomplete("STORDOCNAME➩" + i, "PK_STORDOC➩" + i, i);
+        }
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $("#gridTable").find('input').attr("disabled", "disabled");
+        $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "no");
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var index = $(this).text();
+            $("#PK_STORDOC➩" + index).val("");
+            $("#STORDOCNAME➩" + index).val("");
+        });
+
+    }
+    var array = new Array();
+    function IsExistStore(index, code) {
+        if (!ArrayExists(array, code)) {
+            array[index] = code;
+            return false;
+        } else {
+            return true;
+        }
+    }
+</script>
+<form id="form1">
+    <div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+        <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+            <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+                <span>
+                    <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                        刷新
+                    </b>
+                </span>
+            </a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                    class="tools_btn">
+                <span>
+                    <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                        保存
+                    </b>
+                </span>
+            </a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span>
+                    <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                        离开
+                    </b>
+                </span>
+            </a>
+        </div>
+        <table id="tb_HYBillSOF" class="form">
+            <tr>
+                <th class="formTitle">
+                    用户编号：
+                </th>
+                <td class="formValue">
+                    <input id="ID" type="text" class="txt" datacol="yes" err="用户编号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+                </td>
+                <th class="formTitle">
+                    工号：
+                </th>
+                <td class="formValue">
+                    <input id="ACCOUNT" type="text" class="txt" datacol="yes" err="用户工号" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    姓名：
+                </th>
+                <td class="formValue">
+                    <input id="DEF1" type="hidden" />
+                    <input id="DEF2" type="hidden" />
+
+                    <input id="NAME" type="text" class="txt iconsearch" datacol="yes" err="用户姓名" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    密码：
+                </th>
+                <td class="formValue">
+                    <input id="PWD" type="password" class="txt" datacol="yes" err="密码" checkexpession="NotNull"
+                           onkeyup="clearNoNum(this)" value="123456" maxlength="8" />
+                </td>
+            </tr>
+            <tr>
+                @*<th class="formTitle">
+                        权限
+                    </th>
+                    <td class="formValue" colspan="5">
+                        <span class="item">
+                            <input id="FLIST1" name="FLIST1" type="checkbox" style="vertical-align: middle;"
+                                   checked="checked" />
+                            <label for="FLIST1" style="vertical-align: middle;">
+                                系统设置
+                            </label>
+                        </span><span class="item">
+                            <input id="FLIST2" name="FLIST2" type="checkbox" style="vertical-align: middle;" />
+                            <label for="FLIST2" style="vertical-align: middle;">
+                                采购收货
+                            </label>
+                        </span><span class="item">
+                            <input id="FLIST3" name="FLIST3" type="checkbox" style="vertical-align: middle;" />
+                            <label for="FLIST3" style="vertical-align: middle;">
+                                销售发货
+                            </label>
+                        </span><span class="item">
+                            <input id="FLIST4" name="FLIST4" type="checkbox" style="vertical-align: middle;" />
+                            <label for="FLIST4" style="vertical-align: middle;">
+                                厂内转序收货
+                            </label>
+                        </span><span class="item">
+                            <input id="FLIST5" name="FLIST5" type="checkbox" style="vertical-align: middle;" />
+                            <label for="FLIST5" style="vertical-align: middle;">
+                                厂内转序发货
+                            </label>
+                        </span><span class="item">
+                            <input id="FLIST9" name="FLIST9" type="checkbox" style="vertical-align: middle;" />
+                            <label for="FLIST9" style="vertical-align: middle;">
+                                厂际转序发货
+                            </label>
+                        </span><span class="item">
+                            <input id="FLIST10" name="FLIST10" type="checkbox" style="vertical-align: middle;" />
+                            <label for="FLIST10" style="vertical-align: middle;">
+                                厂际转序发货
+                            </label>
+                        </span><span class="item">
+                            <input id="FLIST6" name="FLIST6" type="checkbox" style="vertical-align: middle;" />
+                            <label for="FLIST6" style="vertical-align: middle;">
+                                采样制卡
+                            </label>
+                        </span><span class="item">
+                            <input id="FLIST7" name="FLIST7" type="checkbox" style="vertical-align: middle;" />
+                            <label for="FLIST7" style="vertical-align: middle;">
+                                历史记录
+                            </label>
+                        </span><span class="item">
+                            <input id="FLIST8" name="FLIST8" type="checkbox" style="vertical-align: middle;" />
+                            <label for="FLIST8" style="vertical-align: middle;">
+                                门禁核验
+                            </label>
+                        </span>
+                    </td>*@
+                <th class="formTitle">
+                    用户组：
+                </th>
+                <td class="formValue">
+                    <input name="USERGROUP" id="USERGROUP" type="hidden" dbfield="true" />
+                    <input id="USERGROUPNAME" type="text" class="txt required" datacol="yes"
+                           err="用户组" checkexpession="NotNull" items="用户组" />
+                </td>
+                <th class="formTitle">
+                    是否启用
+                </th>
+                <td class="formValue">
+                    <input id="STATUE" name="STATUE" type="checkbox" style="vertical-align: middle;"
+                           checked="checked" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    厂区：
+                </th>
+                <td class="formValue">
+                    <select id="PK_ORG" class="txtselect">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        <option value="6000">盛世热电</option>
+                        <option value="7000">新迈纸业</option>
+                        <option value="8000">阳光王子</option>
+                        <option value="9000">华迈纸业</option>
+                        <option value="9010">科迈制浆</option>
+                    </select>
+                </td>
+                <th class="formTitle">
+                    备注：
+                </th>
+                <td class="formValue"  >
+                    <input id="DEF3" type="text" class="txt" />
+                </td>
+            </tr>
+        </table>
+        @*<div id="grid_List">
+                <table id="gridTable"></table>
+                <style>
+                    .ui-widget-content {
+                        border-left: none;
+                    }
+
+                    .ui-jqgrid tr.ui-row-ltr td {
+                        padding: 0px;
+                        border-bottom: 1px solid #ccc;
+                    }
+
+                    .ui-jqgrid .ui-jqgrid-htable th {
+                        line-height: 15px;
+                    }
+
+                        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+                            background: none;
+                        }
+
+                    .editable {
+                        height: 22px;
+                        background-color: #fff;
+                    }
+                </style>
+            </div>*@
+    </div>
+</form>

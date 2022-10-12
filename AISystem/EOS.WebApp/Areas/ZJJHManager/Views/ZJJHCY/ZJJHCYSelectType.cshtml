@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "汽运过磅单-到货单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var FormID = GetQuery('FormID');
+    var KeyValue = GetQuery('KeyValue');
+    var BILLNO = GetQuery('BILLNO');
+    var DEF6 = GetQuery('DEF6');
+    $(function () {
+
+    })
+
+    function btn_OK() {
+        AjaxJson("/ZJJHManager/ZJJHCY/ZJJHSetTypeDEF6?KeyValue=" + escape(KeyValue) + "&Type=" + $("#SelectTypeName").val(), "", function (data) {
+            if (data.Code > 0) {
+                var url = "/ZJJHManager/ZJJHCY/ZJJHCYAddCar?Type=0&FormID=" + FormID + "&KeyValue=" + escape(KeyValue) + "&BILLNO=" + escape(BILLNO) + "&DEF6=" + $("#SelectTypeName").val();
+                Dialog(url, "ZJJHCYAddCar", "移入组批明细", 1100, 400);
+            } else {
+                tipDialog(data.Message, 3, data.Code);
+            }
+        }); 
+    }
+
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    选择类型：
+                </th>
+                <td>
+                    <select id="SelectTypeName" class="txtselect" style="width: 125px">
+                        <option value="XS">销售类型</option>
+                        <option value="CG">采购类型</option>
+                    </select>
+                </td>
+                <td><input id="btnOk" type="button" class="btnSearch" value="确 定" onclick="btn_OK()" /></td>
+            </tr>
+        </table>
+    </div>
+</div>

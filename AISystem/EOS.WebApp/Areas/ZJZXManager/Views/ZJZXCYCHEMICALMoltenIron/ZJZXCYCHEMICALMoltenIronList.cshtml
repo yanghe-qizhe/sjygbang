@@ -1,0 +1,298 @@
+﻿@{
+    ViewBag.Title = "转序铁水化学检测";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+        GetGrid2("");
+    })
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#NAME").val();
+        var CHESTATUS = $("#CHESTATUS")[0].checked.toString();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYCHEMICALMoltenIron/GetZXCHEMoltenList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&PRINTCODE=' + escape(BillNo) + '&CHESTATUS=' + CHESTATUS, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var CHESTATUS = $("#CHESTATUS")[0].checked.toString();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYCHEMICALMoltenIron/GetZXCHEMoltenList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&CHESTATUS=' + CHESTATUS,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: false,
+            width: $(window).width() * 0.8,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', width: 180, align: 'left', align: 'center', hidden: true },
+                { label: 'CYID', name: 'CYID', index: 'CYID', width: 180, align: 'left', align: 'center', hidden: true },
+                { label: '批号', name: 'BILLNO', index: 'BILLNO', width: 180, align: 'left', hidden: true },
+                { label: '样号', name: 'PRINTCODE', index: 'PRINTCODE', width: 180, align: 'left', align: 'center' },
+                {
+                    label: '化学检测状态', name: 'CHESTATUS', index: 'CHESTATUS', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未完成</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>检测中</span>";
+                        if (cellvalue == '2') return "<span style='color:green;font-size:15px'>已完成</span>";
+                    }
+                },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center' },
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 110, align: 'center' },
+                { label: '备注', name: 'CHEMEMO', index: 'CHEMEMO', width: 200, align: 'left' }
+            ],
+            //multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers: true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            //单击事件
+            onSelectRow: function (RowIndx) {
+                var MAINID = GetJqGridRowValue("#gridTable", "ID");
+                $("#gridTable2").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ZJZXManager/ZJZXCYCHEMICAL/GetZXCHEZJItemList")?MAINID=" + escape(MAINID), page: 1
+                }).trigger('reloadGrid');
+            }
+
+        });
+        
+    }
+
+    function GetGrid2(MAINID) {
+        $("#gridTable2").jqGrid({
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYCHEMICAL/GetZXCHEZJItemList")?MAINID=" + escape(MAINID),
+            datatype: "json",
+            height: $(window).height() - 125,
+            autowidth: false,
+            width: $(window).width() * 0.18,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, align: 'left', hidden: true },
+                { label: '质检项', name: 'ITEMNAME', index: 'ITEMNAME', width: 80, align: 'center' },
+                { label: '质检值', name: 'ZJVALUE', index: 'ZJVALUE', width: 80, align: 'center' },
+                {
+                    label: '结果', name: 'ZJBZRESULT', index: 'ZJBZRESULT', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '-1') return "<span style='color:red;font-size:15px'>不合格</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>合格</span>";
+                        if (!IsNull(cellvalue)) return "";
+                    }
+                },
+                { label: '描述', name: 'ZJBZRESULTNAME', index: 'ZJBZRESULTNAME', width: 100, align: 'center' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers: false,
+            pager: false,
+            sortname: 'SORT',
+            sortorder: 'ASC',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        columnModelData("#gridTable2");
+    }
+
+
+    //化学检测
+    function CHECheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        var CYID = GetJqGridRowValue("#gridTable", "CYID");
+        if (IsChecked(KeyValue)) {
+            //获取当前化学检测状态
+            AjaxJson("/ZJZXManager/ZJZXCYPHYSICAL/GetZJStatus?KeyValue=" + escape(KeyValue) + "&CYID=" + escape(CYID), "", function (data) {
+                if (IsNull(data) && IsNull(data.Message) && data.Code == "1") {
+                    var json = jQuery.parseJSON(data.Message);
+                    if (json.CHESTATUS != "2") {
+                        if (json.DEF10 == "1") {
+                            tipDialog("当前批次已移除", 3, data.Code);
+                        } else {
+                            //AddTabMenu("ZJZXCYCHEForm", "@Url.Content("~/ZJZXManager/ZJZXCYCHEMICAL/ZJZXCYCHEForm")?ModuleId="+ModuleId+"&KeyValue="+escape(KeyValue)+"&CYID="+escape(CYID), "转序化学检测", "page_white_add.png", true, true, true);
+                            AddTabMenu("ZJZXCYCHEMICALMoltenIronForm", "@Url.Content("~/ZJZXManager/ZJZXCYCHEMICALMoltenIron/ZJZXCYCHEMICALMoltenIronForm")?ModuleId=" + ModuleId + "&KeyValue=" + escape(KeyValue) + "&CYID=" + escape(CYID), "转序化学检测", "page_white_add.png", true, true, true);
+                        }
+                    } else {
+                        tipDialog("当前批次已检测完成", 3, data.Code);
+                    }
+                } else {
+                    tipDialog(data.Message, 3, data.Code);
+                }
+            });
+        }
+    }
+
+    //化学检测完成
+    function CHEFinish() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            confirmDialog("提示", "确定要完成当前化学检测结果？", function (r) {
+                if (r) {
+                    Loading(true, "正在提交数据...");
+                    window.setTimeout(function () {
+                        AjaxJson("/ZJZXManager/ZJZXCYCHEMICAL/ZXCHEFinish?KeyValue=" + escape(KeyValue), "", function (data) {
+                            tipDialog(data.Message, 3, data.Code);
+                            if (data.Code > 0) {
+                                windowload();
+                            }
+                        });
+                    }, 200);
+                }
+            });
+        }
+    }
+
+    //取消化学检测完成
+    function CHEUNFinish() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            confirmDialog("提示", "确定要取消完成当前化学检测结果？", function (r) {
+                if (r) {
+                    Loading(true, "正在提交数据...");
+                    window.setTimeout(function () {
+                        AjaxJson("/ZJZXManager/ZJZXCYCHEMICAL/ZXCHEUNFinish?KeyValue=" + escape(KeyValue), "", function (data) {
+                            tipDialog(data.Message, 3, data.Code);
+                            if (data.Code > 0) {
+                                windowload();
+                            }
+                        });
+                    }, 200);
+                }
+            });
+        }
+    }
+
+    //新增
+    function btn_add() {
+        var url = "/ZJZXManager/ZJZXCYCHEMICAL/ZJZXCYCHEMICALAdd?ModuleId=" + escape(ModuleId);
+        openDialog(url, "ZJZXCYCHEMICALAdd", "转序化学检测任务新增", 750, 380, function (iframe) {
+            top.frames[iframe].AcceptClick();
+        });
+    }
+
+    //移除样
+    function DeleteMolten() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            window.setTimeout(function () {
+                AjaxJson("/ZJZXManager/ZJZXCYCHEMICALMoltenIron/ZJZXCYDELETEMolten?KeyValue=" + escape(KeyValue), "", function (data) {
+                    tipDialog(data.Message, 3, data.Code);
+                    if (data.Code > 0) {
+                        windowload();
+                    }
+                });
+            }, 200);
+        }
+    }
+
+    //移除样记录
+    function DeleteMoltenLog() {
+        var url = "/ZJZXManager/ZJZXCYCHEMICALMoltenIron/ZJZXCYCHEMICALMoltenIronAdd?ModuleId=" + escape(ModuleId) + "&FormID=@ViewBag.FormID";
+        //        openDialog(url, "ZJZXCYCHEMICALMoltenIronAdd", "铁水移除样记录", 750,380, function (iframe) {
+        //            top.frames[iframe].AcceptClick();
+        //        });
+
+        Dialog(url, "ZJZXCYCHEMICALMoltenIronAdd", "铁水移除样记录", 750, 380);
+    }
+
+    //铁水检测维护
+    function btn_updatehy() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        var CYID = GetJqGridRowValue("#gridTable", "CYID");
+        if (IsChecked(KeyValue)) {
+            //获取当前化学检测状态
+            AjaxJson("/ZJZXManager/ZJZXCYPHYSICAL/GetZJStatus?KeyValue=" + escape(KeyValue) + "&CYID=" + escape(CYID), "", function (data) {
+                if (IsNull(data) && IsNull(data.Message) && data.Code == "1") {
+                    var json = jQuery.parseJSON(data.Message);
+                    if (json.CHESTATUS == "2") {
+                        if (json.DEF10 == "1") {
+                            tipDialog("当前批次已移除", 3, data.Code);
+                        } else {
+                            AddTabMenu("ZJZXCYCHEMICALMoltenIronFormUpdate", "@Url.Content("~/ZJZXManager/ZJZXCYCHEMICALMoltenIron/ZJZXCYCHEMICALMoltenIronFormUpdate")?ModuleId=" + ModuleId + "&KeyValue=" + escape(KeyValue) + "&CYID=" + escape(CYID), "转序化学检测", "page_white_add.png", true, true, true);
+                        }
+                    } else {
+                        if (json.DEF10 == "1") {
+                            tipDialog("当前批次已移除", 3, data.Code);
+                        } else {
+                            tipDialog("当前批次未检测完成,请点击【化学检测】按钮进行化验录入", 3, data.Code);
+                        }
+                    }
+                } else {
+                    tipDialog(data.Message, 3, data.Code);
+                }
+            });
+        }
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    样号：
+                </th>
+                <td>
+                    <input id="NAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+                <td>
+                    <span class="item">
+                        <input type="checkbox" name="checkbox" id="CHESTATUS" />
+                        <label for="CHESTATUS">
+                            检验完成
+                        </label>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <div style="float: left; border-right: 1px solid #ccc">
+            <table id="gridTable"></table>
+            <div id="gridPager">
+            </div>
+        </div>
+        <div style="float: left; border-left: 1px solid #ccc">
+            <table id="gridTable2"></table>
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

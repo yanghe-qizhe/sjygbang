@@ -1,0 +1,171 @@
+﻿@{
+    ViewBag.Title = "选择采购订单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+       BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+ 
+        $("#keywords").focus();
+             setTimeout(function () {
+                GetGrid();
+            }, 100);
+        //绑定键盘按下事件  
+        $(document).keypress(function (e) {
+            // 回车键事件  
+            if (e.which == 13) {
+                $("#keywords").focus();
+                $("#keywords").select();
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    function btn_Search() {
+       
+        var Material = $("#Material").val();
+           var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/HYCONVOPER/GetBHYOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&Material=' +   Material
+        }).trigger('reloadGrid');
+    }
+    //显示 
+    function GetGrid() {
+      var index = GetQuery('index');
+        var Supply=  GetQuery('Supply');
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/HYCONVOPER/GetBHYOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime ,
+            datatype: "json",
+            height:270,
+            width:890,
+            colModel: [
+              { label: '主键单号', name: 'ID',    hidden: true },
+             { label: '单据编号', name: 'TASKNOID', index: 'TASKNOID', width: 130, align: 'center' },
+             { label: '业务状态PK', name: 'STATUS', hidden: true },
+             { label: '业务状态', name: 'STATUSNAME', index: 'STATUSNAME', width: 60, align: 'center',
+              formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '0') 
+                    return "<span style='color:red;'>未使用</span>";
+                    if (cellvalue == '1')
+                    return "<span style='color: blue; font-weight: bold;'>已使用</span>";
+                }
+              },
+             { label: '单据状态PK', name: 'ISUSE', hidden: true },
+             { label: '单据状态', name: 'ISUSENAME', index: 'ISUSENAME', width: 60, align: 'center',
+              formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '0') 
+                    return "<span style='color:red;'>未启用</span>";
+                    if (cellvalue == '1')
+                    return "<span style='color: blue; font-weight: bold;'>已启用</span>";
+                }
+              },
+             { label: '炉号', name: 'STOVENUM', index: 'STOVENUM', width: 100, align: 'left' },
+             { label: '车号', name: "CARSNAME", index: 'CARSNO', width: 100, sortable: false },
+               { label: '发货单位PK', name: 'PK_SENDUNIT', hidden: true },
+             { label: '发货单位', name: 'SENDUNITNAME', index: 'SENDUNITNAME', width: 120, align: 'left' },
+               { label: '收货单位PK', name: 'PK_ACCEPTUNIT', hidden: true },
+             { label: '收货单位', name: 'ACCEPTUNITNAME', index: 'ACCEPTUNITNAME', width: 120, align: 'left' },
+              { label: '物料PK', name: 'PK_MATERIAL', hidden: true },
+             
+             { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 130, align: 'left' },
+            
+             { label: '规格', name: 'MATERIALSPEC', index: 'MATERTARDNUM', width: 150, align: 'left' },
+               { label: '物料属性PK', name: 'PK_MATERIALSPEC', hidden: true },
+             { label: '长度', name: 'MATERIALSPECNAME', index: 'MATERIALSPECNAME', width:100, align: 'left' },
+                 { label: '秤PK', name: 'PK_SCALE', hidden: true },
+             { label: '秤点名称', name: 'SCALENAME', index: 'SCALENAME', width: 120, align: 'left' },
+             { label: '开始日期', name: 'STARTTIME', index: 'STARTTIME', width: 130, align: 'left' },
+             { label: '结束日期', name: 'ENDTIME', index: 'ENDTIME', width: 130, align: 'left' },
+             { label: '原发数量', name: "YFNUM", width: 80, sortable: false },
+             {  label: '制单日期', name: 'CRETIME', index: 'CRETIME', width: 130, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+             { label: '备注', name: 'MEMO', index: 'MEMO', width:150, align: 'center' } 
+            ],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            //双击事件
+            ondblClickRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                 var $parentobj = top.frames[tabiframeId()];
+                $parentobj.$("#PK_EID").val(rowData.TASKNOID);
+                $parentobj.$("#ACCEPTUNITCODE").val(rowData.PK_ACCEPTUNIT);
+                $parentobj.$("#ACCEPTUNITNAME").val(rowData.ACCEPTUNITNAME);
+                $parentobj.$("#SENDUNITCODE").val(rowData.PK_SENDUNIT);
+                $parentobj.$("#SENDUNITNAME").val(rowData.SENDUNITNAME);
+                $parentobj.$("#MTCODE").val(rowData.PK_MATERIAL);
+                $parentobj.$("#STANDNAME").val(rowData.MATERIALNAME);
+                $parentobj.$("#MATERIALKIND").val(rowData.MATERIALSPEC);
+               $parentobj.$("#RAILWAYCODE").val(rowData.STOVENUM);
+                  // $parentobj.$("#CARNUM").val(rowData.CARSNAME);
+              $parentobj.$("#CALCAMOUNT").val(rowData.YFNUM);
+                 closeDialog();
+            }
+        });
+
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+         
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 120px" />
+                </td>  
+     
+                <th>
+                    开始日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-40)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <th>
+                   截止日期：
+                </th>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                 <th></th>
+                <td  >
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

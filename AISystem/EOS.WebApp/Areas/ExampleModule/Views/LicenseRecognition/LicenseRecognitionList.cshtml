@@ -1,0 +1,153 @@
+﻿@{
+    ViewBag.Title = "车牌识别审批";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var CarsName = $("#CarsName").val();
+        var OrderBillNo = $("#OrderBillNo").val();
+        var STATE = $("#STATE").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/LicenseRecognition/GetList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&OrderBillNo=' + OrderBillNo + '&CarsName=' + escape(CarsName) + '&STATE=' + STATE, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/LicenseRecognition/GetList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 150, align: 'center', hidden: true },
+                { label: '单据编号', name: 'ACRECORDNO', index: 'ACRECORDNO', width: 100, align: 'left' },
+                { label: '类型', name: 'TYPENAME', index: 'TYPENAME', width: 100, align: 'left' },
+                {
+                    label: '审批状态', name: 'STATE', index: 'STATE', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1')
+                            return "已审批";
+                        else
+                            return "待审批";
+                    }
+                },
+                { label: '审核人', name: 'AUDITUSER', index: 'AUDITUSER', width: 100, align: 'left' },
+                { label: '审核时间', name: 'AUDITDATE', index: 'AUDITDATE', width: 150, align: 'left' },
+                { label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 100, align: 'left' },
+                { label: '磅号', name: 'CPNO', index: 'CPNO', width: 100, align: 'left' },
+                { label: '识别车号', name: 'READCARSNAME', index: 'READCARSNAME', width: 100, align: 'left' },
+                { label: '通知单号', name: 'ORDERBILLNO', index: 'ORDERBILLNO', width: 150, align: 'left' },
+                { label: '过磅日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 150, align: 'left' }
+
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CREATEDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true
+
+        });
+        columnModelData("#gridTable");
+    }
+
+    //审批
+    function btn_Check() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/LicenseRecognition/CheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+
+        }
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div style="margin-top: 1px; margin-bottom: 0px" class="tools_bar">
+        <div class="PartialButton">
+            <a id="ai-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+                <b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                    刷新 </b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="ai-Invalid" class="tools_btn" title="审批" onclick="btn_Check()"><span><b style="background: url(../../Content/Images/Icon16/spellcheck.png) no-repeat 50% 4px">
+                审批 </b></span></a><a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()">
+                    <span><b style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                        离开 </b></span></a>
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CarsName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    单号：
+                </th>
+                <td>
+                    <input id="OrderBillNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    审批状态：
+                </th>
+                <td>
+                    <select id="STATE" class="select" style="width: 105px">
+                        <option value="">全部</option>
+                        <option value="0" selected="selected">未审批</option>
+                        <option value="1">已审批</option>
+                    </select>
+                </td>
+                <th>
+                    日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

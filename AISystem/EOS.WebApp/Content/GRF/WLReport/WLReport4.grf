@@ -1,0 +1,223 @@
+﻿Object Report
+	Version='6.5.0.0'
+	Title='采购收货逐车明细'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		Size=256
+		Width=42
+		Height=150
+		Oriention=Landscape
+		LeftMargin=0.5
+		TopMargin=1
+		RightMargin=91.8104
+		BottomMargin=1
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		IsCrossTab=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=eosine123;User ID=EOSTYZY;Data Source=192.168.31.83/orcl'
+			QuerySQL='select substr(a.lastdate,0,10) lastdate,b.pk_marbasclassname,sum(SUTTLE) suttle from vwb_weight_bin_report a left join vbd_material b on a.MATERIALCODE=b.code where b.istype='3'\r\ngroup by substr(a.lastdate,0,10), b.pk_marbasclassname \r\norder by substr(a.lastdate,0,10)'
+			Items Field
+				Item
+					Name='LASTDATE'
+				End
+				Item
+					Name='PK_MARBASCLASSNAME'
+				End
+				Item
+					Name='SUTTLE'
+					Type=Float
+				End
+			End
+		End
+		Items Column
+			Item
+				Name='LASTDATE'
+			End
+			Item
+				Name='PK_MARBASCLASSNAME'
+				Width=3.57188
+			End
+		End
+		Object ColumnContent
+			CanGrow=T
+			Height=0.608542
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Items ColumnContentCell
+				Item
+					Column='LASTDATE'
+					DataField='LASTDATE'
+				End
+				Item
+					Column='PK_MARBASCLASSNAME'
+					TextAlign=MiddleRight
+					DataField='SUTTLE'
+				End
+			End
+		End
+		Object ColumnTitle
+			Height=0.608542
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Bold=T
+				Charset=134
+			End
+			Items ColumnTitleCell
+				Item
+					GroupTitle=F
+					Column='LASTDATE'
+					TextAlign=MiddleCenter
+					Text='木浆大类'
+				End
+				Item
+					GroupTitle=F
+					Column='PK_MARBASCLASSNAME'
+					FreeCell=T
+					Items Control
+						Item
+							Type=FieldBox
+							Name='FieldBox1'
+							Dock=Fill
+							DataField='PK_MARBASCLASSNAME'
+						End
+					End
+				End
+			End
+		End
+		Object CrossTab
+			PercentFormat='0.##%'
+			HTotalAtFirst=T
+			HCrossFields='PK_MARBASCLASSNAME'
+			VCrossFields='LASTDATE'
+		End
+	End
+	Object PageHeader
+		Height=0
+	End
+	Object PageFooter
+		Height=0.396875
+		Items Control
+			Item
+				Type=MemoBox
+				Name='MemoBox2'
+				Anchor=[Top|Right]
+				Left=-48.1013
+				Width=3.73063
+				Height=0.608542
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+			End
+		End
+	End
+	Items Parameter
+		Item
+			Name='title'
+		End
+		Item
+			Name='start_Date'
+		End
+		Item
+			Name='end_Date'
+		End
+		Item
+			Name='Query'
+		End
+	End
+	Items ReportHeader
+		Item
+			Height=2.40771
+			Items Control
+				Item
+					Type=MemoBox
+					Name='至'
+					Left=4.20688
+					Top=1.05833
+					Width=0.582083
+					Height=0.529167
+					Text='至'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox4'
+					Left=-0.0264583
+					Top=1.05833
+					Width=3.12208
+					Height=0.608542
+					Parameter='start_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox5'
+					Left=5.00063
+					Top=1.05833
+					Width=4.39208
+					Height=0.635
+					Parameter='end_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox6'
+					Left=1.19063
+					Top=1.71979
+					Width=23.4156
+					Height=0.608542
+					Text='StaticBox6'
+					Parameter='Query'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox7'
+					Top=1.71979
+					Width=1.19063
+					Height=0.608542
+					Text='条件：'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox14'
+					Left=0.608542
+					Top=0.211667
+					Width=39.5817
+					Height=0.79375
+					Object Font
+						Name='宋体'
+						Size=180000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Text='逐车明细表'
+					Parameter='title'
+				End
+			End
+		End
+	End
+	Items ReportFooter
+		Item
+			Name='ReportFooter2'
+			Height=0.608542
+		End
+	End
+End

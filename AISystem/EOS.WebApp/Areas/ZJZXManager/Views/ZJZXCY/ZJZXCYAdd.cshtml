@@ -1,0 +1,875 @@
+﻿@{
+    ViewBag.Title = "原料采样转序新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+    var TypeStatus;
+    $(function () {
+        if (IsNull(KeyValue)) {
+            $("#PCRAWID").val(KeyValue);
+        }
+        Bind();
+
+        InitControl();
+    })
+    function Bind() {
+        $("#DEF11").bind("change", function () {
+            $(this).val($(this).val().toUpperCase());
+            $("#BILLNO").val($("#DEF10").val() + $(this).val());
+        });
+        if (!IsNull(KeyValue)) {
+            $("#MATERIALNAME").bind("click", function () {
+                SelectMaterial();
+            });
+            $("#MATERIALNAME").bind("change", function () {
+                if (!IsNull($(this).val())) {
+                    $("#MATERIAL").val("");
+                }
+            });
+
+            $(".tools_bar .dropdown").hover(function () {
+                var left = $(this).offset().left - ($(this).find('.dropdown-data').width() / 2) + ($(this).width() / 2 + 9);
+                $(this).find('.dropdown-data').show().css('top', ($(this).offset().top + 50)).css('left', left);
+                $(this).find('.dropdown-icon').addClass('dropdown-icon-hover');
+                $(this).addClass('dropdown-selected');
+            }, function () {
+                if (!$(this).hasClass("_click")) {
+                    $(this).removeClass('dropdown-selected');
+                    $(this).find('.dropdown-data').hide();
+                    $(this).find('.dropdown-icon').removeClass('dropdown-icon-hover');
+                }
+            });
+            $('.tools_bar .dropdown').toggle(function () {
+                $(this).addClass('_click');
+                var left = $(this).offset().left - ($(this).find('.dropdown-data').width() / 2) + ($(this).width() / 2 + 9);
+                $(this).find('.dropdown-data').show().css('top', ($(this).offset().top + 50)).css('left', left);
+                $(this).find('.dropdown-icon').addClass('dropdown-icon-hover');
+                $(this).addClass('dropdown-selected');
+            }, function () {
+                $(this).removeClass('dropdown-selected');
+                $(this).find('.dropdown-data').hide();
+                $(this).find('.dropdown-icon').removeClass('dropdown-icon-hover');
+                $('.dropdown').removeClass('_click');
+            });
+            $(".dropdown-data li").click(function () {
+                $('.dropdown').removeClass('dropdown-selected');
+                $('.dropdown').find('.dropdown-data').hide();
+                $('.dropdown').find('.dropdown-icon').removeClass('dropdown-icon-hover');
+                $('.dropdown').removeClass('_click');
+            });
+        } else {
+            $(".tools_separator").remove();
+            $(".dropdown").remove();
+            //$("#DEF1").addClass("readonly").attr("readonly", "readonly").off("focus").unbind("focus").prop("onfocus", null);
+            //$("#DEF2").addClass("readonly").attr("readonly", "readonly").off("focus").unbind("focus").prop("onfocus", null);
+        }
+    }
+    function SelectMaterial() {
+        var url = "/ZJManager/PCRawCY/SelectMaterial?FormID=@ViewBag.FormID";
+        Dialog(url, "SelectMaterial", "选取物料信息（双击表格添加）", 900, 410);
+    }
+
+    function CallBackEvent(rowData) {
+        //判断当前物料是否允许设置
+        var Material = $("#MATERIAL").val();
+        var MATERIALNAME = $("#MATERIALNAME").val();
+        var LEN = $("#add_TableInfo tr").length;
+        if (!IsNull(Material)) {
+            //当前物料为空
+            $("#MATERIAL").val(rowData.ID);
+            $("#MATERIALNAME").val(rowData.NAME);
+        } else {
+            if (LEN > 0) {
+                confirmDialog("提示", "注：当前物料【" + MATERIALNAME + "】已有采样明细【" + LEN + "】条。切换物料会清空当前的采样明细,请谨慎操作.确定要切换物料吗?", function (r) {
+                    if (r) {
+                        $("#add_TableInfo").empty();
+                        $("#PK_LEADERDEPAS").val("");
+                        $("#LEADERDEPAS").val("");
+                        $("#CARSNUM").val("0");
+                        $("#MATERIAL").val(rowData.ID);
+                        $("#MATERIALNAME").val(rowData.NAME);
+                    }
+                });
+            } else {
+                $("#MATERIAL").val(rowData.ID);
+                $("#MATERIALNAME").val(rowData.NAME);
+            }
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!IsNull($("#TYPENAME").val())) {
+            $("#TYPE").val("1");
+            $("#TYPENAME").val("创建批号");
+        }
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJZXManager/ZJZXCY/SetForm", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data.M[0]) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data.M[0][key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+                switch ($("#TYPE").val()) {
+                    case "1":
+                        $("#TYPENAME").val("创建批号");
+                        break;
+                    case "2":
+                        $("#TYPENAME").val("组批中");
+                        break;
+                    case "3":
+                        $("#TYPENAME").val("组批完成");
+                        break;
+                }
+
+                $.each(data.D, function (i, o) {
+                    var maxcode = parseInt($("#MaxID").val()) + 1;
+                    var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" ondblclick="Del(this)" index=' + maxcode + ' >' + maxcode + '</td>';
+                    tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="YBILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="样号" checkexpession="NotNull" /></td>';
+                    tr += '<td class="formValue" style="width: 80px; text-align: center;"><input id="BILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" /><input id="PCID➩' + maxcode + '" readonly="readonly" type="hidden" class="txt required readonly" /><input id="PCITEMID➩' + maxcode + '" type="hidden" class="txt" /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="LEADERDEPAS➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /><input id="PK_LEADERDEPAS➩' + maxcode + '" type="hidden" class="txt" /></td>';
+                    tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="CARSNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /><input id="CARS➩' + maxcode + '" type="hidden" class="txt" /></td>';
+                    tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="MATERIALNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /><input id="MATERIAL➩' + maxcode + '" type="hidden" class="txt"/></td>';
+                    tr += '<td class="formValue" style="width: 100px; text-align: center;"><input id="LEADERDEPAT➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" /><input id="PK_LEADERDEPAT➩' + maxcode + '" type="hidden" class="txt" /></td>';
+                    tr += '<td class="formValue" style="width: 100px; text-align: center;"><input id="DEF14➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" /></td>';
+                    tr += '<td class="formValue" style="width: 60px; text-align: center;"><input id="KZ➩' + maxcode + '" type="text" class="txt required" onfocus="IsMoney(this.id)" value="0" checkexpession="Double" /></td>';
+                    tr += '<td class="formValue" style="width: 60px; text-align: center;"><select id="KS➩' + maxcode + '" class="txtselect required" datacol="yes" err="扣水"></select></td>';
+                    tr += '<td class="formValue" style="width: 80px; text-align: center;"><input id="MEMO➩' + maxcode + '" type="text" class="txt required" /></td>';
+                    tr += '<td class="formValue" style="display:none">'
+                    tr += '<input id="DEPARTMENTS➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="PK_DEPARTMENTS➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="STORESEND➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="PK_STORESEND➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="DEPARTMENTT➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="PK_DEPARTMENTT➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="STORETAKE➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="PK_STORETAKE➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="DEF4➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="DEF5➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="DEF6➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="CRETIME➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '<input id="ICCARD➩' + maxcode + '" type="text" datacol="yes"  />'
+                    tr += '</td>';
+                    tr += '</tr>';
+
+                    $("#add_TableInfo").append(tr);
+                    $("#MaxID").val(maxcode);
+                    DetailsBind(maxcode);
+                    for (var key in o) {
+                        var id = $('#' + key + "➩" + (i + 1));
+                        if (id.attr('id')) {
+                            var value = $.trim(o[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                            var type = id.attr('type');
+                            switch (type) {
+                                case "checkbox":
+                                    if (value == 1) {
+                                        id.attr("checked", 'checked');
+                                    } else {
+                                        id.removeAttr("checked");
+                                    }
+                                    break;
+                                default:
+                                    //id.val(value);
+                                    id.attr("value", value);
+                                    break;
+                            }
+                        }
+                    }
+                })
+            }
+
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    function SetEntityData(data) {
+        $.each(data.rows, function (i, o) {
+            if ($("#add_TableInfo").find("input[value='" + o.id + "']").length <= 0) {
+                var maxcode = parseInt($("#MaxID").val()) + 1;
+                var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" ondblclick="Del(this)" index=' + maxcode + ' >' + maxcode + '</td>';
+                tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="YBILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="样号" checkexpession="NotNull" value="' + o.cars + '" /></td>';
+                tr += '<td class="formValue" style="width: 80px; text-align: center;"><input id="BILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.billno + '" /><input id="PCID➩' + maxcode + '" type="hidden" class="txt" value="' + o.pk_order + '"/><input id="PCITEMID➩' + maxcode + '" type="hidden" class="txt" value="' + o.pk_order + '"/></td>';
+                tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="LEADERDEPAS➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.leaderdepas + '" /><input id="PK_LEADERDEPAS➩' + maxcode + '" type="hidden" class="txt" value="' + o.pk_leaderdepas + '"/></td>';
+                tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="CARSNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.cars + '" /><input id="CARS➩' + maxcode + '" type="hidden" class="txt" value="' + o.pk_cars + '"/></td>';
+                tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="MATERIALNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.material + '" /><input id="MATERIAL➩' + maxcode + '" type="hidden" class="txt" value="' + o.pk_material + '"/></td>';
+                tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="LEADERDEPAT➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.leaderdepat + '" /><input id="PK_LEADERDEPAT➩' + maxcode + '" type="hidden" class="txt" value="' + o.pk_leaderdepat + '"/></td>';
+                tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="DEF14➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.weightdate + '" /></td>';
+                tr += '<td class="formValue" style="width: 60px; text-align: center;"><input id="KZ➩' + maxcode + '" type="text" class="txt required" onfocus="IsMoney(this.id)" value="0" checkexpession="Double" /></td>';
+                tr += '<td class="formValue" style="width: 60px; text-align: center;"><select id="KS➩' + maxcode + '" class="txtselect required" datacol="yes" err="扣水"></select></td>';
+                tr += '<td class="formValue" style="width: 200px; text-align: center;"><input id="MEMO➩' + maxcode + '" type="text" class="txt required" datacol="yes"/></td>';
+                tr += '<td class="formValue" style="display:none">'
+                tr += '<input id="DEPARTMENTS➩' + maxcode + '" type="text" datacol="yes" value="' + o.departments + '"/>'
+                tr += '<input id="PK_DEPARTMENTS➩' + maxcode + '" type="text" datacol="yes" value="' + o.pk_departments + '"/>'
+                tr += '<input id="STORESEND➩' + maxcode + '" type="text" datacol="yes" value="' + o.storesend + '"/>'
+                tr += '<input id="PK_STORESEND➩' + maxcode + '" type="text" datacol="yes" value="' + o.pk_storesend + '"/>'
+                tr += '<input id="DEPARTMENTT➩' + maxcode + '" type="text" datacol="yes" value="' + o.departmentt + '"/>'
+                tr += '<input id="PK_DEPARTMENTT➩' + maxcode + '" type="text" datacol="yes" value="' + o.pk_departmentt + '"/>'
+                tr += '<input id="STORETAKE➩' + maxcode + '" type="text" datacol="yes" value="' + o.storetake + '"/>'
+                tr += '<input id="PK_STORETAKE➩' + maxcode + '" type="text" datacol="yes" value="' + o.pk_storetake + '"/>'
+                tr += '<input id="DEF4➩' + maxcode + '" type="text" datacol="yes" value="' + o.gross + '"/>'
+                tr += '<input id="DEF5➩' + maxcode + '" type="text" datacol="yes" value="' + o.tare + '"/>'
+                tr += '<input id="DEF6➩' + maxcode + '" type="text" datacol="yes" value="' + o.suttle + '"/>'
+                tr += '<input id="CRETIME➩' + maxcode + '" type="text" datacol="yes" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />';
+                tr += '<input id="ICCARD➩' + maxcode + '" type="text" datacol="yes" value="' + o.iccard + '"/>'
+                tr += '</td>';
+                tr += '</tr>';
+                $("#add_TableInfo").append(tr);
+                $("#MaxID").val(maxcode);
+
+                DetailsBind(maxcode);
+
+            }
+        })
+
+        SetType();
+    }
+    function SetType() {
+        if ($("#add_TableInfo tr").length > 0) {
+            $("#TYPE").val("2");
+            $("#TYPENAME").val("组批中");
+            $("#MATERIAL").val($("#MATERIAL➩1").val());
+            $("#MATERIALNAME").val($("#MATERIALNAME➩1").val());
+            $("#PK_LEADERDEPAS").val($("#PK_LEADERDEPAS➩1").val());
+            $("#LEADERDEPAS").val($("#LEADERDEPAS➩1").val());
+        } else {
+            $("#TYPE").val("1");
+            $("#TYPENAME").val("创建批号");
+            $("#MATERIAL").val("");
+            $("#MATERIALNAME").val("");
+            $("#PK_LEADERDEPAS").val("");
+            $("#LEADERDEPAS").val("");
+            $("#msg").val("");
+        }
+        $("#CARSNUM").val($("#MaxID").val());
+    }
+    function DetailsBind(maxcode) {
+        $("#KZ➩" + maxcode).bind("blur", function () {
+            $(this).val(parseFloat($(this).val()).toFixed(3));
+        })
+        BindDropItemForID("#KS➩" + maxcode, "KSType", "==请选择="); //扣水类型
+    }
+    function ZPFinish() {
+        if ($("#add_TableInfo tr").length > 0) {
+            if (!CheckDataValid('#form1')) {
+                return false;
+            }
+            Loading(true, "正在提交数据...");
+            window.setTimeout(function () {
+                AjaxJson("/ZJZXManager/ZJZXCY/PCZXCYFinishNew?KeyValue=" + $("#PCRAWID").val(), "", function (data) {
+                    if (data.Code == "1") {
+                        $("#TYPE").val("3");
+                        $("#TYPENAME").val("组批完成");
+                        tipDialog(data.Message, 3, data.Code);
+                        top.frames["tabs_iframe_" + ModuleId].windowload();
+                        ThisCloseTab();
+                    } else {
+                        tipDialog(data.Message, 3, data.Code);
+                    }
+                });
+            }, 200);
+        } else {
+            tipDialog("没有采样明细记录无法对该批号完成", 3, 0);
+        }
+    }
+
+    function Del(obj) {
+        var No = $(obj).attr("index");
+        confirmDialog('', '注：您确定要删除当前第【' + No + '】行数据吗？', function (r) {
+            if (r) {
+                $("#add_TableInfo").find("tr[index='" + No + "']").remove();
+                for (var i = No; i <= $("#MaxID").val(); i++) {
+                    if (IsNull($("#ID➩" + (parseInt(i) + 1)).val())) {
+                        $("#add_TableInfo").find("td[index='" + (parseInt(i) + 1) + "']").text(i);
+                        $("#add_TableInfo").find("td[index='" + (parseInt(i) + 1) + "']").attr("index", i);
+                        $("#add_TableInfo").find("tr[index='" + (parseInt(i) + 1) + "']").attr("index", i);
+
+                        $("#YBILLNO➩" + (parseInt(i) + 1)).attr("id", "YBILLNO➩" + i);
+                        $("#BILLNO➩" + (parseInt(i) + 1)).attr("id", "BILLNO➩" + i);
+                        $("#PCID➩" + (parseInt(i) + 1)).attr("id", "PCID➩" + i);
+                        $("#PCITEMID➩" + (parseInt(i) + 1)).attr("id", "PCITEMID➩" + i);
+                        $("#LEADERDEPAS➩" + (parseInt(i) + 1)).attr("id", "LEADERDEPAS➩" + i);
+                        $("#PK_LEADERDEPAS➩" + (parseInt(i) + 1)).attr("id", "PK_LEADERDEPAS➩" + i);
+                        $("#CARSNAME➩" + (parseInt(i) + 1)).attr("id", "CARSNAME➩" + i);
+                        $("#CARS➩" + (parseInt(i) + 1)).attr("id", "CARS➩" + i);
+                        $("#MATERIALNAME➩" + (parseInt(i) + 1)).attr("id", "MATERIALNAME➩" + i);
+                        $("#MATERIAL➩" + (parseInt(i) + 1)).attr("id", "MATERIAL➩" + i);
+                        $("#LEADERDEPAT➩" + (parseInt(i) + 1)).attr("id", "LEADERDEPAT➩" + i);
+                        $("#PK_LEADERDEPAT➩" + (parseInt(i) + 1)).attr("id", "PK_LEADERDEPAT➩" + i);
+                        $("#KZ➩" + (parseInt(i) + 1)).attr("id", "KZ➩" + i);
+                        $("#KS➩" + (parseInt(i) + 1)).attr("id", "KS➩" + i);
+                        $("#MEMO➩" + (parseInt(i) + 1)).attr("id", "MEMO➩" + i);
+
+                        $("#DEPARTMENTS➩" + (parseInt(i) + 1)).attr("id", "DEPARTMENTS➩" + i);
+                        $("#PK_DEPARTMENTS➩" + (parseInt(i) + 1)).attr("id", "PK_DEPARTMENTS➩" + i);
+                        $("#STORESEND➩" + (parseInt(i) + 1)).attr("id", "STORESEND➩" + i);
+                        $("#PK_STORESEND➩" + (parseInt(i) + 1)).attr("id", "PK_STORESEND➩" + i);
+                        $("#DEPARTMENTT➩" + (parseInt(i) + 1)).attr("id", "DEPARTMENTT➩" + i);
+                        $("#PK_DEPARTMENTT➩" + (parseInt(i) + 1)).attr("id", "PK_DEPARTMENTT➩" + i);
+                        $("#STORETAKE➩" + (parseInt(i) + 1)).attr("id", "STORETAKE➩" + i);
+                        $("#PK_STORETAKE➩" + (parseInt(i) + 1)).attr("id", "PK_STORETAKE➩" + i);
+                        $("#DEF4➩" + (parseInt(i) + 1)).attr("id", "DEF4➩" + i);
+                        $("#DEF5➩" + (parseInt(i) + 1)).attr("id", "DEF5➩" + i);
+                        $("#DEF6➩" + (parseInt(i) + 1)).attr("id", "DEF6➩" + i);
+                        $("#DEF14➩" + (parseInt(i) + 1)).attr("id", "DEF14➩" + i);
+                        $("#CRETIME➩" + (parseInt(i) + 1)).attr("id", "CRETIME➩" + i);
+                        $("#ICCARD➩" + (parseInt(i) + 1)).attr("id", "ICCARD➩" + i);
+                    }
+                }
+                $("#MaxID").val(parseInt($("#MaxID").val()) - 1);
+                SetType();
+            }
+        });
+    }
+    //获取单据状态
+    function GetStatus(KeyValue) {
+        AjaxJson("/ZJZXManager/ZJZXCY/GetZXStatus?KeyValue=" + escape(KeyValue), "", function (data) {
+            if (data.Success) {
+                TypeStatus = jQuery.parseJSON(data.Message);
+            } else {
+                tipDialog(data.Message, 3, data.Code);
+                return;
+            }
+        });
+    }
+    //多选汽运过磅单
+    function SelectWeight() {
+        var MATERIAL = $("#MATERIAL").val();
+        var MATERIALNAME = $("#MATERIALNAME").val();
+        var SUPPLY = $("#PK_LEADERDEPAS").val();
+        var SUPPLYNAME = $("#LEADERDEPAS").val();
+        var stime = "", etime = "";
+        if (IsNull(KeyValue)) {
+            //不为空 编辑
+            GetStatus(KeyValue);
+            stime = TypeStatus.DEF1;
+            etime = TypeStatus.DEF2;
+        } else {
+            //为空 新增
+            stime = $("#DEF1").val();
+            etime = $("#DEF2").val();
+        }
+        var url = "/ZJZXManager/ZJZXCY/ZJZXCYSelectWeight?Type=0&FormID=@ViewBag.FormID&MATERIAL=" + escape(MATERIAL) + "&SUPPLY=" + escape(SUPPLY) + "&MATERIALNAME=" + escape(MATERIALNAME) + "&SUPPLYNAME=" + escape(SUPPLYNAME) + "&stime=" + escape(stime) + "&etime=" + escape(etime);
+        Dialog(url, "ZJZXCYSelectWeight", "选取汽运过磅单", 900, 400);
+    }
+    //多选汽运过磅单回调
+    function CallBackEventWeight(KeyValue) {
+        //过滤当前已经选中的汽运过磅单
+        var KeyValue2 = "";
+        $.each(KeyValue.split(','), function (i, o) {
+            if ($("#add_TableInfo").find("input[value='" + o + "']").length <= 0) {
+                KeyValue2 += o + ",";
+            }
+        })
+        if (IsNull(KeyValue2)) {
+            AjaxJson("/ZJZXManager/ZJZXCY/PCGetQYData?KeyValue=" + escape(KeyValue2), "", function (data) {
+                if (IsNull(data) && IsNull(data.rows) && data.rows.length > 0) {
+                    SetEntityData(data);
+                } else {
+                    tipDialog("未查询到数据", 2, 0);
+                }
+            });
+        }
+    }
+
+    function SetMaterial(id, aid, name) {
+        //判断当前物料是否允许设置
+        var Material = $("#MATERIAL").val();
+        var MATERIALNAME = $("#MATERIALNAME").val();
+        var LEN = $("#add_TableInfo tr").length;
+        if (!IsNull(Material)) {
+            //当前物料为空
+            SetMaterial2(id, aid, name);
+        } else {
+            if (LEN > 0) {
+                confirmDialog("提示", "注：当前物料【" + MATERIALNAME + "】已有采样明细【" + LEN + "】条。切换物料会清空当前的采样明细,请谨慎操作.确定要切换物料吗?", function (r) {
+                    if (r) {
+                        $("#add_TableInfo").empty();
+                        $("#PK_LEADERDEPAS").val("");
+                        $("#LEADERDEPAS").val("");
+                        $("#CARSNUM").val("0");
+                        SetMaterial2(id, aid, name);
+                    }
+                });
+            } else {
+                SetMaterial2(id, aid, name);
+            }
+        }
+    }
+
+    function SetMaterial2(id, aid, name) {
+        //$(".tools_bar a[id^='06']").css("color", "black");
+        //$("#" + aid).css("color", "Red");
+        $("#MATERIAL").val(id);
+        $("#MATERIALNAME").val(name);
+    }
+
+    function SetMaterialType(id, code, name) {
+        $("#MATERIAL").val("");
+        $("#MATERIALNAME").val(""); 
+        var url = "/SelectValue/Select/SelectZJFA?MaterialType=" + id + "&ZJForType=78341346-7108-443d-a20c-dd3a061ec999&Type=0&FormID=@ViewBag.FormID&Code=FANO,FANAME,MATERIALID,MATERIALNAME";
+        Dialog(url, "SelectZJFA", "选取质检方案信息", 900, 400);
+        //$("a[chose='Material']").css("color", "black");
+        //$("#" + code).css("color", "red");
+    }
+    function CallBackEventFANO(rowData) { 
+        $("#MATERIAL").val(rowData.MATERIALID);
+        $("#MATERIALNAME").val(rowData.MATERIALNAME);
+    }
+    //保存事件
+    function SubmitOrderForm_OLD() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        var Save = "0";
+        window.setTimeout(function () {
+            var postData = GetWebControlsForTrue("#RuleHead");
+            postData["ZJZXCYDetailJson"] = GetTableDataJson("#Temp_List");
+            AjaxJson("/ZJZXManager/ZJZXCY/ZJZXCYSAVE?KeyValue=" + GetQuery('KeyValue'), postData, function (data) {
+                if (data.Code == "1") {
+                    tipDialog(data.Message, 3, data.Code);
+                    top.frames["tabs_iframe_" + ModuleId].windowload();
+                    ThisCloseTab();
+                } else if (data.Code == "3") {
+                    confirmDialog("提示", "注：当前已经采样的车辆明细超出设置的时间段.强制保存,系统会自动移除超出时间范围的车辆明细,请谨慎操作.确定要强制保存吗?", function (r) {
+                        if (r) {
+                            Save = "1";
+                        }
+                    });
+                } else {
+                    tipDialog(data.Message, 3, data.Code);
+                }
+            });
+
+            if (Save == "1") {
+                AjaxJson("/ZJZXManager/ZJZXCY/ZJZXCYSAVE?KeyValue=" + GetQuery('KeyValue') + "&Save=True", postData, function (data) {
+                    if (data.Code == "1") {
+                        tipDialog(data.Message, 3, data.Code);
+                        top.frames["tabs_iframe_" + ModuleId].windowload();
+                        ThisCloseTab();
+                    } else {
+                        tipDialog(data.Message, 3, data.Code);
+                    }
+                });
+            }
+        }, 200);
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+
+        //验证明细磅单重车时间 是否超出 所选的时间段
+        var stime = $("#DEF1").val() + ":00:00";
+        var etime = $("#DEF2").val() + ":00:00";
+        var def14 = "";
+        var b = true;
+        $.each($("#add_TableInfo").find("input[id^='DEF14']"), function (i, o) {
+            def14 = $(this).val();
+            if (IsNull(def14)) {
+                if (def14 < stime || def14 > etime) {
+                    tipDialog("磅单【" + $("#BILLNO➩" + $(this).attr("id").split('➩')[1]).val() + "】,车号【" + $("#CARSNAME➩" + $(this).attr("id").split('➩')[1]).val() + "】,超出设置的时间段,无法保存！", 3, "0");
+                    b = false;
+                    return false;
+                }
+            }
+        })
+
+        if (b) {
+            Loading(true, "正在提交数据...");
+            window.setTimeout(function () {
+                var postData = GetWebControlsForTrue("#RuleHead");
+                postData["ZJZXCYDetailJson"] = GetTableDataJson("#Temp_List");
+                AjaxJson("/ZJZXManager/ZJZXCY/ZJZXCYSAVE?KeyValue=" + GetQuery('KeyValue'), postData, function (data) {
+                    tipDialog(data.Message, 3, data.Code);
+                    if (data.Code == "1") {
+                        top.frames["tabs_iframe_" + ModuleId].windowload();
+                        ThisCloseTab();
+                    }
+                });
+            }, 200);
+        }
+    }
+</script>
+<style type="text/css">
+    .acolor
+    {
+        color: Blue;
+    }
+</style>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<input id="PCRAWID" type="hidden" />
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a><a id="button_Commit_SelectWeight" title="选择过磅单" onclick="SelectWeight()"
+                        class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/advanced_data_grid.png")) 50% 4px no-repeat;">
+                            选择过磅单</b></span></a> <a id="button_ZPFinish" title="完成" onclick="ZPFinish()" class="tools_btn">
+                                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/relationships.png")) 50% 4px no-repeat;">
+                                    完成</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                            离开</b></span></a> @*<a id="0602001001003" title="自产活性粉灰套筒窑" onclick="SetMaterial('1001AA100000000RTUI6','0602001001003','自产活性粉灰套筒窑')"
+                                                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/qip_angry.png")) 50% 4px no-repeat;">
+                                                    自产活性粉灰套筒窑</b></span></a><a id="0602001001002" title="自产活性粉灰回转窑" onclick="SetMaterial('1001AA100000000POYHU','0602001001002','自产活性粉灰回转窑')"
+                                                        class="tools_btn"><span> <b style="background: url(@Url.Content("~/Content/Images/Icon16/qip_angry.png")) 50% 4px no-repeat;">
+                                                            自产活性粉灰回转窑</b></span></a><a id="0602002002002" title="自产转炉用活性块灰" onclick="SetMaterial('1001AA100000000RTU9P','0602002002002','自产转炉用活性块灰')"
+                                                                class="tools_btn"><span> <b style="background: url(@Url.Content("~/Content/Images/Icon16/qip_angry.png")) 50% 4px no-repeat;">
+                                                                    自产转炉用活性块灰(回转窑)</b></span></a><a id="0602002002001" title="自产转炉用活性块灰" onclick="SetMaterial('1001AA100000000POYIJ','0602002002001','自产转炉用活性块灰')"
+                                                                        class="tools_btn"><span> <b style="background: url(@Url.Content("~/Content/Images/Icon16/qip_angry.png")) 50% 4px no-repeat;">
+                                                                            自产转炉用活性块灰(套筒窑)</b></span></a><a id="0602003001002" title="自产轻烧白云石粉" onclick="SetMaterial('1001AA100000000POYJC','0602003001002','自产轻烧云石粉')"
+                                                                                class="tools_btn"><span> <b style="background: url(@Url.Content("~/Content/Images/Icon16/qip_angry.png")) 50% 4px no-repeat">
+                                                                                    自产轻烧白云石粉</b></span></a>*@
+    <div class="tools_separator">
+    </div>
+    <a class="tools_btn dropdown">
+        <div style="float: left;">
+            <div class="icon">
+                <img src="~/Content/Images/Icon16/evacuator.png" /></div>
+            <div class="text">
+                熔剂</div>
+        </div>
+        <div class="dropdown-icon">
+            <img src="~/Content/Images/dropdown-icon.png" /></div>
+        <div class="dropdown-data" style="left: 438.5px; top: 82px; display: none;">
+            <i></i><span></span>
+            <ul>
+                <li id="1001AA100000000RTUI6" onclick="SetMaterial('1001AA100000000RTUI6','0602001001003','自产活性粉灰套筒窑')"
+                    ids="熔剂">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0602001001003-自产活性粉灰套筒窑</li>
+                <li id="1001AA100000000POYHU" onclick="SetMaterial('1001AA100000000POYHU','0602001001002','自产活性粉灰回转窑')"
+                    ids="熔剂">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0602001001002-自产活性粉灰回转窑</li>
+                <li id="1001AA100000000RTU9P" onclick="SetMaterial('1001AA100000000RTU9P','0602002002002','自产转炉用活性块灰')"
+                    ids="熔剂">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0602002002001-自产转炉用活性块灰(回转窑)</li>
+                <li id="1001AA100000000POYJC" onclick="SetMaterial('1001AA100000000POYJC','0602003001002','自产轻烧云石粉')"
+                    ids="熔剂">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0602003001002-自产轻烧白云石粉</li>
+            </ul>
+        </div>
+    </a>
+    <div class="tools_separator">
+    </div>
+    <a class="tools_btn dropdown">
+        <div style="float: left;">
+            <div class="icon">
+                <img src="~/Content/Images/Icon16/evacuator.png" /></div>
+            <div class="text">
+                煤焦</div>
+        </div>
+        <div class="dropdown-icon">
+            <img src="~/Content/Images/dropdown-icon.png" /></div>
+        <div class="dropdown-data" style="left: 438.5px; top: 82px; display: none;">
+            <i></i><span></span>
+            <ul>
+                <li id="1001AA100000000WGC78" onclick="SetMaterial('1001AA100000000WGC78','0603002001003','除尘焦粉')"
+                    ids="煤焦">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0603002001003-除尘焦粉</li>
+                <li id="1001A1100000000LV52X" onclick="SetMaterial('1001A1100000000LV52X','0603002001001','焦粉（瑞达）')"
+                    ids="煤焦">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0603002001001-焦粉（瑞达）</li>
+                <li id="1001A1100000000LV52V" onclick="SetMaterial('1001A1100000000LV52V','0603001001001','焦炭（瑞达）')"
+                    ids="煤焦">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0603001001001-焦炭（瑞达）</li>
+                <li id="1001A1100000000LV52Z" onclick="SetMaterial('1001A1100000000LV52Z','0603003001001','焦粒')"
+                    ids="煤焦">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0603003001001-焦粒</li>
+                <li id="1001A11000000006ZLPI" onclick="SetMaterial('1001A11000000006ZLPI','0102004001001','外购焦粉')"
+                    ids="煤焦">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0102004001001-外购焦粉</li>
+            </ul>
+        </div>
+    </a>
+    <div class="tools_separator">
+    </div>
+    <a class="tools_btn dropdown">
+        <div style="float: left;">
+            <div class="icon">
+                <img src="~/Content/Images/Icon16/evacuator.png" /></div>
+            <div class="text">
+                固废</div>
+        </div>
+        <div class="dropdown-icon">
+            <img src="~/Content/Images/dropdown-icon.png" /></div>
+        <div class="dropdown-data" style="left: 438.5px; top: 82px; display: none;">
+            <i></i><span></span>
+            <ul>
+                <li id="1001A1100000000LV55Q" onclick="SetMaterial('1001A1100000000LV55Q','0606003001001','氧化铁皮（炼钢）')"
+                    ids="固废">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0606003001001-氧化铁皮（炼钢）</li>
+                <li id="1001A1100000000LV56G" onclick="SetMaterial('1001A1100000000LV56G','0607002001001','氧化铁皮（轧钢）')"
+                    ids="固废">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0607002001001-氧化铁皮（轧钢）</li>
+                <li id="1001A1100000000LV55U" onclick="SetMaterial('1001A1100000000LV55U','0606004002001','压滤泥')"
+                    ids="固废">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0606004002001-压滤泥</li>
+                <li id="1001A1100000000LV55S" onclick="SetMaterial('1001A1100000000LV55S','0606004001001','粗颗料')"
+                    ids="固废">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0606004001001-粗颗料</li>
+            </ul>
+        </div>
+    </a>
+    <div class="tools_separator">
+    </div>
+    <a class="tools_btn dropdown">
+        <div style="float: left;">
+            <div class="icon">
+                <img src="~/Content/Images/Icon16/evacuator.png" /></div>
+            <div class="text">
+                钢渣</div>
+        </div>
+        <div class="dropdown-icon">
+            <img src="~/Content/Images/dropdown-icon.png" /></div>
+        <div class="dropdown-data" style="left: 438.5px; top: 82px; display: none;">
+            <i></i><span></span>
+            <ul>
+                <li id="1001A1100000000LV55O" onclick="SetMaterial('1001A1100000000LV55O','0606002005001','磁选铁')"
+                    ids="钢渣">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0606002005001-磁选铁</li>
+                <li id="1001A1100000000LV55M" onclick="SetMaterial('1001A1100000000LV55M','0606002004001','钢渣小铁')"
+                    ids="钢渣">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0606002004001-钢渣小铁</li>
+                <li id="1001A1100000000LV55E" onclick="SetMaterial('1001A1100000000LV55E','0606002002001','钢渣中块1#中铁')"
+                    ids="钢渣">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0606002002001-钢渣中块1#中铁</li>
+                <li id="1001A1100000000LV55K" onclick="SetMaterial('1001A1100000000LV55K','0606002003001','钢渣中块2#中铁')"
+                    ids="钢渣">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0606002003001-钢渣中块2#中铁</li>
+            </ul>
+        </div>
+    </a>
+    <div class="tools_separator">
+    </div>
+    <a id="01" chose="Material" title="块矿类" onclick="SetMaterialType('1001A11000000006O4G8','01','粉矿')"
+        class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/draft.png")) 50% 4px no-repeat;">
+            块矿类</b></span></a>
+</div>
+<div id="PCRAWCYADD">
+    <div id="RuleHead">
+        <table class="form">
+            <tr style="display: none">
+                <td>
+                    <input id="PCRAWTYPE" type="hidden" datacol="yes" value="0" dbfield="true" />
+                    <input id="BILLNO" maxlength="50" type="text" class="txt required" datacol="yes"
+                        dbfield="true" err="批号" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    批号：
+                </th>
+                <td class="formValue">
+                    <input id="DEF10" maxlength="50" type="text" class="txt readonly" style="float: left;
+                        width: 10%" readonly="readonly" datacol="yes" dbfield="true" value="@DateTime.Now.Year.ToString().Substring(2, 2)" />
+                    <input id="DEF11" maxlength="50" type="text" class="txt required" style="float: left;
+                        width: 89%" datacol="yes" dbfield="true" err="批号" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    日期：
+                </th>
+                <td class="formValue">
+                    <input id="CYDATE" maxlength="50" type="text" class="txt Wdate" datacol="yes" value="@EOS.Utilities.DateTimeHelper.GetToday()" dbfield="true"
+                    onfocus="var CYDATE=$dp.$('CYDATE');WdatePicker({onpicked:function(){CYDATE.focus();},maxDate:'#F{$dp.$D(\'CYDATE\')}'})"
+                        err="日期" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    状态：
+                </th>
+                <td class="formValue">
+                    <input id="TYPE" type="hidden" dbfield="true" />
+                    <input id="TYPENAME" type="text" class="txt required readonly" readonly="readonly"
+                        style="font-weigth: bold; font-size: 18px; color: Red" dbfield="true" err="状态"
+                        checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    物料：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIAL" type="hidden" datacol="yes" dbfield="true" err="物料" checkexpession="NotNull" />
+                    <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                        dbfield="true" err="物料" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    采样开始时段：
+                </th>
+                <td class="formValue">
+                    <input id="DEF1" maxlength="50" type="text" class="txt Wdate" datacol="yes" value="@DateTime.Now.ToString("yyyy-MM-dd HH")" dbfield="true"
+                    onfocus="var endDate=$dp.$('DEF2');WdatePicker({dateFmt: &#39;yyyy-MM-dd HH&#39;,onpicked:function(){DEF2.focus();},maxDate:'#F{$dp.$D(\'DEF2\')}'})"
+                        err="采样开始时段" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    采样结束时段：
+                </th>
+                <td class="formValue">
+                    <input id="DEF2" maxlength="50" type="text" class="txt Wdate" datacol="yes" value="@DateTime.Now.ToString("yyyy-MM-dd HH")" dbfield="true"
+                    onfocus="WdatePicker({dateFmt: &#39;yyyy-MM-dd HH&#39;,minDate:'#F{$dp.$D(\'DEF1\')}'})"
+                        err="采样结束时段" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    发货单位：
+                </th>
+                <td class="formValue">
+                    <input id="PK_LEADERDEPAS" type="hidden" dbfield="true" />
+                    <input id="LEADERDEPAS" type="text" dbfield="true" class="txt readonly" readonly="readonly"
+                        err="发货单位" />
+                </td>
+                <th class="formTitle">
+                    组批车数：
+                </th>
+                <td class="formValue">
+                    <input id="CARSNUM" type="text" class="txt required readonly" readonly="readonly"
+                        dbfield="true" err="组批车数" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    制单日期：
+                </th>
+                <td class="formValue">
+                    <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+                </td>
+                <th class="formTitle">
+                    制单人：
+                </th>
+                <td class="formValue">
+                    <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+                </td>
+                <th class="formTitle">
+                    描述：
+                </th>
+                <td class="formValue" colspan="3">
+                    <input id="MEMO" type="text" class="txt" err="描述" dbfield="true" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    采样明细</div>
+            </div>
+        </div>
+    </div>
+    <table id="Temp_List" class="grid leftline form" style="width: 100%">
+        <thead>
+            <tr>
+                <td style="width: 30px; text-align: center; border-left: none;">
+                    <div class="table-header">
+                        行号</div>
+                </td>
+                <td style="width: 50px; text-align: center;">
+                    <div class="table-header">
+                        样号</div>
+                </td>
+                <td style="width: 80px; text-align: center;">
+                    <div class="table-header">
+                        过磅单号</div>
+                </td>
+                <td style="width: 150px; text-align: center;">
+                    <div class="table-header">
+                        发货单位</div>
+                </td>
+                <td style="width: 50px; text-align: center;">
+                    <div class="table-header">
+                        车号</div>
+                </td>
+                <td style="width: 120px; text-align: center;">
+                    <div class="table-header">
+                        物料</div>
+                </td>
+                <td style="width: 150px; text-align: center;">
+                    <div class="table-header">
+                        收货单位</div>
+                </td>
+                <td style="width: 150px; text-align: center;">
+                    <div class="table-header">
+                        重车时间</div>
+                </td>
+                <td style="width: 60px; text-align: center;">
+                    <div class="table-header">
+                        扣重(吨)</div>
+                </td>
+                <td style="width: 60px; text-align: center;">
+                    <div class="table-header">
+                        扣水</div>
+                </td>
+                <td style="width: 200px; text-align: center;">
+                    <div class="table-header">
+                        备注</div>
+                </td>
+                <td style="display: none">
+                </td>
+            </tr>
+        </thead>
+        <tbody id="add_TableInfo">
+        </tbody>
+    </table>
+    <div class="line">
+    </div>
+    <table class="grid  form" style="width: 100%; display: none">
+        <tfoot>
+            <tr>
+                <td style="width: 30px; text-align: center;">
+                    合计
+                </td>
+                <td style="width: 50px; text-align: center;">
+                </td>
+                <td style="width: 80px; text-align: center;">
+                </td>
+                <td style="width: 150px; text-align: center;">
+                </td>
+                <td style="width: 50px; text-align: center;">
+                </td>
+                <td style="width: 120px; text-align: center;">
+                </td>
+                <td style="width: 150px; text-align: center;">
+                </td>
+                <td style="width: 60px; text-align: center;">
+                    <label id="TotalKZ">
+                    </label>
+                </td>
+                <td style="width: 60px; text-align: center;">
+                </td>
+                <td style="width: 200px; text-align: center;">
+                </td>
+                <td style="display: none">
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+</form>

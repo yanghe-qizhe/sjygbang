@@ -1,0 +1,289 @@
+﻿@{
+    ViewBag.Title = "StoreSortForm";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        //        BindAutocomplete("SUPPLYNAME", "SUPPLY", "Supply", "200", "150", "");
+        BindAutocomplete("ITEMNAME", "ITEM", "ZJITEMS", "200", "150", "");
+        BindAutocomplete("ITEMNAME2", "ITEM2", "ZJITEMS", "200", "150", "");
+        BindAutocomplete("ITEMNAME3", "ITEM3", "ZJITEMS", "200", "150", "");
+        BindAutocomplete("ITEMNAME4", "ITEM4", "ZJITEMS", "200", "150", "");
+        BindAutocomplete("ITEMNAME5", "ITEM5", "ZJITEMS", "200", "150", "");
+        $("#MATERIALNAME").bind("dblclick", function () {
+            SelectMaterial();
+        });
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+        }
+    })
+
+    function CallBackEvent(rowData) {
+        $("#MATERIAL").val(rowData.ID);
+        $("#MATERIALNAME").val(rowData.NAME);
+        $("#MATERIALSPEC").val(rowData.MATERIALSPEC);
+    }
+    function SelectMaterial() {
+        var url = "/SelectValue/Select/SelectMaterial?Type=0&FormID=@ViewBag.FormID";
+        Dialog(url, "SelectMaterial", "选取物料信息（双击表格添加）", 900, 410);
+    }
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/AVGEXPRESSIONS/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    AjaxJson("/BaseSet/AVGEXPRESSIONS/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+   
+</script>
+<form id="form1">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            公式编号：
+        </th>
+        <td class="formValue">
+            <input id="ID" type="text"  class="txt required" datacol="yes" err="公式编号" checkexpession="NotNull" value="@ViewBag.Code" readonly="readonly"/>
+        </td>
+        <th class="formTitle">
+            公式名称：
+        </th>
+        <td class="formValue">
+            <input id="NAME" type="text" class="txt required" datacol="yes" err="标准名称" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" datacol="yes" err="物料" checkexpession="NotNull" />
+            <input id="MATERIALNAME" type="text" class="txt required" datacol="yes" err="物料"
+                checkexpession="NotNull" title="双击选择物料" />
+        </td>
+        <th class="formTitle">
+            规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPEC" type="text" class=" txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            质检项1：
+        </th>
+        <td class="formValue">
+            <input id="ITEM" type="hidden" />
+            <input id="ITEMNAME" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            标准值1：
+        </th>
+        <td class="formValue">
+            <input id="ITEMBZ" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            类型1：
+        </th>
+        <td class="formValue">
+            <select id="ITEMTYPE" class="txtselect">
+                <option value="0" selected="selected">扣吨</option>
+                <option value="1">扣价</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            公式1：
+        </th>
+        <td class="formValue">
+            <input id="EXPRESSIONS" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            质检项2：
+        </th>
+        <td class="formValue">
+            <input id="ITEM2" type="hidden" />
+            <input id="ITEMNAME2" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            标准值2：
+        </th>
+        <td class="formValue">
+            <input id="ITEMBZ2" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            类型2：
+        </th>
+        <td class="formValue">
+            <select id="ITEMTYPE2" class="txtselect">
+                <option value="0" selected="selected">扣吨</option>
+                <option value="1">扣价</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            公式2：
+        </th>
+        <td class="formValue">
+            <input id="EXPRESSIONS2" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            质检项3：
+        </th>
+        <td class="formValue">
+            <input id="ITEM3" type="hidden" />
+            <input id="ITEMNAME3" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            标准值3：
+        </th>
+        <td class="formValue">
+            <input id="ITEMBZ3" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            类型3：
+        </th>
+        <td class="formValue">
+            <select id="ITEMTYPE3" class="txtselect">
+                <option value="0" selected="selected">扣吨</option>
+                <option value="1">扣价</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            公式3：
+        </th>
+        <td class="formValue">
+            <input id="EXPRESSIONS3" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            质检项4：
+        </th>
+        <td class="formValue">
+            <input id="ITEM4" type="hidden" />
+            <input id="ITEMNAME4" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            标准值4：
+        </th>
+        <td class="formValue">
+            <input id="ITEMBZ4" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            类型4：
+        </th>
+        <td class="formValue">
+            <select id="ITEMTYPE4" class="txtselect">
+                <option value="0" selected="selected">扣吨</option>
+                <option value="1">扣价</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            公式4：
+        </th>
+        <td class="formValue">
+            <input id="EXPRESSIONS4" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            质检项5：
+        </th>
+        <td class="formValue">
+            <input id="ITEM5" type="hidden" />
+            <input id="ITEMNAME5" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            标准值5：
+        </th>
+        <td class="formValue">
+            <input id="ITEMBZ5" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            类型5：
+        </th>
+        <td class="formValue">
+            <select id="ITEMTYPE5" class="txtselect">
+                <option value="0" selected="selected">扣吨</option>
+                <option value="1">扣价</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            公式5：
+        </th>
+        <td class="formValue">
+            <input id="EXPRESSIONS5" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            开始时间：
+        </th>
+        <td class="formValue">
+            <input id="BEGINDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+        </td>
+        <th class="formTitle">
+            结束时间：
+        </th>
+        <td class="formValue">
+            <input id="ENDDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+        </td>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input id="ISUSE" name="ISUSE" type="checkbox" checked="checked" style="vertical-align: middle;" />
+                <label for="ISUSE" style="vertical-align: middle;">
+                    有效</label>
+            </span>
+        </td>
+        <th class="formTitle">
+            说明：
+        </th>
+        <td class="formValue">
+            <input id="MEMO" type="text" class="txt" />
+        </td>
+    </tr>
+</table>
+</form>

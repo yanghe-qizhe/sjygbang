@@ -1,0 +1,139 @@
+﻿@{
+    ViewBag.Title = "质检方案管理》表单页面";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("FANO");
+    var KeyValueName = GetQuery("FANAME"); 
+    var TYPE = GetQuery("TYPE");
+    var TYPENAME = GetQuery("TYPENAME");
+    $(function () { 
+        GetGrid();  
+    }) 
+    //加载表格
+    function GetGrid() {  
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/ZJFA/GetZJFAProjectList")?FANO=" + escape(KeyValue),
+            datatype: "json",
+            height: $(window).height() - 110,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, align: 'left', hidden: true },
+                { label: '方案主键', name: 'FANO', index: 'FANO', width: 80, align: 'left', hidden: true },
+                { label: '方案名称', name: 'FANAME', index: 'FANAME', width: 100, align: 'center' },
+                { label: '项目编号', name: 'ITEMNO', index: 'ITEMNO', width: 100, align: 'center' },
+                { label: '项目名称', name: 'ITEMNAME', index: 'ITEMNAME', width: 100, align: 'center' },
+                { label: '方案类型', name: 'TYPENAME', index: 'TYPENAME', width: 100, align: 'center' }, 
+                { label: '是否判定项', name: 'ISJUDGE', index: 'ISJUDGE', width: 100, align: 'center', 
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:18px;font-weight:bold'>是</span>";
+                        if (cellvalue == '0') return "<span style='color:red;font-size:18px;font-weight:bold'>否</span>";
+                    }
+                 }, 
+                { label: '排序号', name: 'SORT', index: 'SORT', width: 100, align: 'center' }, 
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 90, align: 'center' },
+                {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },    { label: '方案标准', name: 'CHECKMEMO', index: 'CHECKMEMO', width: 200, align: 'left' },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'SORT',
+            sortorder: 'ASC',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        ////
+    } 
+
+    //新增
+    function btn_add() {  
+        if (IsNull(KeyValue)) { 
+            var url = '@Url.Content("~/BaseSet/ZJFA/ZJFAProjectAdd")?FANO='+escape(KeyValue)+"&FANAME="+escape(KeyValueName)+'&TYPE='+escape(TYPE)+'&TYPENAME='+escape(TYPENAME);
+            openDialog(url, "ZJFAProjectAdd", "质检方案项目新增", 750,380, function (iframe) {
+                top.frames[iframe].AcceptClick()
+            }); 
+            //AddTabMenu("ZJFAProjectAdd", '@Url.Content("~/BaseSet/ZJFA/ZJFAProjectAdd")?FANO='+escape(KeyValue), "质检方案项目新增", "house.png", 'true', 'true');
+        } else{
+            tipDialog('您没有选中任何质检方案,请您选中后再操作。', 4, 'warning');
+        }
+    } 
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/ZJFA/ZJFAProjectEdit?KeyValue=" + KeyValue;
+            openDialog(url, "ZJFAProjectEdit", "编辑质检方案项目", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+    //全编辑
+    function btn_editall() {  
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/ZJFA/ZJFAProjectEditAll?FANO=" + escape(KeyValue)+"&FANAME="+escape(KeyValueName)+"&TYPE="+escape(TYPE)+"&TYPENAME="+escape(TYPENAME);
+            openDialog(url, "ZJFAProjectEditAll", "编辑质检方案项目", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        var FANO = GetJqGridRowValue("#gridTable", "FANO");
+        var ITEMNO = GetJqGridRowValue("#gridTable", "ITEMNO");
+        if (IsDelData(KeyValue) && IsDelData(FANO)) {
+            var delparm = 'KeyValue=' + escape(KeyValue)+'&FANO='+escape(FANO)+'&ITEMNO='+escape(ITEMNO);
+            delConfig('/BaseSet/ZJFA/DeleteFAItem', delparm, KeyValue.split(",").length);
+        }
+    }
+
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            <a title="刷新" class="tools_btn" id="lr-replace" onclick="Replace()" ids="2e93cddb-303b-4584-bbc6-5bfe1fb9c858">
+                <span><b style='background: url("../../Content/Images/Icon16/arrow_refresh.png") no-repeat 50% 4px;'>
+                    刷新</b></span></a><div class="tools_separator">
+                    </div>
+            <a title="新增" class="tools_btn" id="lr-add" onclick="btn_add()" ids="f92a0cb8-d982-43a9-a7c6-3c970ff40104">
+                <span><b style='background: url("../../Content/Images/Icon16/add.png") no-repeat 50% 4px;'>
+                    新增</b></span></a><a title="编辑" class="tools_btn" id="lr-edit" onclick="btn_edit()"
+                        ids="557ba5ed-98b0-4edc-85f1-6e8d80b7cb49"><span><b style='background: url("../../Content/Images/Icon16/edit.gif") no-repeat 50% 4px;'>编辑</b></span></a><a
+                            title="全编辑" class="tools_btn" id="lr-edit" onclick="btn_editall()" ids="557ba5ed-98b0-4edc-85f1-6e8d80b7cb49"><span><b
+                                style='background: url("../../Content/Images/Icon16/edit.gif") no-repeat 50% 4px;'>全编辑</b></span></a><a
+                                    title="删除" class="tools_btn" id="lr-delete" onclick="btn_delete()" ids="f27e4aee-40fa-4f25-8c0a-fa9326f9af6d"><span><b
+                                        style='background: url("../../Content/Images/Icon16/DeleteRed.png") no-repeat 50% 4px;'>删除</b></span></a><a
+                                            title="离开" class="tools_btn" id="lr-leave" onclick="btn_back()" ids="0ec4d7b4-b766-4574-8145-88173731413d"><span><b
+                                                style='background: url("../../Content/Images/Icon16/back.png") no-repeat 50% 4px;'>离开</b></span></a><div
+                                                    class="tools_separator">
+                                                </div>
+        </div>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

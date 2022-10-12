@@ -1,0 +1,207 @@
+﻿@{
+    ViewBag.Title = "申批单管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+ var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+   
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var BILLNO = $("#BILLNO").val();
+             var SQR = $("#SQR").val(); 
+                    var SQBM = $("#SQBM").val(); 
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/BillSOFCHECK/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&BillNo=' + BILLNO+'&SQR='+escape(SQR) +'&SQBM='+escape(SQBM), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+         var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/BillSOFCHECK/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 280,
+            autowidth: true,
+            colModel: [ 
+              { label: '主键', name: 'ID',    hidden: true },
+            { label: '审批号', name: 'REQUESTID', index: 'REQUESTID', width: 100, align: 'center' },
+             { label: '反馈', name: 'STATUS', index: 'STATUS', width: 85, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                       if (cellvalue == '1') 
+                            return "已反馈";
+                      else if (cellvalue == '0')
+                         return "未反馈";
+                         else return cellvalue;
+                    }
+            },
+            { label: '文件编号', name: 'WJBH', index: 'WJBH', width: 100, align: 'left' },
+              { label: '申请人', name: 'SQR', index: 'SQR', width: 100, align: 'left' },
+             { label: '申请部门', name: 'SQBM', index: 'SQBM', width: 100, align: 'left' },
+             {  label: '申请日期', name: 'SQRQ', index: 'SQRQ', width: 100, align: 'center'  } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'SQRQ',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true ,
+            onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var ID=rowData.ID;
+                  $("#gridETable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/BillSOFCHECK/GetOrderEntryList")?KeyValue="+ID, page: 1
+                 }).trigger('reloadGrid');
+            }
+                 });
+        //
+
+          $("#gridETable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/BillSOFCHECK/GetOrderEntryList")?KeyValue=",
+            datatype: "json",
+            height:100 ,
+            width:$(window).width()-5,
+            autowidth: true,
+            colModel: [ 
+                    { label: '派车单号', name: 'PZDH', index: 'PZDH', width: 130, align: 'left' },
+                    { label: '供应商', name: 'GYSMC', index: 'GYSMC', width: 200, align: 'left' },
+                    { label: '车号', name: 'CH', index: 'CH', width:150, align: 'left' },
+                    { label: '修改前信息', name: 'XGQXX', index: 'XGQXX', width:150, align: 'left' },
+                    { label: '修改后信息', name: 'XXHXX', index: 'XXHXX', width:150, align: 'left' },
+                    { label: '需修改字段', name: 'XXGZD', index: 'XXGZD', width:150, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                       if (cellvalue == '0') 
+                            return "订单编号";
+                      else if (cellvalue == '1')
+                         return "入厂厂区";
+                    else if (cellvalue == '2')
+                         return "货主名称";
+                           else    if (cellvalue == '3')
+                         return "卸货地址";
+                         else return cellvalue;
+                    } },
+                    { label: '计量单号', name: 'BILLNO', index: 'BILLNO', width: 120, align: 'left' },
+                    { label: '实际原发量', name: 'SJYFL', index: 'SJYFL', width: 120, align: 'left' },
+                    { label: '实际毛重', name: 'SJMZ', index: 'SJMZ', width:60, align: 'left' },
+                    { label: '实际皮重', name: 'SJPZ', index: 'SJPZ', width:60, align: 'left' },
+                    { label: '实际净重', name: 'SJJZ', index: 'SJJZ', width:60, align: 'left' },
+                    { label: '备注', name: 'BZ', index: 'BZ', width: 120, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            sortname: 'PZDH',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            autoScroll:true,
+            gridview: true 
+        });
+ 
+        
+    }
+
+     function btn_Check(){
+      var Key = GetJqGridRowValue("#gridTable", "ID");
+       var KeyValue = GetJqGridRowValue("#gridTable", "REQUESTID");
+        if (IsChecked(KeyValue)) {
+//            var STATUS = GetJqGridRowValue("#gridTable", "STATUS");
+//            if (STATUS == "已反馈") {
+//                tipDialog("此单据已反馈,无法继续反馈！", 3, ""); 
+//                return false;
+//            }
+            var  parm = 'Key='+Key+'&KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/BillSOFCHECK/HandOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+ 
+    
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+             $("#gridETable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    @*    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>*@
+    <div style="margin-top: 1px; margin-bottom: 0px" class="tools_bar">
+        <div class="PartialButton">
+            <a id="ai-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+                <b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                    刷新</b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="ai-Invalid" class="tools_btn" title="反馈" onclick="btn_Check()"><span><b style="background: url(../../Content/Images/Icon16/spellcheck.png) no-repeat 50% 4px">
+                反馈</b></span></a> <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()">
+                    <span><b style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                        离开</b></span></a></div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    文件编号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    申请人：
+                </th>
+                <td>
+                    <input id="SQR" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    申请部门：
+                </th>
+                <td>
+                    <input id="SQBM" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+        <table id="gridETable">
+        </table>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

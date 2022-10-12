@@ -1,0 +1,214 @@
+﻿@{
+    ViewBag.Title = "汽运过磅单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript"> 
+    var FormID = GetQuery('FormID'); 
+    var MATERIAL = GetQuery('MATERIAL'); 
+    var MATERIALNAME = GetQuery('MATERIALNAME');  
+    var RECEIVE = GetQuery('RECEIVE'); 
+    var RECEIVENAME = GetQuery('RECEIVENAME');
+    $(function () {  
+        if(IsNull(MATERIAL)){
+            //$("#PK_MARBASCLASSNAME").attr("disabled","disabled");
+            $("#MATERIALNAME").attr("disabled","disabled");
+            $("#MATERIAL").val(MATERIAL);
+            $("#MATERIALNAME").val(MATERIALNAME);
+        } else{
+//            $("#PK_MARBASCLASSNAME").bind("click",function(){
+//                SelectMaterialType();
+//            });
+//            $("#PK_MARBASCLASSNAME").bind("change",function(){
+//                if(!IsNull($(this).val())){
+//                    $("#PK_MARBASCLASS").val("");
+//                }
+//            });
+//            $("#MATERIALNAME").bind("click",function(){
+//                SelectMaterial();
+//            });
+//            $("#MATERIALNAME").bind("change",function(){
+//                if(!IsNull($(this).val())){
+//                    $("#MATERIAL").val("");
+//                }
+//            });
+        }
+         if(IsNull(RECEIVE)){
+            $("#RECEIVENAME").attr("disabled","disabled");
+            $("#RECEIVE").val(RECEIVE);
+            $("#RECEIVENAME").val(RECEIVENAME);
+        }
+        setTimeout(function(){
+            GetGrid(); 
+        },500);
+    }) 
+//    function SelectMaterialType() { 
+//        var url = "/ZJManager/PCRawCY/SelectMaterialType?FormID=@ViewBag.FormID";
+//        Dialog(url, "SelectMaterialType", "选取物料信息（双击表格添加）", 900, 410); 
+//    }
+//     function CallBackEventMain(rowData){
+//         $("#PK_MARBASCLASS").val(rowData.Id);
+//         $("#PK_MARBASCLASSNAME" ).val(rowData.ShortName);
+//    }
+//    function CallBackEvent(rowData){ 
+//         $("#MATERIAL").val(rowData.ID);
+//         $("#MATERIALNAME" ).val(rowData.NAME);
+//    }
+//    function SelectMaterial() { 
+//        var PK_MARBASCLASS = $("#PK_MARBASCLASS").val();
+//        var url = "/ZJManager/PCRawCY/SelectMaterial?FormID=@ViewBag.FormID";
+//        if (PK_MARBASCLASS != "") {
+//            url += "&matclass=" + PK_MARBASCLASS;
+//        } 
+//        Dialog(url, "SelectMaterial", "选取物料信息（双击表格添加）", 900, 410); 
+//    }
+    function btn_OK(){ 
+        var KeyValue =  GetJqGridRowValue("#gridTable", "ID");
+        if (IsNull(KeyValue)) {
+            //判断多选内容是否是同一客户 物料 
+            var RECEIVE = GetJqGridRowValue("#gridTable", "RECEIVE"); 
+            if($.unique(RECEIVE.split(',')).length > 1){
+                tipDialog('请选择同一客户、物料的数据', 4, 'warning');
+                return;
+            }
+            var material = GetJqGridRowValue("#gridTable", "MATERIAL");
+            if($.unique(material.split(',')).length > 1){
+                tipDialog('请选择同一客户、物料的数据', 4, 'warning');
+                return;
+            }
+           if(IsNull(FormID)){
+                     $parentobj = top.frames[FormID]; 
+                } else{
+                     $parentobj = top.frames[tabiframeId()];
+                } 
+                $parentobj.CallBackEvent(KeyValue); 
+                closeDialog();  
+        } else{
+            tipDialog('请至少选择一个磅单', 4, 'warning');
+        }
+    }
+     
+    //搜索
+    function btn_Search() { 
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        MATERIAL = $("#MATERIAL").val();
+        MATERIALNAME = $("#MATERIALNAME").val();
+        //var PK_MARBASCLASS = $("#PK_MARBASCLASS").val();
+        //var PK_MARBASCLASSNAME = $("#PK_MARBASCLASSNAME").val();
+        RECEIVE = $("#RECEIVE").val();
+        RECEIVENAME = $("#RECEIVENAME").val();
+        var CARS = $("#CARS").val();  
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJJHManager/ZJJHCY/GetJHWeightList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&MATERIAL=' + escape(MATERIAL)+ '&RECEIVE=' + escape(RECEIVE)   + '&MATERIALNAME=' + escape(MATERIALNAME)+ '&RECEIVENAME=' + escape(RECEIVENAME)+  '&CARS='+escape(CARS) , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJJHManager/ZJJHCY/GetJHWeightList")?StartTime=" + StartTime + '&EndTime=' + EndTime+ '&MATERIAL=' + MATERIAL+ '&RECEIVE=' + RECEIVE,
+            datatype: "json",
+            height: $(window).height() - 130,
+            autowidth: true,
+            colModel: [ 
+            { label: '单号', name: 'ID',  width: 120, hidden:true },   
+            { label: '过磅单号', name: 'BILLNO',  width: 120, align: 'left' },   
+            { label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 80, align: 'left' },   
+            { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width:100, align: 'left' }, 
+            { label: '发货单位', name: 'SENDNAME', index: 'SENDNAME', width:120, align: 'left' }, 
+            { label: '客户', name: 'RECEIVENAME', index: 'RECEIVENAME', width:120, align: 'left' },  
+            { label: '毛重', name: 'GROSS', index: 'GROSS', width:80, align: 'left' }, 
+            { label: '皮重', name: 'TARE', index: 'TARE', width:80, align: 'left' }, 
+            { label: '净重', name: 'SUTTLE', index: 'SUTTLE', width:80, align: 'left' }, 
+            {  label: '重车时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 130, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                }
+            }
+            ],
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'WEIGHTDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true 
+        });
+        columnModelData("#gridTable");
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    开始日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                @*<th>
+                    物料分类：
+                </th>
+                <td>
+                    <input id="PK_MARBASCLASS" type="hidden" dbfield="true" />
+                    <input id="PK_MARBASCLASSNAME" type="text" class="txt" />
+                </td>*@
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIAL" type="hidden" dbfield="true" />
+                    <input id="MATERIALNAME" type="text" class="txt" err="物料" />
+                </td>
+                <th>
+                    客户：
+                </th>
+                <td>
+                    <input id="RECEIVE" type="hidden" dbfield="true" />
+                    <input id="RECEIVENAME" type="text" class="txt" err="客户" />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    结束时间：
+                </th>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CARS" type="text" class="txt" err="车号" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+                <td>
+                    <input id="btnOK" type="button" class="btnSearch" value="确 定" onclick="btn_OK()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

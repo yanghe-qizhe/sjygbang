@@ -1,0 +1,132 @@
+﻿@{
+    ViewBag.Title = "流水扣重比例";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        AddRow();
+        if (IsNull(KeyValue)) {
+            AjaxJson("/BaseSet/LSKZFormula/SetForm?KeyValue=" + escape(KeyValue), "", function (data) {
+                if (IsNull(data)) {
+                    SetForm(data);
+                }
+            });
+        }
+    })
+
+    function SetForm(json) {
+        if (IsNull(json)) {
+            var o = json;
+            var maxcode = $("#MaxID").val();
+            $("#LSTYPE➩" + maxcode).val(IsNull(o.LSTYPE) ? o.LSTYPE : "");
+            $("#SIGN1➩" + maxcode).val(IsNull(o.SIGN1) ? o.SIGN1 : "");
+            $("#MAXJS➩" + maxcode).val(IsNull(o.MAXJS) ? o.MAXJS : "");
+            $("#SIGN2➩" + maxcode).val(IsNull(o.SIGN2) ? o.SIGN2 : "");
+            $("#MINJS➩" + maxcode).val(IsNull(o.MINJS) ? o.MINJS : "");
+            $("#KZTYPE➩" + maxcode).val(IsNull(o.KZTYPE) ? o.KZTYPE : "");
+            $("#KZVAL➩" + maxcode).val(IsNull(o.KZVAL) ? o.KZVAL : "");
+        }
+    }
+
+    function AddRow() {
+        var maxcode = parseInt($("#MaxID").val()) + 1;
+        var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" index=' + maxcode + ' >' + maxcode + '</td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="LSTYPE➩' + maxcode + '" class="txtselect required" datacol="yes" err="流水类型" checkexpession="NotNull"></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;display:none"><select id="SIGN1➩' + maxcode + '" class="txtselect required" datacol="yes" err="比较符" checkexpession="NotNull"></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="MINJS➩' + maxcode + '" type="text" class="txt required" /></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;display:none"><select id="SIGN2➩' + maxcode + '" class="txtselect required" datacol="yes" err="比较符" checkexpession="NotNull"></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="MAXJS➩' + maxcode + '" type="text" class="txt required" /></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="KZTYPE➩' + maxcode + '" class="txtselect required" datacol="yes" err="扣重类型" checkexpession="NotNull"><option value="1">扣重</option></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="KZVAL➩' + maxcode + '" type="text" class="txt required" /></td>';
+        tr += '</tr>';
+        $("#add_TableInfo").append(tr);
+        $("#MaxID").val(maxcode);
+        $("#LSTYPE➩" + maxcode).append(BindLSTYPE());
+        $("#SIGN1➩" + maxcode).append(BindSIGN());
+        $("#SIGN2➩" + maxcode).append(BindSIGN());
+    }
+
+    function BindSIGN() {
+        var tr = "<option value='>'>></option>";
+        tr += "<option value='>='>>=</option>";
+        tr += "<option value='='>=</option>";
+        tr += "<option value='<='><=</option>";
+        tr += "<option value='<'><</option>";
+        return tr;
+    }
+    function BindLSTYPE() {
+        BindDropItemForID("#LSTYPE➩1", "KSType", "==请选择=");
+    }
+
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = jQuery.parseJSON('{"LSKZData":""}');
+            postData["LSKZData"] = GetTableDataJson("#Temp_List");
+            AjaxJson("/BaseSet/LSKZFormula/LSKZSave?KeyValue=" + escape(KeyValue), postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+    <div class="PartialButton">
+        <a title="刷新" class="tools_btn" id="lr-replace" onclick="Replace()" ids="2e93cddb-303b-4584-bbc6-5bfe1fb9c858">
+            <span><b style='background: url("../../Content/Images/Icon16/arrow_refresh.png") no-repeat 50% 4px;'>
+                刷新</b></span></a>
+        <div class="tools_separator">
+        </div>
+    </div>
+</div>
+<div id="ZJKZAdd">
+    <table id="Temp_List" class="grid leftline form" style="width: 100%">
+        <thead>
+            <tr>
+                <td style="width: 30px; text-align: center; border-left: none;">
+                    <div class="table-header">
+                        行号</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        类型</div>
+                </td>
+                <td style="width: 50px; display: none">
+                    <div class="table-header">
+                        比较符</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        开始</div>
+                </td>
+                <td style="width: 50px; display: none">
+                    <div class="table-header">
+                        比较符</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        结束</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        扣重类型</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        扣重(T)</div>
+                </td>
+            </tr>
+        </thead>
+        <tbody id="add_TableInfo">
+        </tbody>
+    </table>
+</div>
+</form>

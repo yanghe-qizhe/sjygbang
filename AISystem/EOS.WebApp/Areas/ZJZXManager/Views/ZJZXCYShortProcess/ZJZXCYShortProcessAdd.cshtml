@@ -1,0 +1,362 @@
+﻿@{
+    ViewBag.Title = "制样化验流程";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        Bind();
+        InitControl();
+    })
+    function Bind() {
+        $("#FANAME").bind("click", function () {
+            SelectZJFA();
+        })
+        $("#DEF11").bind("change", function () {
+            $(this).val($(this).val().toUpperCase());
+            $("#BILLNO").val($("#DEF10").val() + $(this).val());
+        });
+
+        $(".tools_bar .dropdown").hover(function () {
+            var left = $(this).offset().left - ($(this).find('.dropdown-data').width() / 2) + ($(this).width() / 2 + 9);
+            $(this).find('.dropdown-data').show().css('top', ($(this).offset().top + 50)).css('left', left);
+            $(this).find('.dropdown-icon').addClass('dropdown-icon-hover');
+            $(this).addClass('dropdown-selected');
+        }, function () {
+            if (!$(this).hasClass("_click")) {
+                $(this).removeClass('dropdown-selected');
+                $(this).find('.dropdown-data').hide();
+                $(this).find('.dropdown-icon').removeClass('dropdown-icon-hover');
+            }
+        });
+        $('.tools_bar .dropdown').toggle(function () {
+            $(this).addClass('_click');
+            var left = $(this).offset().left - ($(this).find('.dropdown-data').width() / 2) + ($(this).width() / 2 + 9);
+            $(this).find('.dropdown-data').show().css('top', ($(this).offset().top + 50)).css('left', left);
+            $(this).find('.dropdown-icon').addClass('dropdown-icon-hover');
+            $(this).addClass('dropdown-selected');
+        }, function () {
+            $(this).removeClass('dropdown-selected');
+            $(this).find('.dropdown-data').hide();
+            $(this).find('.dropdown-icon').removeClass('dropdown-icon-hover');
+            $('.dropdown').removeClass('_click');
+        });
+        $(".dropdown-data li").click(function () {
+            $('.dropdown').removeClass('dropdown-selected');
+            $('.dropdown').find('.dropdown-data').hide();
+            $('.dropdown').find('.dropdown-icon').removeClass('dropdown-icon-hover');
+            $('.dropdown').removeClass('_click');
+        });
+
+    }
+
+    //点击下拉设置方案
+    function SetFANO(id, aid, name, type) {
+        //type=1  单种煤 混合煤  方案名称为单种煤、混合煤  物料随机  按照方案名称、方案类型去查询方案、物料
+        //type=2  按照物料ID获取方案
+        //type=3  特殊煤粉  方案名称为煤粉，物料为喷吹烟煤  按照物料、方案类型去查询方案、物料
+        AjaxJson("/ZJZXManager/ZJZXCYShortProcess/GetFANOMaterial", { id: id, name: name, type: type }, function (data) {
+            if (data.Code == "1") {
+                var json = $.parseJSON(data.Message);
+                $("#ZJFA").val(json.FANO);
+                $("#FANAME").val(json.FANAME);
+                $("#MATERIAL").val(json.MATERIALID);
+                $("#MATERIALNAME").val(json.MATERIALNAME);
+            } else {
+                tipDialog(data.Message, 3, data.Code);
+            }
+        });
+    }
+
+    //铁矿类
+    function SetMaterialType(id, code, name) {
+        $("#MATERIAL").val("");
+        $("#MATERIALNAME").val("");
+        $("#ZJFA").val("");
+        $("#FANAME").val("");
+        var url = "/SelectValue/Select/SelectZJFA?MaterialType=" + id + "&ZJForType=78341346-7108-443d-a20c-dd3a061ec999&Type=0&DEF1=4&FormID=@ViewBag.FormID&Code=FANO,FANAME,MATERIALID,MATERIALNAME";
+        Dialog(url, "SelectZJFA", "选取质检方案信息", 900, 400);
+        //$("a[chose='Material']").css("color", "black");
+        //$("#" + code).css("color", "red");
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJZXManager/ZJZXCYShortProcess/SetForm", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    function SelectZJFA() {
+        var url = "/SelectValue/Select/SelectZJFA?ZJForType=78341346-7108-443d-a20c-dd3a061ec999&Type=0&FormID=@ViewBag.FormID&Code=FANO,FANAME,MATERIALID,MATERIALNAME&DEF1=4";
+        Dialog(url, "SelectZJFA", "选取质检方案信息", 900, 400);
+    }
+    function CallBackEventFANO(rowData) {
+        $("#ZJFA").val(rowData.FANO);
+        $("#FANAME").val(rowData.FANAME);
+        $("#MATERIAL").val(rowData.MATERIALID);
+        $("#MATERIALNAME").val(rowData.MATERIALNAME);
+    }
+
+    function Dialog(url, _id, _title, _width, _height) {
+        Loading(true);
+        top.$.dialog({
+            id: _id,
+            width: _width,
+            height: _height,
+            max: false,
+            lock: false,
+            title: _title,
+            content: 'url:' + RootPath() + url
+        });
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/ZJZXManager/ZJZXCYShortProcess/ZYSAVE?KeyValue=" + GetQuery('KeyValue'), postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (IsNull(FormID)) {
+                    $parentobj = top.frames[FormID];
+                } else {
+                    $parentobj = top.frames[tabiframeId()];
+                }
+                $parentobj.windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> @*<a id="button_ZPFinish" title="完成" onclick="ZPFinish()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/relationships.png")) 50% 4px no-repeat;">
+                            完成</b></span></a>*@ <a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn">
+                                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                    离开</b></span></a>
+    <div class="tools_separator">
+    </div>
+    <a class="tools_btn dropdown">
+        <div style="float: left;">
+            <div class="icon">
+                <img src="~/Content/Images/Icon16/evacuator.png" /></div>
+            <div class="text">
+                焦化工艺</div>
+        </div>
+        <div class="dropdown-icon">
+            <img src="~/Content/Images/dropdown-icon.png" /></div>
+        <div class="dropdown-data" style="left: 438.5px; top: 82px; display: none;">
+            <i></i><span></span>
+            <ul>
+                <li id="d1" onclick="SetFANO('','','单种煤','1')" ids="单种煤">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />单种煤</li>
+                <li id="h1" onclick="SetFANO('','','混合煤','1')" ids="混合煤">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />混合煤</li>
+            </ul>
+        </div>
+    </a>
+    <div class="tools_separator">
+    </div>
+    <a class="tools_btn dropdown">
+        <div style="float: left;">
+            <div class="icon">
+                <img src="~/Content/Images/Icon16/evacuator.png" /></div>
+            <div class="text">
+                熔剂</div>
+        </div>
+        <div class="dropdown-icon">
+            <img src="~/Content/Images/dropdown-icon.png" /></div>
+        <div class="dropdown-data" style="left: 438.5px; top: 82px; display: none;">
+            <i></i><span></span>
+            <ul>
+                <li id="1001AA100000000RTUI6" onclick="SetFANO('1001AA100000000RTUI6','0602001001003','自产活性粉灰套筒窑','2')"
+                    ids="熔剂">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0602001001003-自产活性粉灰套筒窑</li>
+                <li id="1001AA100000000POYHU" onclick="SetFANO('1001AA100000000POYHU','0602001001002','自产活性粉灰回转窑','2')"
+                    ids="熔剂">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0602001001002-自产活性粉灰回转窑</li>
+                <li id="1001AA100000000RTU9P" onclick="SetFANO('1001AA100000000RTU9P','0602002002002','自产转炉用活性块灰','2')"
+                    ids="熔剂">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0602002002001-自产转炉用活性块灰(回转窑)</li>
+                <li id="1001AA100000000POYJC" onclick="SetFANO('1001AA100000000POYJC','0602003001002','自产轻烧云石粉','2')"
+                    ids="熔剂">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0602003001002-自产轻烧白云石粉</li>
+            </ul>
+        </div>
+    </a>
+    <div class="tools_separator">
+    </div>
+    <a class="tools_btn dropdown">
+        <div style="float: left;">
+            <div class="icon">
+                <img src="~/Content/Images/Icon16/evacuator.png" /></div>
+            <div class="text">
+                炼铁工艺</div>
+        </div>
+        <div class="dropdown-icon">
+            <img src="~/Content/Images/dropdown-icon.png" /></div>
+        <div class="dropdown-data" style="left: 438.5px; top: 82px; display: none;">
+            <i></i><span></span>
+            <ul>
+                <li id="1001A1100000000LV6SX" onclick="SetFANO('1001A1100000000LV6SX','0605006001001','高炉渣','3')"
+                    ids="高炉渣(水渣)">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0605006001001-高炉渣(水渣)</li>
+                <li id="1001A11000000006ZLP8" onclick="SetFANO('1001A11000000006ZLP8','0102002002001','煤粉','3')"
+                    ids="煤粉（喷吹烟煤）">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0102002002001-煤粉（喷吹烟煤）</li>
+                <li id="1001AA100000000WNAJN" onclick="SetFANO('1001AA100000000WNAJN','0605005006001','含锌除尘灰','2')"
+                    ids="含锌除尘灰">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0605005006001-含锌除尘灰</li>
+                <li id="1001A1100000000LV558" onclick="SetFANO('1001A1100000000LV558','0605005002002','高锌除尘灰','2')"
+                    ids="高锌除尘灰">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0605005002002-高锌除尘灰</li>
+                <li id="1001A1100000000LV556" onclick="SetFANO('1001A1100000000LV556','0605005005001','罐位除尘灰','2')"
+                    ids="罐位除尘灰">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0605005005001-罐位除尘灰</li>
+                <li id="1001A1100000000LV554" onclick="SetFANO('1001A1100000000LV554','0605005004001','矿槽除尘灰','2')"
+                    ids="矿槽除尘灰">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0605005004001-矿槽除尘灰</li>
+                <li id="1001A1100000000LV552" onclick="SetFANO('1001A1100000000LV552','0605005003001','槽下除尘灰','2')"
+                    ids="槽下除尘灰">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0605005003001-槽下除尘灰</li>
+                <li id="1001A1100000000LV550" onclick="SetFANO('1001A1100000000LV550','0605005002001','布袋除尘灰','2')"
+                    ids="布袋除尘灰">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0605005002001-布袋除尘灰</li>
+                <li id="1001A1100000000LV54Y" onclick="SetFANO('1001A1100000000LV54Y','0605005001001','重力除尘灰','2')"
+                    ids="重力除尘灰">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0605005001001-重力除尘灰</li>
+            </ul>
+        </div>
+    </a>
+    <div class="tools_separator">
+    </div>
+    <a class="tools_btn dropdown">
+        <div style="float: left;">
+            <div class="icon">
+                <img src="~/Content/Images/Icon16/evacuator.png" /></div>
+            <div class="text">
+                炼钢工艺</div>
+        </div>
+        <div class="dropdown-icon">
+            <img src="~/Content/Images/dropdown-icon.png" /></div>
+        <div class="dropdown-data" style="left: 438.5px; top: 82px; display: none;">
+            <i></i><span></span>
+            <ul>
+                <li id="1001AA100000000WFYQG" onclick="SetFANO('1001AA100000000WFYQG','0606002001002','转炉渣','3')"
+                    ids="转炉渣(炼钢钢渣)">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0606002001002-转炉渣(炼钢钢渣)</li>
+                <li id="1001A11000000006ZT33" onclick="SetFANO('1001A11000000006ZT33','0103001005001','FeMn68Si18','2')"
+                    ids="FeMn68Si18">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0103001005001-FeMn68Si18</li>
+                <li id="1001A11000000006ZT31" onclick="SetFANO('1001A11000000006ZT31','0103001004001','FeSi75-B','2')"
+                    ids="FeSi75-B">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0103001004001-FeSi75-B</li>
+                <li id="1001A11000000006ZT2V" onclick="SetFANO('1001A11000000006ZT2V','0103001001001','FeMn68','2')"
+                    ids="FeMn68">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0103001001001-FeMn68</li>
+                <li id="1001A11000000006ZT2X" onclick="SetFANO('1001A11000000006ZT2X','0103001002001','FeMn68C7.0','2')"
+                    ids="FeMn68C7.0">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0103001002001-FeMn68C7.0</li>
+                <li id="1001A11000000006ZT35" onclick="SetFANO('1001A11000000006ZT35','0103002001001','VN16','2')"
+                    ids="VN16">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0103002001001-VN16</li>
+                <li id="1001AA100000000PL6ZI" onclick="SetFANO('1001AA100000000PL6ZI','0103003021001','碳包芯线','2')"
+                    ids="碳包芯线">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0103003021001-碳包芯线</li>
+                <li id="1001A11000000006ZT37" onclick="SetFANO('1001A11000000006ZT37','0103002002001','锰硅碳球','2')"
+                    ids="锰硅碳球">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0103002002001-锰硅碳球</li>
+                <li id="1001A1100000000LV53Q" onclick="SetFANO('1001A1100000000LV53Q','0605001001001','铁水','2')"
+                    ids="铁水">
+                    <img src="~/Content/Images/Icon16/layer_arrange_back.png" />0605001001001-铁水</li>
+            </ul>
+        </div>
+    </a>
+    <div class="tools_separator">
+    </div>
+    <a id="01" chose="Material" title="铁矿类" onclick="SetMaterialType('1001A11000000006O2FG','01','铁矿')"
+        class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/draft.png")) 50% 4px no-repeat;">
+            铁矿类</b></span></a>
+</div>
+<table class="form">
+    <tr style="display: none">
+        <td>
+            <input id="PCRAWTYPE" type="hidden" datacol="yes" value="3" dbfield="true" />
+            <input id="BILLNO" maxlength="50" type="text" class="txt required" datacol="yes"
+                dbfield="true" err="批号" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            批号：
+        </th>
+        <td class="formValue">
+            <input id="DEF10" maxlength="50" type="text" class="txt readonly" style="float: left;
+                        width: 10%" readonly="readonly" datacol="yes" dbfield="true" value="@DateTime.Now.Year.ToString().Substring(2, 2)" />
+            <input id="DEF11" maxlength="50" type="text" class="txt required" style="float: left;
+                width: 89%" datacol="yes" dbfield="true" err="批号" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            日期：
+        </th>
+        <td class="formValue">
+            <input id="TYPE" type="hidden" dbfield="true" value="2" />
+            <input id="CYDATE" maxlength="50" type="text" class="txt Wdate" datacol="yes" value="@EOS.Utilities.DateTimeHelper.GetToday()" dbfield="true"
+                    onfocus="var CYDATE=$dp.$('CYDATE');WdatePicker({onpicked:function(){CYDATE.focus();},maxDate:'#F{$dp.$D(\'CYDATE\')}'})"
+                        err="日期" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            质检方案：
+        </th>
+        <td class="formValue">
+            <input id="ZJFA" type="hidden" dbfield="true" checkexpession="NotNull" err="质检方案"
+                datacol="yes" />
+            <input id="FANAME" type="text" class="txt" err="质检方案" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" dbfield="true" checkexpession="NotNull" err="物料"
+                datacol="yes" />
+            <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" err="物料" />
+        </td>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+        </td>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="5">
+            <input id="MEMO" type="text" class="txt" err="描述" dbfield="true" />
+        </td>
+    </tr>
+</table>
+</form>

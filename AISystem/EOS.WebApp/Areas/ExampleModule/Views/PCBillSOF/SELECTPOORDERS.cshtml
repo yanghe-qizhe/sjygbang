@@ -1,0 +1,231 @@
+﻿@{
+    ViewBag.Title = "选择采购订单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    var op = GetQuery('op'); // 操作类型0正常，1补增
+    var iszx = "0";
+    if (op == "1") {
+        iszx = "";
+    }
+    $(function () {
+        BindAutocomplete("RECCOMPANYNAME", "RECCOMPANYID", "Company1", "200", "150", "");
+        BindComBoxTree("matclassname", "matclass", "200", "/BaseSet/Material/TreeJson");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+        $("#keywords").focus();
+        setTimeout(function () {
+            GetGrid();
+        }, 300);
+        //绑定键盘按下事件
+        $(document).keypress(function (e) {
+            // 回车键事件
+            if (e.which == 13) {
+                $("#keywords").focus();
+                $("#keywords").select();
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    function btn_Search() {
+        var RECCOMPANYID = $("#RECCOMPANYID").val();
+        var Supply = $("#Supply").val();
+        var Material = $("#Material").val();
+        var matclass = $("#matclass").val();
+        var BillNo = $("#BillNo").val();
+        var StartTime = $("#StartTime").val();
+
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/POOrder/GetQYPOOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&Supply=' + Supply + '&Material=' + Material + "&matclass=" + matclass + '&BillNo=' + BillNo + "&RECCOMPANYID=" + RECCOMPANYID
+        }).trigger('reloadGrid');
+    }
+    //显示
+    function GetGrid() {
+        var index = GetQuery('index');
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/POOrder/GetQYPOOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: 265,
+            width: 890,
+            colModel: [
+                { label: '主键', name: 'PK_ORDER', width: 80, align: 'left', hidden: true },
+                { label: '子主键', name: 'PK_ORDER_B', width: 80, align: 'left', hidden: true },
+                 { label: '订单来源', name: 'DATATYPE', width: 80, align: 'left', hidden: true },
+                { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 100, align: 'center' },
+                  { label: '主键', name: 'RECCOMPANYID', width: 80, align: 'left', hidden: true },
+                { label: '工厂', name: 'RECCOMPANYNAME', index: 'RECCOMPANYNAME', width: 120, align: 'left' },
+                 { label: '提货单号', name: 'SOURCEBILLNO', index: 'SOURCEBILLNO', width: 120, align: 'left' },
+                 { label: '主键', name: 'PK_SUPPLIER', index: 'PK_SUPPLIER', width: 80, align: 'left' },
+                   { label: '供应商', name: 'PK_SUPPLIERNAME', index: 'PK_SUPPLIERNAME', width: 160, align: 'left' },
+                    { label: '主键', name: 'PK_MATERIAL', width: 80, align: 'left', hidden: true },
+                  { label: '物料', name: 'PK_MATERIALNAME', index: 'PK_MATERIALNAME', width: 100, align: 'left' },
+                    { label: '主键', name: 'MATERIALCODE', hidden: true },
+                    { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 120, align: 'left' },
+                     { label: '主数量', name: 'NASTNUM', index: 'NASTNUM', width: 60, align: 'left' },
+                      { label: '辅数量', name: 'SECQUANTITY', index: 'SECQUANTITY', width: 60, align: 'left' },
+                     { label: '余量', name: 'YLNUM', index: 'YLNUM', width: 80, align: 'left' },
+                   {
+                       label: '订单日期', name: 'DBILLDATE', index: 'DBILLDATE', width: 110, align: 'center',
+                       formatter: function (cellvalue, options, rowObject) {
+                           return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                       }
+                   },
+                   { label: '主计量', name: 'PURUNITNAME', index: 'PURUNITNAME', width: 60, align: 'left' },
+                        { label: '辅计量', name: 'SECPURUNITNAME', index: 'SECPURUNITNAME', width: 60, align: 'left' },
+
+                         { label: '单价', name: 'NPRICE', index: 'NPRICE', width: 50, align: 'left' },
+
+                             { label: '主键', name: 'PK_DEPT', width: 80, align: 'left', hidden: true },
+                             { label: '采购部门', name: 'DEPTNAME', index: 'DEPTNAME', width: 100, align: 'left' },
+                             { label: 'DATATYPE', name: 'DATATYPE', width: 80, align: 'left', hidden: true },
+                               {
+                                   label: '数据来源', name: 'DATATYPENAME', index: 'DATATYPENAME', width: 60, align: 'center',
+                                   formatter: function (cellvalue, options, rowObject) {
+                                       if (cellvalue == '0') return "自建";
+                                       if (cellvalue == '1') return "SAP";
+                                       if (cellvalue == '2') return "BI";
+                                   }
+                               }
+
+            ],
+            pager: "#gridPager",
+            sortname: 'DBILLDATE',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            //双击事件
+            ondblClickRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var $parentobj = top.frames[tabiframeId()];
+                var json = { "PK_ORDER_B": rowData.PK_ORDER_B.toLowerCase(), "PK_SUPPLIER": rowData.PK_SUPPLIER.toLowerCase(), "PK_MATERIAL": rowData.PK_MATERIAL.toLowerCase() }
+                if (!$parentobj.IsExistOrder(index, json)) {
+                    var amount = $parentobj.$("#AMOUNT➩" + index).val();
+                    if (parseFloat(rowData.NASTNUM) > 1 && parseFloat(amount) > 0 && parseFloat(amount) > parseFloat(rowData.YLNUM) && parseFloat(rowData.YLNUM) > 0) {
+                        top.TipMsg("发货量" + amount + "不能大与订单余量" + rowData.YLNUM + "！", 4000, "error");
+                        $parentobj.$("#AMOUNT➩" + index).val(rowData.YLNUM);
+                    }
+                    $parentobj.$("#PK_ORDER➩" + index).val(rowData.PK_ORDER);
+                    $parentobj.$("#PK_ORDER_B➩" + index).val(rowData.PK_ORDER_B);
+                    $parentobj.$("#VBILLCODE➩" + index).val(rowData.VBILLCODE);
+                    $parentobj.$("#PK_SUPPLIER➩" + index).val(rowData.PK_SUPPLIER);
+                    $parentobj.$("#SUPPLIERNAME➩" + index).val(rowData.PK_SUPPLIERNAME);
+                    if (index == "1") {
+                        $parentobj.$("#PK_SUPPLIER").val(rowData.PK_SUPPLIER);
+                        $parentobj.$("#SUPPLIERNAME").val(rowData.PK_SUPPLIERNAME);
+                        $parentobj.$("#DEF6").val(rowData.SOURCEBILLNO);
+                    }
+                    $parentobj.$("#PK_MATERIAL➩" + index).val(rowData.PK_MATERIAL);
+
+                    $parentobj.$("#MATERIALNAME➩" + index).val(rowData.PK_MATERIALNAME);
+                    $parentobj.$("#MATERIALSPEC➩" + index).val(rowData.MATERIALSPEC);
+                    $parentobj.$("#MATERIALCODE➩" + index).val(rowData.MATERIALCODE);
+                    $parentobj.$("#NASTNUM➩" + index).val(rowData.SECQUANTITY);
+                    $parentobj.$("#YLNUM➩" + index).val(rowData.YLNUM);
+                    $parentobj.$("#PRICE➩" + index).val(rowData.NPRICE);
+                    $parentobj.$("#PK_ORG➩" + index).val(rowData.RECCOMPANYID);
+                    $parentobj.$("#ORGNAME➩" + index).val(rowData.RECCOMPANYNAME);
+                    $parentobj.$("#PK_DEPT➩" + index).val(rowData.PK_DEPT);
+                    $parentobj.$("#DEPTNAME➩" + index).val(rowData.DEPTNAME);
+                    $parentobj.$("#DBILLDATE➩" + index).val(rowData.DBILLDATE);
+                    $parentobj.$("#DEF1➩" + index).val(rowData.PURUNITNAME);
+                    $parentobj.$("#DEF2➩" + index).val(rowData.SECPURUNITNAME);
+                    $parentobj.$("#DATATYPE").val(rowData.DATATYPE);
+                    $parentobj.$("#gridTable tbody tr:eq(" + index + ")").find('input').attr("datacol", "yes");
+                    index++;
+                    $parentobj.$("#gridTable tbody tr:eq(" + index + ")").find('input').removeAttr('disabled');
+                    $parentobj.$("#gridTable").find('.disabled').attr("disabled", "disabled");
+                    $parentobj.$("#AMOUNT➩" + index).focus();
+                    $parentobj.Conversion(index);
+                    closeDialog();
+                } else {
+                    $parentobj.$("#AMOUNT➩" + index).val("0");
+                    top.TipMsg("订单品种相同,不能添加！", 4000, "error");
+                }
+            }
+        });
+
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    订单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-40)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    工厂：
+                </th>
+                <td>
+                    <input id="RECCOMPANYID" type="hidden" />
+                    <input id="RECCOMPANYNAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="Supply" type="hidden" />
+                    <input id="SupplyName" type="text" class="txt" style="width: 120px" />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    订单编号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料分类：
+                </th>
+                <td>
+                    <input id="matclass" type="hidden" />
+                    <input id="matclassname" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <td></td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable"></table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content {
+            border-left: none;
+        }
+
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+            background: none;
+        }
+    </style>
+</div>

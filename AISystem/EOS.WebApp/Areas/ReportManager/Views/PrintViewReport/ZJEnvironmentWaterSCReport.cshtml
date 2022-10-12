@@ -1,0 +1,128 @@
+﻿@{
+    ViewBag.Title = "质检报表水分析";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var Company = "@ViewBag.Company";
+    $(function () {
+        $("#layoutA").splitter({
+            type: "v",
+            outline: true,
+            minLeft: 235, sizeLeft: 235, maxLeft: 235,
+            anchorToWindow: true,
+            accessKey: "L"
+        });
+        LoadReport(); 
+    }) 
+    function LoadReport() {
+        var Report = "";
+        var Data = "/ReportManager/PrintViewReport/ZJReport";
+        //报表显示查询条件
+        var Parm_Key_Name = GetParm_Key_Name();
+        var start_Date = $("#bdate").val();
+        var end_Date = $("#edate").val();
+        var ReportName = $("#reporttype").find("option:selected").text();
+        //报表参数对应值
+        var Parameter = "title,Query,start_Date,end_Date|String,String,String,String|" + Company + ReportName + "," + Parm_Key_Name + "," + start_Date + "," + end_Date;
+        //查询条件
+        var Parm_Key_Value = GetParm_Key_Value();
+
+        Report = "ZJReport/ZJEnvironmentWater.grf";
+        Data = "/ReportManager/PrintViewReport/ZJEnvironmentWaterReportList";
+
+        var path = "/ReportManager/PrintViewReport/PrintViewReportIndex?Report=" + Report + "&Data=" + Data;
+        path += "&Parm_Key_Value=" + escape(Parm_Key_Value);
+        path += "&Parameter=" + escape(Parameter);
+        $("#iframeReport").attr("src", path);
+    }
+    //查询条件PK值
+    function GetParm_Key_Value() {
+        var Parm_Key_Value = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var pk_id = $(this).attr('id');
+            var pk_value = $("#" + pk_id).val();
+            if (pk_value != "") {
+                var like = $(this).attr('like');
+                Parm_Key_Value += pk_id + "☻" + (pk_value == null ? "" : pk_value) + "☻" + like + "≌";
+            }
+        });
+        return Parm_Key_Value
+    }
+    //查询条件名称值
+    function GetParm_Key_Name() {
+        var Parm_Key_Name = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var pk_id = $(this).attr('id');
+            var pk_value = $("#" + pk_id).val();
+            if (pk_value != "" && pk_value != undefined && pk_value != 'undefined' && pk_id != "bdate" && pk_id != "edate" && pk_id != "reporttype") {
+                if (Parm_Key_Name == "") {
+                    Parm_Key_Name += pk_value;
+                } else {
+                    Parm_Key_Name += "-" + pk_value;
+                }
+            }
+        });
+        return Parm_Key_Name;
+    }
+</script>
+<div id="layoutA" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="QueryArea">
+            <table border="0" class="form-find" style="height: 45px;">
+                <tr>
+                    <th>
+                        日期：
+                    </th>
+                    <td>
+                        <input id="bdate" type="text" class="txt Wdate"  style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM&#39;})" dbfield="true" like="false"/>
+                    </td>
+                </tr>
+                @*<tr>
+                    <th>
+                        厂：
+                    </th>
+                    <td>
+                        <input id="DEF2" type="text" class="txt required" err="厂" dbfield="true" />
+                    </td>
+                </tr>*@
+                <tr>
+                    <th>
+                        厂：
+                    </th>
+                    <td>
+                        <select id="DEF2" class="txtselect required" style="width: 140px" dbfield="true"
+                            err="厂" checkexpession="NotNull">
+                            <option value="动力厂,炼钢厂,炼铁厂,焦化厂,轧钢厂">全部</option>
+                            <option value="动力厂">动力厂</option>
+                            <option value="炼钢厂">炼钢厂</option>
+                            <option value="炼铁厂">炼铁厂</option>
+                            <option value="焦化厂">焦化厂</option>
+                            <option value="轧钢厂">轧钢厂</option>
+                            @*<option value="热电1#">热电1#</option>
+                            <option value="热电2#">热电2#</option>
+                            <option value="15吨锅炉">15吨锅炉</option>
+                            <option value="35吨锅炉">35吨锅炉</option>
+                            <option value="100吨锅炉">100吨锅炉</option>
+                            <option value="烧结环冷">烧结环冷</option>
+                            <option value="杂项">杂项</option>*@
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                    </th>
+                    <td>
+                        <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="LoadReport()" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <iframe id="iframeReport" src="" scrolling="auto" frameborder="0" scrolling="no"
+            width="100%" height="100%"></iframe>
+    </div>
+</div>

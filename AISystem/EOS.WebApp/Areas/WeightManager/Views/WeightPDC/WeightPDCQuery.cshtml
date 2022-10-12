@@ -1,0 +1,73 @@
+﻿@{
+    ViewBag.Title = "采购过磅查询";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script>
+
+    $(function () {
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+         
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+       
+        var Material = $("#Material").val();
+        var STATIONID = $("#STATIONID").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime  ;
+        url += "&Material=" + escape(Material) + "&STATIONID=" + STATIONID;
+ 
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                 <input id="StartTime" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd 00:00:00")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})"  style="width: 200px"  />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+               <input id="EndTime" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd 23:59:59")"
+        onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})"  style="width: 200px" /></td>
+        </tr>
+       
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="Material" type="hidden" />
+                <input id="MaterialName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+    
+      <tr> <th  >
+            称重站点：
+        </th>
+        <td  >
+            <select id="STATIONID" class="select"   style="width: 205px" >
+                <option value="">---请选择---</option>
+                <option value="H14">H14</option>
+                <option value="H15">H15</option>
+                <option value="H16">H16</option>
+            </select>
+        </td></tr>
+    </table>
+</div>
+

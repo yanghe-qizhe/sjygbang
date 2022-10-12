@@ -1,0 +1,90 @@
+﻿@{
+    ViewBag.Title = "管理员验证";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script src="~/Content/Scripts/jquery/jQuery.md5.js"></script>
+<script>
+    var op = GetQuery("op");
+    var realname = "";
+    function SelectText() {
+        var txtaccount = $("#txtaccount").val();
+        var txtpassword = $("#txtpassword").val();
+        if (txtaccount == "") {
+            $("#txtaccount").focus();
+            top.TipMsg("账户不能为空！", 4000, "warning");
+            return false;
+        } else if (txtpassword == "") {
+            $("#txtpassword").focus();
+            top.TipMsg("密码不能为空！", 4000, "warning");
+            return false;
+        } else {
+            top.TipMsg("正在验证...", 4000, "succeed");
+            window.setTimeout(function () {
+                var postData = {
+                    Account: escape(txtaccount),
+                    Password: escape($.md5(txtpassword))
+                }
+                AjaxJson('/Login/CheckUserLogin', postData, function (rs) {
+                    if (parseInt(rs.Message) == -1) {
+                        $("#txtaccount").focus();
+                        top.TipMsg("登录账户不存在！", 4000, "error");
+
+                    } else if (parseInt(rs.Message) == 2) {
+                        $("#txtaccount").focus();
+                        top.TipMsg("登录账户被系统锁定！", 4000, "error");
+
+                    } else if (parseInt(rs.Message) == 4) {
+                        $("#txtaccount").focus();
+                        $("#txtpassword").val("");
+                        top.TipMsg("登录密码错误！", 4000, "error");
+
+                    } else if (parseInt(rs.Message) == 5) {
+                        $("#txtaccount").focus();
+                        top.TipMsg("登录账户不是管理员！", 4000, "error");
+
+                    } else if (parseInt(rs.Message) == 3) {
+                        top.TipMsg("验证成功,正在跳转参照页面！", 4000, "succeed");
+                        realname = rs.BillNo;
+                        setInterval(Load, 1000);
+                    } else {
+                        alert(rs);
+                    }
+                });
+            }, 500);
+        }
+    }
+    function Load() {
+        var frameid = tabiframeId();
+        var $parentobj = top.frames[frameid];
+        $parentobj.BDPrint();
+        closeDialog();
+        return false;
+    }
+
+    function ClearText() {
+        closeDialog();
+    }
+   
+</script>
+<form id="form1" style="margin: 1px">
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            登录账户：
+        </th>
+        <td class="formValue">
+            <input id="txtaccount" type="text" class="txt required" datacol="yes" err="登录账户"
+                checkexpession="NotNull" value="" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            密码：
+        </th>
+        <td class="formValue">
+            <input id="txtpassword" type="password" class="txt required" datacol="yes" err="密码"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+</table>
+</form>

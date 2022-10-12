@@ -1,0 +1,54 @@
+﻿@{
+    ViewBag.Title = "部门物料权限";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue');                     //分类
+    $(function () {
+        GetTree(); 
+    })
+    var ModuleId = ""; 
+    function GetTree() {
+        var itemtree = {
+            showcheck: true, 
+            url: "@Url.Content("~/ZJPermission/DeptPermission/ModuleTree")?KeyValue=" + KeyValue  
+        };
+        $("#AccessTree").treeview(itemtree);
+    }
+    
+    //保存事件
+    function AcceptClick() {
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            //获取系统模块 信息:
+            var MId = ""; $('#AccessTree .bbit-tree-node-cb').each(function () {
+                var _src = $(this).attr('src');
+                _src = _src.substr(_src.lastIndexOf("/") + 1);
+                if (_src == 'checkbox_1.gif') {
+                    var _MId = $(this).attr('id').substring(11).replace(/_/g, "-");
+                    _MId = _MId.substring(0, _MId.length - 3);
+                    MId += _MId + ",";
+                }
+            });
+             
+            var postData = {
+                MId: MId,
+                KeyValue: KeyValue 
+            }
+            AjaxJson("/ZJPermission/DeptPermission/AuthorizedSubmit", postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<div class="layoutPanel layout-west">
+    <div class="btnbartitle">
+        <div>
+            物料列表
+        </div>
+    </div>
+    <div class="ScrollBar" id="AccessTree">
+    </div>
+</div>

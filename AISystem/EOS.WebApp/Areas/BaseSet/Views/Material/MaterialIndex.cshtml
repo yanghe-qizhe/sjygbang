@@ -1,0 +1,373 @@
+﻿@{
+    ViewBag.Title = "物料管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+        GetTree();
+    })
+    var matclass = "";
+    //加载左边树
+    function GetTree() {
+        var itemtree = {
+            onnodeclick: function (item) {
+                matclass = item.value;
+                if (item.id == '~') {
+                    matclass = '';
+                }
+                $("#CenterTitle").html(" - " + item.text + "(" + item.value + ")");
+                btn_Search();
+            },
+            url: "@Url.Content("~/BaseSet/Material/TreeJson")"
+        };
+        $("#ItemsTree").treeview(itemtree);
+    }
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = "";
+        var EndTime = "";
+        var ISUSE = $("#ISUSE").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/Material/GetMaterialList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&isuse=' + ISUSE,
+            datatype: "json",
+            height: $(window).height() - 178,
+            autowidth: true,
+            colModel: [
+                { label: '单号', name: 'ID', index: 'ID', width: 150, align: 'center' },
+                { label: '内码', name: 'CODE', index: 'CODE', width: 100, align: 'center' },
+                { label: '名称', name: 'NAME', index: 'NAME', width: 150, align: 'left' },
+              { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 150, align: 'left' },
+             { label: '分类编码', name: 'PK_MARBASCLASSCODE', index: 'PK_MARBASCLASSCODE', width: 60, align: 'left' },
+             { label: '物料分类', name: 'PK_MARBASCLASSNAME', index: 'PK_MARBASCLASSNAME', width: 60, align: 'left' },
+             { label: '物料组', name: 'PK_GROUP', index: 'PK_GROUP', width: 60, align: 'left' },
+             { label: '外部物料组', name: 'MATERIALBARCODE', index: 'MATERIALBARCODE', width: 60, align: 'left' },
+             {
+                    label: '业务类型', name: 'CTYPE', index: 'CTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1')
+                            return "<span style='color: green;'>采购</span>";
+                        else if (cellvalue == '2')
+                            return "<span style='color: blue;'>销售</span>";
+                        else if (cellvalue == '3')
+                            return "<span style='color: green;'>共有</span>";
+                        else
+                            return "<span style='color: green;'>其它</span>";
+                    }
+                }, {
+                    label: '有效', name: 'ISUSE', index: 'ISUSE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                }, {
+                    label: '手持机上显示', name: 'ISDEL', index: 'ISDEL', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        else if (cellvalue == '1') return "<img src='../../Content/Images/checknomark.gif'/>";
+                       else  return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                }, {//页面新增验级地点字段 sxy/myt 220831
+                    label: '验级地点', name: 'DEF3', index: 'DEF3', width: 60, align: 'center',
+                 formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '' || cellvalue==null) return "";
+                        if (cellvalue == 'KW0100031') return "A料场";
+                        if (cellvalue == 'KW0100032') return "B料场";
+                        if (cellvalue == 'KW0100033') return "四期成品库";
+                        if (cellvalue == 'KW0100025') return "五车间废纸验级区";
+                        if (cellvalue == 'KW0100027') return "七车间废纸验级区";
+                        if (cellvalue == 'KW0100029') return "九车间废纸验级区";
+                        if (cellvalue == 'KW0100026') return "六车间废纸验级区";
+                        if (cellvalue == 'KW0100028') return "八车间废纸验级区";
+                        if (cellvalue == 'KW0100030') return "十车间废纸验级区";
+                        if (cellvalue == 'KW0100034') return "新迈辅料场";
+                        if (cellvalue == 'KW0100035') return "新迈大料场";
+                        if (cellvalue == 'KW0100036') return "新迈木浆2号库";
+                        if (cellvalue == 'KW0100037') return "新迈木浆3号库";
+                        if (cellvalue == 'KW0100049') return "新迈抄纸化工验级区";
+                        if (cellvalue == 'KW0100055') return "科迈制浆验级区";
+                        if (cellvalue == 'KW0100061') return "科迈原料1号棚";
+                        if (cellvalue == 'KW0100062') return "科迈原料2号棚";
+                        if (cellvalue == 'KW0100063') return "科迈原料3号棚";
+                        if (cellvalue == 'KW0100064') return "科迈原料4号棚";
+                        if (cellvalue == 'KW0100065') return "科迈原料5号棚";
+                        if (cellvalue == 'KW0100066') return "科迈原料6号棚";
+                    }
+                }, {
+                    label: '是否计量', name: 'ISJL', index: 'ISJL', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                }, {
+                    label: '废纸手持机验级/化工收货确认', name: 'ISOK', index: 'ISOK', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                }, {
+                    label: '是否质检', name: 'ISBATCH', index: 'ISBATCH', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                },
+                //{
+                //    label: '是否计算', name: 'ISWRITE', index: 'ISWRITE', width: 60, align: 'center',
+                //    formatter: function (cellvalue, options, rowObject) {
+                //        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                //        else return "<img src='../../Content/Images/checknomark.gif'/>";
+                //    }
+                //},
+            {
+                label: '需要生产技术中心化验', name: 'ISKZ', index: 'ISKZ', width: 120, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                    else return "<img src='../../Content/Images/checknomark.gif'/>";
+                }
+            },
+            {
+                label: '叫号才能进厂', name: 'ISJH', index: 'ISJH', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                    else return "<img src='../../Content/Images/checknomark.gif'/>";
+                }
+            },
+            {
+                label: '货源地必填', name: 'ISHYD', index: 'ISHYD', width: 100, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                    else return "<img src='../../Content/Images/checknomark.gif'/>";
+                }
+                },
+                 //sxy/myt 220908 新增货源地类型字段
+                { label: '货源地类型', name: 'DEF4', index: 'DEF4', width: 60, align: 'left' },
+            {
+                label: '启用固含量', name: 'ISMC', index: 'ISMC', width: 100, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                    else return "<img src='../../Content/Images/checknomark.gif'/>";
+                }
+            },
+              { label: '固含量系数/供应商系数', name: 'MCAMOUNT', index: 'MCAMOUNT', width: 120, align: 'left' },
+                { label: '抽包数量', name: 'CBAMOUNT', index: 'CBAMOUNT', width: 80, align: 'left' },
+             {
+                 label: '物料类型', name: 'ISTYPE', index: 'ISTYPE', width: 60, align: 'center',
+                 formatter: function (cellvalue, options, rowObject) {
+                     if (cellvalue == '1') return "理重";
+                     if (cellvalue == '0') return "实重";
+                 }
+             },
+            { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 90, align: 'center' },
+            {   
+                label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                }
+            },
+            {
+                label: '最后修改日期', name: 'UPDTIME', index: 'UPDTIME', width: 110, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                }
+            },
+                   {
+                       label: '来源', name: 'DATATYPE', index: 'DATATYPE', width: 60, align: 'center',
+                       formatter: function (cellvalue, options, rowObject) {
+
+                           if (cellvalue == '1') return "SAP";
+                           if (cellvalue == '0') return "自建";
+                       }
+                   },
+            { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'center' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        columnModelData("#gridTable");
+    }
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var keyword = $("#keyword").val();
+        var MATERIALBARCODE = $("#MATERIALBARCODE").val();
+        var PK_GROUP = $("#PK_GROUP").val();
+        var ORDERTYPE = $("#ORDERTYPE").val();
+        var ISUSE = $("#ISUSE").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/BaseSet/Material/GetMaterialList")?matclass=" + matclass + '&keyword=' + escape(keyword) + '&datatype=' + ORDERTYPE + '&isuse=' + ISUSE + '&MATERIALBARCODE=' + MATERIALBARCODE + '&PK_GROUP=' + PK_GROUP, page: 1
+        }).trigger('reloadGrid');
+    }
+
+
+    function btn_add() {
+        if (matclass != "" && matclass != undefined) {
+            var url = "/BaseSet/Material/MaterialForm?ModuleId=" + ModuleId + "&PK_MARBASCLASS=" + matclass;
+            openDialog(url, "MaterialForm", "新增物料", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        } else {
+            tipDialog("请先选择物料分类！", 3, "");
+            return false;
+        }
+    }
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/Material/MaterialForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId;
+            openDialog(url, "MaterialForm", "编辑物料", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/BaseSet/Material/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+    function btn_HandOrder() {
+        confirmDialog('提示', '注：您确认要同步操作吗？', function (r) {
+            if (r) {
+                var keyword = $("#keyword").val();
+                var MATERIALBARCODE = $("#MATERIALBARCODE").val();
+                var PK_GROUP = $("#PK_GROUP").val();
+                var parm = "id=" + keyword + "&MATERIALBARCODE=" + MATERIALBARCODE + "&PK_GROUP=" + PK_GROUP;
+                AjaxJson('/BaseSet/Material/HandOrder', parm, function (data) {
+                    tipDialog(data.Message, 3, data.Code);
+                    if (data.Code > 0) {
+                        windowload();
+                    }
+                });
+            }
+        });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+    //分类管理
+    function btn_sortmanage() {
+        var url = "/BaseSet/Material/SortManage";
+        openDialog(url, "ItemsForm", "物料类别（选中左边菜单右击可操作）", 750, 350, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+</script>
+<div id="layout" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="btnbartitle">
+            <div>
+                物料分类
+            </div>
+        </div>
+        <div class="ScrollBar" id="ItemsTree">
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <div class="btnbartitle">
+            <div>
+                物料列表 <span id="CenterTitle"></span>
+            </div>
+        </div>
+        <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+            <div class="PartialButton">
+                @Html.Partial("_PartialButton")
+            </div>
+            @*<div class="PartialButton">
+                    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+                        <b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                            刷新 </b></span></a><a id="ai-add" class="tools_btn" title="新增" onclick="btn_add()"><span>
+                                <b style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">新增
+                                </b></span></a><a id="ai-edit" class="tools_btn" title="编辑" onclick="btn_edit()"><span>
+                                    <b style="background: url(../../Content/Images/Icon16/edit.gif) no-repeat 50% 4px">编辑
+                                    </b></span></a><a id="lr-delete" class="tools_btn" title="删除(Ctrl+S)" onclick="btn_delete()">
+                                        <span><b style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">
+                                            删除</b></span></a> <a id="lr-sortmanage" class="tools_btn" title="分类管理" onclick="btn_sortmanage()">
+                                                <span><b style="background: url(../../Content/Images/Icon16/sort_ascending.png) no-repeat 50% 4px">
+                                                    分类管理 </b></span></a>
+                    <div class="tools_separator">
+                    </div>
+                    <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()"><span><b
+                        style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                        离开 </b></span></a>
+                </div>*@
+        </div>
+        <div id="grid_List">
+            <div class="QueryArea">
+                <div class="bottomline QueryArea" style="margin: 1px; margin-top: 0px; margin-bottom: 0px;">
+                    <table border="0" class="form-find" style="height: 45px;">
+                        <tr>
+                            <th>
+                                关键字：
+                            </th>
+                            <td>
+                                <input id="keyword" type="text" class="txt" style="width: 80px" />
+                            </td>
+                            <th>
+                                外部物料组：
+                            </th>
+                            <td>
+                                <input id="MATERIALBARCODE" type="text" class="txt" style="width:80px" />
+                            </td>
+                            <th>
+                                物料组：
+                            </th>
+                            <td>
+                                <input id="PK_GROUP" type="text" class="txt" style="width:80px" />
+                            </td>
+                            
+                            <th>
+                                来源：
+                            </th>
+                            <td>
+                                <select id="ORDERTYPE" class="select" style="width: 80px">
+                                    <option value="">请选择</option>
+                                    <option value="0">自建</option>
+                                    <option value="1">SAP</option>
+                                </select>
+                            </td>
+                            <th>
+                                有效：
+                            </th>
+                            <td>
+                                <select id="ISUSE" class="select" style="width: 80px">
+                                    <option value="">请选择</option>
+                                    <option value="0">否</option>
+                                    <option value="1" selected="selected">是</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <table id="gridTable"></table>
+            <div id="gridPager">
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

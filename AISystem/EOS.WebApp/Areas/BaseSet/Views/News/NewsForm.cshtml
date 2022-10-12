@@ -1,0 +1,83 @@
+﻿@{
+    ViewBag.Title = "承运商管理";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+ 
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/News/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/News/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            标题：
+        </th>
+        <td class="formValue">
+            <input id="TITLE" type="text" class="txt required" datacol="yes" err="标题" checkexpession="NotNull"
+                value="" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            分类：
+        </th>
+        <td class="formValue">
+            <select id="TYPE" class="txtselect" datacol="yes" err="分类" checkexpession="NotNull">
+                <option value="">---请选择---</option>
+                <option value="1">内部</option>
+                <option value="2">客户</option>
+                <option value="3">供应商</option>
+                <option value="4">全部</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input id="ISUSE" name="ISUSE" type="checkbox" checked="checked" style="vertical-align: middle;" />
+                <label for="ISUSE" style="vertical-align: middle;">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            内容：
+        </th>
+        <td class="formValue">
+              <textarea id="CONTENT" name="CONTENT" maxlength="2000" class="txtArea" cols="80" rows="10" style=" font-size:22px;"></textarea>
+        </td>
+    </tr>
+</table>
+</form>

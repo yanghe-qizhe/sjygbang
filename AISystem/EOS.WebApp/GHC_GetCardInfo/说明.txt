@@ -1,0 +1,8 @@
+文件说明：
+GHC_GetCardInfo.dll---------------控件
+WltRS.dll-------------------------控件依赖库
+GHC_GetCardInfo.html--------------测试网页
+installocx.bat--------------------注册控件脚本
+uninstallocx.bat------------------卸载控件脚本
+
+请先运行install.bat注册控件GHC_GetCardInfo.dll

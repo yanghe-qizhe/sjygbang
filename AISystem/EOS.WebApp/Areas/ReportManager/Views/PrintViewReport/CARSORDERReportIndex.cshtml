@@ -1,0 +1,205 @@
+﻿@{
+    ViewBag.Title = "车辆状态报表";
+    Layout = "~/Views/Shared/_LayoutReportIndex.cshtml";
+}
+<script type="text/javascript">
+    var Company = "@ViewBag.Company";
+    $(function () {
+        $("#layoutA").splitter({
+            type: "v",
+            outline: true,
+            minLeft: 235, sizeLeft: 235, maxLeft: 235,
+            anchorToWindow: true,
+            accessKey: "L"
+        });
+        LoadReport();
+        $("#reporttype").change(function () {
+            LoadReport();
+        });
+
+    })
+
+    function LoadReport() {
+        var Report = "";
+        var Data = "/ReportManager/PrintViewReport/BaseSetDataSetReport";
+
+        var ReportName = $("#reporttype").find("option:selected").text();
+        //报表参数对应值
+        var Parameter = "title|String|" + Company + ReportName;
+        //查询条件
+        var Parm_Key_Value = GetParm_Key_Value();
+
+        var ReportType = $("#reporttype").val();
+
+        if (ReportType == "000300") {
+            Report = "WeightReport/CarsOrderByDetails.grf";
+            Data = "/ReportManager/PrintViewReport/CarsOrderDataSetReport";
+        }else if (ReportType == "000301") {
+            Report = "WeightReport/CarsOrderByDetails2.grf";
+            Data = "/ReportManager/PrintViewReport/CarsOrderDataSetReport";
+        }else if (ReportType == "000303") {
+            Report = "WeightReport/CarsTarckReport.grf";
+            Data = "/ReportManager/PrintViewReport/CarsOrderDataSetReport";
+        } else if (ReportType == "000304") {
+            Report = "WeightReport/CarsOrderByDetailsHS.grf";
+            Data = "/ReportManager/PrintViewReport/CarsOrderDataSetReport";
+        } else if (ReportType == "000305") {
+            Report = "WeightReport/CarsOrderByDetailsXXWL.grf";
+            Data = "/ReportManager/PrintViewReport/CarsOrderDataSetReport";
+        }
+
+        var path = "/ReportManager/PrintViewReport/DisplayViewReportIndex?Report=" + Report + "&Data=" + Data + "&ReportName=" + escape(ReportName);
+        path += "&Parm_Key_Value=" + escape(Parm_Key_Value) + escape("reporttype☻" + ReportType + "☻true");
+        path += "&Parameter=" + escape(Parameter);
+        $("#iframeReport").attr("src", path);
+    }
+    //查询条件PK值
+    function GetParm_Key_Value() {
+        var Parm_Key_Value = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var pk_id = $(this).attr('id');
+            var pk_value = $("#" + pk_id).val();
+            if (pk_value != "") {
+                var like = $(this).attr('like');
+                Parm_Key_Value += pk_id + "☻" + (pk_value == null ? "" : pk_value) + "☻" + like + "≌";
+            }
+        });
+        return Parm_Key_Value
+    }
+
+
+
+
+</script>
+<div id="layoutA" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="QueryArea">
+            <table border="0" class="form-find" style="height: 45px;">
+                <tr>
+                    <th>
+                        报表类型：
+                    </th>
+                    <td>
+                        <select id="reporttype" name="reporttype" class="select" style="width: 140px;">
+                            <option value="000303">车辆跟踪报表</option>
+                            <option value="000300">采购车辆出入报表</option>
+                            <option value="000301">销售车辆出入报表</option>
+                            <option value="000304">车辆厂内耗时记录</option>
+                            <option value="000305">销项物流信息查询</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        订单编号：
+                    </th>
+                    <td>
+                        <input id="VBILLCODE" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        提单号：
+                    </th>
+                    <td>
+                        <input id="TDBILLNO" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        车号：
+                    </th>
+                    <td>
+                        <input id="CARSNAME" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        司机：
+                    </th>
+                    <td>
+                        <input id="DRIVERSNAME" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        身份证：
+                    </th>
+                    <td>
+                        <input id="PSDNO" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        物料：
+                    </th>
+                    <td>
+                        <input id="MATERIALNAME" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        入厂厂区：
+                    </th>
+                    <td>
+                        <select id="CQDEF1" class="txt select" style="width: 140px" dbfield="true" like="false">
+                            <option value="">---请选择---</option>
+                            <option value="1000">阳光纸业</option>
+                            <option value="6000">盛世热电</option>
+                            <option value="7000">新迈纸业</option>
+                            <option value="8000">阳光王子</option>
+                            <option value="9000">华迈纸业</option>
+                            <option value="9010">科迈制浆</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        状态：
+                    </th>
+                    <td>
+                        <select id="MISUSENAME" class="txt select" style="width: 140px" dbfield="true" like="false">
+                            <option value="">---请选择---</option>
+                            <option value="未入厂">未入厂</option>
+                            <option value="入厂">入厂</option>
+                            <option value="出厂">出厂</option>
+                            @*<option value="作废">作废</option>*@
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        开始时间：
+                    </th>
+                    <td>
+                        <input id="bdate" type="text" class="txt Wdate" style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM-dd 00:00:00")"
+                               onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" dbfield="true" like="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        结束时间：
+                    </th>
+                    <td>
+                        <input id="edate" type="text" class="txt Wdate" style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM-dd 23:59:59")"
+                               onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" dbfield="true" like="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                    </th>
+                    <td>
+                        <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="LoadReport()" />
+                        <input id="btnClear" type="button" class="btnSearch" value="清 空" onclick="ClearValue()" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <iframe id="iframeReport" src="" scrolling="auto" frameborder="0" scrolling="no"
+                width="100%" height="100%"></iframe>
+    </div>
+</div>

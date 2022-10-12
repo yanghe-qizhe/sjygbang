@@ -1,0 +1,150 @@
+﻿@{
+    ViewBag.Title = "车辆管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var keyword = $("#keyword").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/BaseSet/Cars/GetCarsList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&keyword=' + escape(keyword), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/Cars/GetCarsList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', width: 80, align: 'left', hidden: true },
+                { label: '内码', name: 'CODE', index: 'CODE', width: 100, align: 'center' },
+                { label: '名称', name: 'NAME', index: 'NAME', width: 100, align: 'center' },
+                { label: '简称', name: 'SHORTNAME', index: 'SHORTNAME', width: 100, align: 'left' },
+                { label: '车辆类型', name: 'CARTYPE', index: 'CARTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "倒运";
+                        if (cellvalue == '0') return "非倒运";
+                        if (cellvalue == '2') return "工程车辆";
+                    }
+                },
+                { label: '所属承运商', name: 'TRAFFICCOMPANYNAME', index: 'TRAFFICCOMPANYNAME', width: 100, align: 'left' },
+                { label: '车型', name: 'BRANDMODEL', index: 'BRANDMODEL', width: 100, align: 'left' },
+                { label: '车辆长度', name: 'CARL', index: 'CARL', width: 100, align: 'left' },
+                { label: '车辆高度', name: 'CARH', index: 'CARH', width: 100, align: 'left' },
+                { label: '车辆宽度', name: 'CARW', index: 'CARW', width: 100, align: 'left' },
+                { label: '车辆所有权', name: 'OWNERSHIP', index: 'OWNERSHIP', width: 100, align: 'left' },
+                { label: '行驶证号', name: 'VEHLIC', index: 'VEHLIC', width: 100, align: 'left' },
+                { label: '车架号', name: 'VIN', index: 'VIN', width: 100, align: 'left' },
+                { label: '发动机号', name: 'ENGINENO', index: 'ENGINENO', width: 100, align: 'left' },
+                { label: '车货总重', name: 'TGGWEIGHT', index: 'TGGWEIGHT', width: 100, align: 'left' },
+                { label: '皮重', name: 'TARE', index: 'TARE', width: 100, align: 'left' },
+                { label: '拉筋', name: 'DEF1', index: 'DEF1', width: 100, align: 'left' },
+                { label: '排放标准', name: 'EFFLUENTSTD', index: 'EFFLUENTSTD', width: 100, align: 'left' },
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 90, align: 'center' },
+                { label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        //////////////////////////
+    }
+    //新增
+    function btn_add() {
+        var url = "/BaseSet/Cars/CarsForm?ModuleId=" + ModuleId;
+        openDialog(url, "Form11111", "新增车号", 650, 380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/Cars/CarsForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId;
+            openDialog(url, "Form11111", "编辑车号", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/BaseSet/Cars/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    关键字：
+                </th>
+                <td>
+                    <input id="keyword" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="" style="width: 120px"
+                           onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

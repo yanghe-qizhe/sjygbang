@@ -1,0 +1,367 @@
+﻿@{
+    ViewBag.Title = "采购磅单>>参照";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var op = GetQuery('op'); //操作类型
+    $(function () {
+        BindAutocomplete("TRAFFICCOMPANY", "PK_TRAFFICCOMPANY", "TrafficCompany", "", "", "");
+        BindAutocomplete("RECEIVESTORE", "PK_RECEIVESTORE", "Store", "", "", "");
+        BindAutocomplete("DRIVERS", "PK_DRIVERS", "Drivers", "", "", "");
+        BindAutocomplete("CARS", "PK_CARSID", "Cars", "", "", "");
+        if (!!KeyValue) {
+            //信息
+            InitControl();
+        }
+        $("#GROSS").bind('keyup', function () {
+            GetSuttle(this.id);
+        });
+        $("#TARE").bind('keyup', function () {
+            GetSuttle(this.id);
+        });
+
+    })
+
+    //计算
+    function GetSuttle(id) {
+        var Gross = $("#GROSS").val();
+        var Tare = $("#TARE").val();
+        if (Tare * 1 > Gross * 1) {
+            top.TipMsg("皮重不能大于毛重！", 4000, "error");
+            $("#" + id).val('');
+            return false;
+        }
+        if (Gross != 0 && Gross != undefined && Tare != 0 && Tare != undefined) {
+            var Suttle = FloatSub(Gross, Tare);
+            $("#SUTTLE").val(FormatCurrency(Suttle));
+        } else {
+            $("#Suttle").val('0.000');
+        }
+    }
+
+    function GetMaterialPrice(){
+        AjaxJson("/WeightManager/WeightIn/GetMaterialPrice", { KeyValue: KeyValue}, function (data) {
+            $("#PRICE").val(data.PRICE);
+            $("#TRAFFICPRICE").val(data.PRICE1);
+        });
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/WeightManager/WeightIn/SetFormControl", { KeyValue: KeyValue}, function (data) {
+                SetWebControls(data);
+                if(data.FINISH="0"){
+                    $("#SUTTLE").attr("datacol","NO");
+                    $("#TARE").attr("datacol","NO");
+                    $("#RECEIVESTORE").attr("datacol","NO");
+                }
+            });
+        }
+    }
+
+    function SelectPCBillSOF() {
+        var VBillCode = $("#PK_CONTRACT_B").val();
+        //        if (VBillCode == "") {
+        //            top.TipMsg("请您先选择采购订单！", 4000, "error");
+        //            return false;
+        //        }
+        var title = "选取采购汽运到货单信息";
+        var url = "/WeightManager/WeightIn/SELECTPCBillSOF?VBillCode="; // + VBillCode;
+        openMyDialog(url, "SELECTPCBillSOF", title, 900, 400,
+             function (iframe) {
+                 top.frames[iframe].SelectText();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText();
+             });
+    }
+    function SelectPOORDER() {
+        var title = "选取采购订单信息（双击表格添加）";
+        var url = "/WeightManager/WeightIn/SELECTPOORDERS";
+        Dialog(url, "SELECTPOORDERS", title, 900, 400);
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    AjaxJson("/WeightManager/WeightIn/SubmitOrderFormEdit?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+</script>
+<form id="form1" style="margin: 1px">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a> <a id="button_Commit_Save" title="取价" onclick="GetMaterialPrice()"
+                class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    取价
+                </b>
+            </span>
+        </a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+               class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    <table id="tb_OrderFrom" class="form">
+        <tr>
+            <th class="formTitle">
+                计量单号：
+            </th>
+            <td class="formValue">
+                <input id="BILLNO" maxlength="50" type="text" class="txt readonly" datacol="yes" readonly=readonly
+                       err="计量单号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+            </td>
+
+            <th class="formTitle">
+                订单编号：
+            </th>
+            <td class="formValue">
+                <input id="PK_BILL" type="hidden" />
+                <input id="PK_BILL_B" type="hidden" />
+                <input id="PK_CONTRACT" type="hidden" />
+                <input id="PK_CONTRACT_B" maxlength="50" type="text" class="txt"
+                       datacol="yes" err="订单编号" checkexpession="NotNull" onclick="SelectPOORDER();" />
+            </td>
+            <th class="formTitle">
+                到货单号：
+            </th>
+            <td class="formValue">
+                <input name="PK_TASK" id="PK_TASK" type="hidden" />
+                <input id="PK_ORDER_B" type="hidden" datacol="yes" err="到货单号" checkexpession="NotNull" />
+                <input id="PK_ORDER" type="text" class="txt readonly" datacol="yes" err="到货单号" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                供应商：
+            </th>
+            <td class="formValue">
+                <input name="PK_SENDORG" id="PK_SENDORG" type="hidden" />
+                <input id="SENDORG" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" err="供应商" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="PK_MATERIAL" type="hidden" />
+                <input id="MATERIAL" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" err="物料" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                规格：
+            </th>
+            <td class="formValue">
+                <input id="PK_MATERIALKIND" type="hidden" />
+                <input id="MATERIALKIND" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                卸货地点：
+            </th>
+            <td class="formValue">
+                <input id="PK_RECEIVESTORE" type="hidden" datacol="No" err="卸货地点" checkexpession="NotNull" />
+                <input id="RECEIVESTORE" type="text" class="txt" datacol="No"
+                       err="卸货地点" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                承运商：
+            </th>
+            <td class="formValue">
+                <input id="PK_TRAFFICCOMPANY" type="hidden" />
+                <input id="TRAFFICCOMPANY" type="text" class="txt" />
+            </td>
+            <th class="formTitle">
+                工厂：
+            </th>
+            <td class="formValue">
+                <input name="PK_RECEIVEORG" id="PK_RECEIVEORG" type="hidden" />
+                <input id="RECEIVEORG" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                       datacol="no" err="工厂" checkexpession="NotNull" />
+            </td>
+        </tr>
+
+        <tr>
+            <th class="formTitle">
+                车号：
+            </th>
+            <td class="formValue">
+                <input id="PK_CARSID" type="hidden" datacol="yes" err="车号" checkexpession="NotNull" />
+                <input id="CARS" type="text" class="txt required" datacol="yes" err="车号" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                司机：
+            </th>
+            <td class="formValue">
+                <input id="PK_DRIVERS" type="hidden" datacol="yes" err="司机" checkexpession="NotNull" />
+                <input id="DRIVERS" type="text" class="txt required" datacol="yes" err="司机" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                应收数量：
+            </th>
+            <td class="formValue">
+                <input id="YFSUTTLE" type="text" class="txt" datacol="No" err="应收数量" checkexpession="DoubleOrZero"
+                       onfocus="IsMoney(this.id);" maxlength="10" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                毛重：
+            </th>
+            <td class="formValue">
+                <input id="GROSS" type="text" class="txt required" datacol="yes" err="毛重" checkexpession="DoubleOrZero"
+                       onfocus="IsMoney(this.id);" maxlength="10" />
+            </td>
+            <th class="formTitle">
+                皮重：
+            </th>
+            <td class="formValue">
+                <input id="TARE" type="text" class="txt required" datacol="yes" err="皮重" checkexpession="DoubleOrZero"
+                       onfocus="IsMoney(this.id);" maxlength="10" />
+            </td>
+            <th class="formTitle">
+                净重：
+            </th>
+            <td class="formValue">
+                <input id="CHARGE" type="hidden" />
+                <input id="SUTTLE" type="text" class="txt readonly" datacol="yes" err="净重" readonly="readonly"
+                       checkexpession="DoubleOrZero" maxlength="10" />
+            </td>
+        </tr>
+
+        <tr>
+            <th class="formTitle">
+                重车时间：
+            </th>
+            <td class="formValue">
+                <input id="WEIGHTDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                       onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+            </td>
+            <th class="formTitle">
+                单价：
+            </th>
+            <td class="formValue">
+                <input id="PRICE" type="text" class="txt required" datacol="No" err="单价" checkexpession="DoubleOrZero"
+                       onfocus="IsMoney(this.id);" />
+            </td>
+            <th class="formTitle">
+                单价1：
+            </th>
+            <td class="formValue">
+                <input id="TRAFFICPRICE" type="text" class="txt required" datacol="No" err="单价1" checkexpession="DoubleOrZero"
+                       onfocus="IsMoney(this.id);" maxlength="10" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                轻车时间：
+            </th>
+            <td class="formValue">
+                <input id="LIGHTDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                       onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+            </td>
+
+            <th class="formTitle">
+                过磅员：
+            </th>
+            <td class="formValue">
+                <input id="INGBUSER" type="hidden" dbfield="true" value="@ViewBag.CreateUserName" />
+                <input id="OUTGBUSER" type="text" class="txt readonly" readonly="readonly" dbfield="true" value="@ViewBag.CreateUserName" />
+            </td>
+
+            <th class="formTitle">
+                创建时间：
+            </th>
+            <td class="formValue">
+                <input id="CREATEDATE" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" err="创建时间" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                计量状态：
+            </th>
+            <td class="formValue">
+                <input id="COMPUTERTYPE" type="hidden" />
+                <select id="FINISH" name="FINISH" class="txtselect">
+                    <option value="0">一次计量</option>
+                    <option value="1">二次计量</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                计算状态：
+            </th>
+            <td class="formValue">
+                <select id="UPLOAD1" name="UPLOAD1" class="txtselect">
+                    <option value="0" selected="selected">未计算</option>
+                    <option value="1">已计算</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                备注：
+            </th>
+            <td class="formValue">
+                <input id="MEMO" type="text" class="txt" dbfield="true" />
+            </td>
+        </tr>
+
+    </table>
+
+
+</form>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+
+    .ui-jqgrid tr.ui-row-ltr td {
+        padding: 0px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .ui-jqgrid .ui-jqgrid-htable th {
+        line-height: 15px;
+    }
+
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+            background: none;
+        }
+
+    .editable {
+        height: 22px;
+        background-color: #fff;
+    }
+</style>

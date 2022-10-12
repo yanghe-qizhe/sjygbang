@@ -1,0 +1,141 @@
+﻿@{
+    ViewBag.Title = "质检月度指标";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    $(function () { 
+        GetGrid(); 
+    }) 
+    //搜索
+    function btn_Search() {
+        var STIME = "";
+        var ETIME = "";
+        var NAME = $("#NAME").val(); 
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/BaseSet/ZJMonthTarget/GetZJMonthTargetList")?StartTime=" + STIME + '&EndTime=' + ETIME+"&NAME="+escape(NAME), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var STIME = "";
+        var ETIME = "";  
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/ZJMonthTarget/GetZJMonthTargetList")?StartTime=" + STIME + '&EndTime=' + ETIME,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, align: 'left', hidden: true },
+                { label: '名称', name: 'ITEMNAME', index: 'ITEMNAME', width: 100, align: 'center' },
+                { label: '基准值', name: 'BASETARGET', index: 'BASETARGET', width: 100, align: 'center' },
+                { label: '比较符', name: 'SIGNMAX', index: 'SIGNMAX', width: 100, align: 'center' },
+                { label: '最大基准值', name: 'MAXTARGET', index: 'MAXTARGET', width: 100, align: 'center' },
+                { label: '比较符', name: 'SIGNMIN', index: 'SIGNMIN', width: 100, align: 'center' },
+                { label: '最小基准值', name: 'MINTARGET', index: 'MINTARGET', width: 100, align: 'center' },
+                { label: '比较符', name: 'TOPSIGNMAX', index: 'TOPSIGNMAX', width: 100, align: 'center' },
+                { label: '一级品上限', name: 'TOPMAXTARGET', index: 'TOPMAXTARGET', width: 100, align: 'center' },
+                { label: '比较符', name: 'TOPSIGNMIN', index: 'TOPSIGNMIN', width: 100, align: 'center' },
+                { label: '一级品下限', name: 'TOPMINTARGET', index: 'TOPMINTARGET', width: 100, align: 'center'  },
+                { label: '开始时间', name: 'STIME', index: 'STIME', width: 100, align: 'center'  },
+                { label: '结束时间', name: 'ETIME', index: 'ETIME', width: 100, align: 'center'  }, 
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 90, align: 'center' },
+                {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        //
+    }
+    //新增
+    function btn_add() {
+        var url = "/BaseSet/ZJMonthTarget/ZJMonthTargetForm";
+        openDialog(url, "ZJItemForm", "新增质检指标", 650, 380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/ZJMonthTarget/ZJMonthTargetForm?KeyValue=" + KeyValue;
+            openDialog(url, "ZJMonthTargetForm", "编辑质检指标", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/BaseSet/ZJMonthTarget/DeleteZJMonthTarget', delparm, KeyValue.split(",").length);
+        }
+    }
+
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    名称：
+                </th>
+                <td>
+                    <input id="NAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="STIME" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="ETIME" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

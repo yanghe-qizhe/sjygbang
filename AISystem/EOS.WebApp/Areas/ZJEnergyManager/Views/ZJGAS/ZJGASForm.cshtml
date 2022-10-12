@@ -1,0 +1,161 @@
+﻿@{
+    ViewBag.Title = "选择物料分类方案";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var type = GetQuery("type");
+    var FormID = GetQuery('FormID');
+    $(document).ready(function () {
+        setTimeout(function () {
+            GetTree();
+            GetGrid();
+        }, 100);
+        $("#CYDATE").on("blur", function () {
+            btn_Search(); 
+        })
+    });
+    var matclass = "";
+    //加载左边树
+    function GetTree() {
+        var itemtree = {
+            onnodeclick: function (item) {
+                matclass = item.id;
+                $("#CenterTitle").html(" - " + item.text + "(" + item.value + ")");
+                btn_Search();
+            },
+            url: "/ZJEnergyManager/ZJGAS/TreeJson?type=" + type
+        };
+        $("#ItemsTree").treeview(itemtree);
+    }
+
+    //加载表格
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            url: "/ZJEnergyManager/ZJGAS/GetMaterialList?matclass=" + matclass + "&CYDATE=" + escape($("#CYDATE").val()),
+            datatype: "json",
+            height: $(window).height() - 135,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, hidden: true },
+                { label: '内码', name: 'CODE', index: 'CODE', width: 100, align: 'center' },
+                { label: '名称', name: 'NAME', index: 'NAME', width: 160, align: 'center' },
+                { label: '简称', name: 'SHORTNAME', index: 'SHORTNAME', width: 160, align: 'center' },
+                { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 160, align: 'center' },
+                { label: '牌号', name: 'PK_MARBASCLASSNAME', index: 'PK_MARBASCLASSNAME', width: 160, align: 'center' }
+
+            ],
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        
+    }
+
+    //搜索
+    function btn_Search() {
+        var CYDATE = $("#CYDATE").val();
+        var keyword = $("#keyword").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "/ZJEnergyManager/ZJGAS/GetMaterialList?matclass=" + matclass + '&CYDATE=' + escape(CYDATE) + '&keyword=' + escape(keyword), page: 1
+        }).trigger('reloadGrid');
+    }
+
+    //新建任务
+    function btn_Add() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsNull(KeyValue)) {
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + KeyValue + '\",\"CYDATE\":\"' + $("#CYDATE").val() + '\"}');
+            AjaxJson("/ZJEnergyManager/ZJGAS/AddGAS", postData, function (data) {
+                if (IsNull(data)) {
+                    if (data.Code == -2) {
+                        KeyValue = data.Message;
+                        var url = '@Url.Content("~/ZJEnergyManager/ZJGAS/ZJGASFANOSelect")?KeyValue=' + KeyValue + "&CYDATE=" + escape($("#CYDATE").val());
+                        openDialog(url, "ZJGASFANOSelect", "匹配质检方案", 750, 380, function (iframe) {
+                            top.frames[iframe].AcceptClick();
+                        });
+                    } else {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (IsNull(FormID)) {
+                            $parentobj = top.frames[FormID];
+                        } else {
+                            $parentobj = top.frames[tabiframeId()];
+                        }
+                        $parentobj.CallBackEvent();
+                        closeDialog();
+                    }
+                }
+            });
+        } else {
+            tipDialog('请至少选择一个物料', 4, 'warning');
+        }
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div id="layout" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="btnbartitle">
+            <div>
+                物料分类
+            </div>
+        </div>
+        <div class="ScrollBar" id="ItemsTree">
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <div class="btnbartitle">
+            <div>
+                物料列表 <span id="CenterTitle"></span>
+            </div>
+        </div>
+        <div id="grid_List">
+            <div class="QueryArea">
+                <div class="bottomline QueryArea" style="margin: 1px; margin-top: 0px; margin-bottom: 0px;">
+                    <table border="0" class="form-find" style="height: 45px;">
+                        <tr>
+                            <th>
+                                任务日期：
+                            </th>
+                            <td>
+                                <input id="CYDATE" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();}})" />
+                            </td>
+                            <th>
+                                关键字：
+                            </th>
+                            <td>
+                                <input id="keyword" type="text" class="txt" style="width: 120px" />
+                            </td>
+                            <td>
+                                <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                                <input id="btnAdd" type="button" class="btnSearch" value="新 建 任 务" onclick="btn_Add()" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <table id="gridTable">
+            </table>
+            <div id="gridPager">
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,211 @@
+﻿@{
+    ViewBag.Title = "转序报表";
+    Layout = "~/Views/Shared/_LayoutReportIndex.cshtml";
+}
+<script type="text/javascript">
+    var Company = "@ViewBag.Company";
+    $(function () {
+        BindAutocomplete("SENDSTORE", "PK_SENDORG", "Dictionary", "", "", "");//车间
+        BindAutocomplete("RECEIVEORG", "PK_RECEIVEORG", "Company", "150", "150", "");
+        $("#layoutA").splitter({
+            type: "v",
+            outline: true,
+            minLeft: 260, sizeLeft: 260, maxLeft: 260,
+            anchorToWindow: true,
+            accessKey: "L"
+        });
+        LoadReport();
+        $("#reporttype").change(function () {
+            LoadReport();
+        });
+
+    })
+
+    function LoadReport() {
+        var Report = "";
+        var Data = "/ReportManager/SalesReport/SalesLoad";
+        //报表显示查询条件
+        var Parm_Key_Name = GetParm_Key_Name();
+        var start_Date = $("#bdate").val();
+        var end_Date = $("#edate").val();
+        var ReportName = $("#reporttype").find("option:selected").text();
+        //报表参数对应值
+        var Parameter = "title,Query,start_Date,end_Date|String,String,String,String|" + Company + ReportName + "," + Parm_Key_Name + "," + start_Date + "," + end_Date;
+        //查询条件
+        var Parm_Key_Value = GetParm_Key_Value();
+        var ReportType = $("#reporttype").val();
+        if (ReportType == "200003060") {
+            Report = "OtherDBReport/OtherDbByCarDetails5.grf";
+            Data = "/ReportManager/PrintViewReport/OtherDbDataSetReport3";
+        }
+
+
+        var path = "/ReportManager/PrintViewReport/DisplayViewReportIndex?Report=" + Report + "&Data=" + Data + "&ReportName=" + escape(ReportName);
+        path += "&Parm_Key_Value=" + escape(Parm_Key_Value) + escape("reporttype☻" + ReportType + "☻true");
+        path += "&Parameter=" + escape(Parameter);
+        $("#iframeReport").attr("src", path);
+    }
+    //查询条件PK值
+    function GetParm_Key_Value() {
+        var Parm_Key_Value = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var pk_id = $(this).attr('id');
+            var pk_value = $("#" + pk_id).val();
+            if (pk_value != "") {
+                var like = $(this).attr('like');
+                Parm_Key_Value += pk_id + "☻" + (pk_value == null ? "" : pk_value) + "☻" + like + "≌";
+            }
+        });
+        return Parm_Key_Value
+    }
+    //查询条件名称值
+    function GetParm_Key_Name() {
+        var Parm_Key_Name = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var type = this.type;
+            var pk_id = $(this).attr('id');
+            var pk_value = "";
+            if (type == "hidden") {
+                pk_value = $("#" + pk_id + "Name").val();
+            } else {
+                pk_value = $("#" + pk_id).val();
+            }
+            if (pk_value != "" && pk_value != undefined && pk_value != 'undefined' && pk_id != "bdate" && pk_id != "edate" && pk_id != "reporttype") {
+                if (Parm_Key_Name == "") {
+                    Parm_Key_Name += pk_value;
+                } else {
+                    Parm_Key_Name += "-" + pk_value;
+                }
+            }
+        });
+        return Parm_Key_Name;
+    }
+
+    function SelectMaterialType() {
+        $("#iframeReport").hide();
+        var url = "/Utility/SelectMaterialType";
+        openMyDialog(url, "Form11111", "选取物料分类信息", 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText("PK_MARBASCLASSNAME", "PK_MARBASCLASS");
+                 $("#iframeReport").show();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText("PK_MARBASCLASSNAME", "PK_MARBASCLASS");
+                 $("#iframeReport").show();
+             });
+    }
+
+    function SelectMaterial() {
+        $("#iframeReport").hide();
+        var PK_MARBASCLASS = $("#PK_MARBASCLASS").val();
+        var url = "/Utility/SelectMaterial";
+        if (PK_MARBASCLASS != "") {
+            url += "?matclass=" + PK_MARBASCLASS;
+        }
+        openMyDialog(url, "Form11111", "选取物料信息", 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText("PK_MaterialName", "PK_Material");
+                 $("#iframeReport").show();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText("PK_MaterialName", "PK_Material");
+                 $("#iframeReport").show();
+             });
+    }
+
+
+    function SelectDept(txtname, txtid, title) {
+        $("#iframeReport").hide();
+        var url = "/Utility/SelectDept";
+        openMyDialog(url, "Form11111", title, 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText(txtname, txtid);
+                 $("#iframeReport").show();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText(txtname, txtid);
+                 $("#iframeReport").show();
+             });
+    }
+</script>
+<div id="layoutA" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="QueryArea">
+            <table border="0" class="form-find" style="height: 45px;">
+                <tr>
+                    <th>
+                        报表类型：
+                    </th>
+                    <td colspan="2">
+                        <select id="reporttype" name="reporttype" class="select" style="width: 140px;">
+                            <option value="200003060">化验包使用情况明细</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        车间：
+                    </th>
+                    <td colspan="2">
+                        <input id="PK_SENDORG" type="hidden" />
+                        <input id="SENDSTORE" type="text" class="txt" style="width: 130px" items="车间" dbfield="true" like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        班组：
+                    </th>
+                    <td>
+                        <select id="QXBC" class="select" style="width: 135px" dbfield="true" like="false">
+                            <option value="">请选择</option>
+                            <option value="白班">白班</option>
+                            <option value="中班">中班</option>
+                        </select>
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <th>
+                        车号：
+                    </th>
+                    <td colspan="2">
+                        <input id="PCCARSNAME" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>
+                        开始时间：
+                    </th>
+                    <td colspan="2">
+                        <input id="bdate" type="text" class="txt Wdate" style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM-dd 00:00:00")"
+                               onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" dbfield="true" like="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        结束时间：
+                    </th>
+                    <td colspan="2">
+                        <input id="edate" type="text" class="txt Wdate" style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM-dd 23:59:59")"
+                               onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" dbfield="true" like="false" />
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <th>
+                    </th>
+                    <td colspan="2">
+                        <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="LoadReport()" />
+                        <input id="btnClear" type="button" class="btnSearch" value="清 空" onclick="ClearValue()" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <iframe id="iframeReport" src="" scrolling="auto" frameborder="0" scrolling="no"
+                width="100%" height="100%"></iframe>
+    </div>
+</div>

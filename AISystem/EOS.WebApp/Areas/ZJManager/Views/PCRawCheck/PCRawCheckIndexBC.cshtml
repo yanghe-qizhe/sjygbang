@@ -1,0 +1,465 @@
+﻿@{
+    ViewBag.Title = "包材化学检测";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键 
+      var PCRAWTYPE = GetQuery("PCRAWTYPE");
+         var CreateUserName = "@ViewBag.CreateUserName";
+    $(function () { 
+       BindAutocomplete("STORE", "PK_STORE", "Store", "200", "150", "");
+          BindAutocomplete("ORGNAME", "PK_ORG", "Company", "200", "150", "");
+        GetGrid();  
+        GetGrid2("");   
+    })
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var PRINTCODE = $("#PRINTCODE").val(); 
+           var BILLNO = $("#BILLNO").val(); 
+           var PK_STORE = $("#PK_STORE").val();
+        var CHESTATUS = $("#CHESTATUS").val(); 
+        var ISKZ= $("#ISKZ").val();
+            var MATERIALNAME = $("#MATERIALNAME").val();
+         var MATERIALSPEC = $("#MATERIALSPEC").val();
+          var PK_ORG = $("#PK_ORG").val(); 
+             var CQDEF1 = $("#CQDEF1").val(); 
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJManager/PCRawCheck/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&PRINTCODE=' + escape(PRINTCODE)+ '&ISKZ=' + ISKZ +'&PCRAWTYPE='+PCRAWTYPE + '&MATERIALNAME=' + escape(MATERIALNAME)+ '&MATERIALSPEC=' + escape(MATERIALSPEC) +"&BILLNO="+BILLNO+"&PK_ORG="+PK_ORG+"&PK_STORE="+PK_STORE+"&CQDEF1="+CQDEF1, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+      
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJManager/PCRawCheck/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime +'&PCRAWTYPE='+PCRAWTYPE,
+            datatype: "json",
+          height: $(window).height() - 330,
+        autowidth: true,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', width: 100, align: 'center',align:'center',hidden:true }, 
+                      { label: '化验单号', name: 'BILLNO', index: 'BILLNO', width: 120, align: 'center'  }, 
+ 
+                { label: 'AUDITSTATUS', name: 'AUDITSTATUS', index: 'AUDITSTATUS', width: 100,  align:'center',hidden:true }, 
+                {
+                    label: '审批状态', name: 'AUDITSTATUSNAME', index: 'AUDITSTATUSNAME', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未审批</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>已审批</span>"; 
+                    }
+                },
+                 { label: 'CYID', name: 'CYID', index: 'CYID', width: 100,  align:'center',hidden:true }, 
+                { label: '制样码', name: 'PRINTCODE', index: 'PRINTCODE', width: 150, align: 'left',align:'center' }, 
+               { label: '供应商', name: 'SUPPLYNAME', index: 'SUPPLYNAME', width: 150, align: 'center'  }, 
+                { label: '物料编码', name: 'MATERIALCODE', index: 'MATERIALCODE', width: 80, align: 'center'  }, 
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 130, align: 'center'  },  
+                 { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'center'  },  
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 80, align: 'center' },
+                  { label: 'ZJRESULT', name: 'ZJRESULT', index: 'ZJRESULT', width:70,  align:'center',hidden:true }, 
+                {
+                    label: '合格判定', name: 'ZJRESULTNAME', index: 'ZJRESULTNAME', width: 70, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:blue;font-size:15px'>检验合格</span>";
+                        if (cellvalue == '1') return "<span style='color:red;font-size:15px'>检验不合格</span>"; 
+                    }
+                },
+                { label: 'CZTYPE', name: 'CZTYPE', index: 'CZTYPE', width: 70,  align:'center',hidden:true }, 
+               {
+                    label: '处置方式', name: 'CZTYPENAME', index: 'CZTYPENAME', width: 70, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:blue;font-size:15px'>合格</span>";
+                       else if (cellvalue == '1') return "<span style='color:green ;font-size:15px'>让步接收</span>"; 
+                       else if (cellvalue == '2') return "<span style='color:blue;font-size:15px'>退货</span>"; 
+                        else  if (cellvalue == '3') return "<span style='color:blue;font-size:15px'>合格扣减</span>"; 
+                          else return "";
+                    }
+                },
+                { label: 'ISKZ', name: 'ISKZ', index: 'ISKZ', width: 80,  align:'center',hidden:true }, 
+                 {  label: '提交采购扣重', name: 'ISKZNAME', index: 'ISKZNAME', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>否</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>是</span>"; 
+                    }
+                }, 
+                 { label: '检验结果', name: 'ZJRESULTMEMO', index: 'ZJRESULTMEMO', width: 200,  align:'center'}, 
+                   { label: '审批人', name: 'AUDITUSER', index: 'AUDITUSER', width: 80,  align:'center' },
+              { label: '审批时间', name: 'AUDITDATE', index: 'AUDITDATE', width: 80,  align:'center' },
+                   { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 60, align: 'center' },
+                 { label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center' },
+                { label: '卸货地点', name: 'STORE', index: 'STORE', width: 100, align: 'center' },
+               { label: '入厂厂区', name: "CQDEF1", width: 100, sortable: false, align: 'center' ,
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1000')
+                        return "阳光纸业";
+                    else if (cellvalue == '6000')
+                        return "盛世热电";
+                    else if (cellvalue == '7000')
+                        return "新迈纸业";
+                    else if (cellvalue == '8000')
+                        return "阳光王子";
+                    else if (cellvalue == '9000')
+                        return "华迈纸业";
+                    else if (cellvalue == '9010')
+                        return "科迈制浆";
+                            else
+                             return "";
+                }
+                }, 
+                { label: '接收公司', name: 'ORGNAME', index: 'ORGNAME', width: 160, align: 'left' },
+                           { label: '打印次数', name: 'PRINTCOUNT', index: 'PRINTCOUNT', width: 80, align: 'center' },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 150, align: 'center' }
+            ],
+            //multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            //单击事件
+            onSelectRow: function (RowIndx) {  
+                var KeyValue = GetJqGridRowValue("#gridTable", "ID"); 
+                $("#gridTable2").jqGrid('setGridParam', {
+                   url: "@Url.Content("~/ZJManager/PCRawCheck/GetOrderEntryList")?KeyValue=" + escape(KeyValue), page: 1
+                }).trigger('reloadGrid'); 
+            }
+
+        });
+        
+    }
+      
+    function GetGrid2(MAINID) {  
+        $("#gridTable2").jqGrid({ 
+            url: "@Url.Content("~/ZJManager/PCRawCheck/GetOrderEntryList")?MAINID=" + escape(MAINID),
+            datatype: "json",
+             height:130 ,
+            width:$(window).width()-5,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, align: 'left', hidden: true },
+                { label: '质检项', name: 'ITEMNAME', index: 'ITEMNAME', width: 80, align: 'center' },
+                { label: 'ZJVALUETYPE', name: 'ZJVALUETYPE', index: 'ZJVALUETYPE', width: 100,  align:'center',hidden:true }, 
+                { label: '质检值', name: 'ZJVALUE', index: 'ZJVALUE', width: 80, align: 'center' ,
+                    formatter: function (cellvalue, options, rowObject) {
+                        var zjvaluetype=rowObject["ZJVALUETYPE"];
+                        if(zjvaluetype=="1"){
+                            return cellvalue;
+                       }else{
+                        if (cellvalue == '0' ) return "<span style='color:blue;font-size:15px'>合格</span>";
+                        if (cellvalue == '1') return "<span style='color:red;font-size:15px'>不合格</span>";
+                       }
+                    }
+                    },
+                { 
+                    label: '合格判定', name: 'ZJBZRESULT', index: 'ZJBZRESULT', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:blue;font-size:15px'>合格</span>";
+                        if (cellvalue == '1') return "<span style='color:red;font-size:15px'>不合格</span>";
+                        if (!IsNull(cellvalue)) return "";      
+                    }
+                 }, 
+                   { label: '检验标准', name: 'CHECKMEMO', index: 'CHECKMEMO', width: 150, align: 'center' } ,
+                { label: '描述', name: 'ZJBZRESULTNAME', index: 'ZJBZRESULTNAME', width: 200, align: 'center' } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:false, 
+            pager: false,
+            sortname: 'SORT',
+            sortorder: 'ASC',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        columnModelData("#gridTable2");
+    } 
+ 
+    //化学检测完成
+    function CHEFinish() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID"); 
+        if (IsChecked(KeyValue)) {
+           var CHESTATUS = GetJqGridRowValue("#gridTable", "CHESTATUS");
+            if ( CHESTATUS == "1") {
+                tipDialog("当前批次已经检测完成,无法做完成操作", 3, 0);
+                return false;
+            }  
+                confirmDialog("提示", "确定要完成当前化学检测结果？", function (r) {
+                if (r) {
+                   Loading(true, "正在提交数据...");
+                    window.setTimeout(function () {
+                        AjaxJson("/ZJManager/PCRawCheck/CHEFinish?KeyValue=" + escape(KeyValue), "", function (data) {
+                            tipDialog(data.Message, 3, data.Code);
+                            if (data.Code > 0) {
+                                windowload();
+                            }
+                        });
+                    }, 200);
+                }
+            }); 
+           
+        }
+    }
+
+    //取消化学检测完成
+    function CHEUNFinish() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID"); 
+        if (IsChecked(KeyValue)) {
+            var CHESTATUS = GetJqGridRowValue("#gridTable", "CHESTATUS");
+            if ( CHESTATUS == "0") {
+                tipDialog("当前批次检测未完成,无法做取消完成的操作", 3, 0);
+                return false;
+            } 
+             var AUDITSTATUS = GetJqGridRowValue("#gridTable", "AUDITSTATUS");
+            if ( AUDITSTATUS == "1") {
+                tipDialog("当前批次已审批,无法做取消完成的操作", 3, 0);
+                return false;
+            } 
+            confirmDialog("提示", "确定要取消完成当前化学检测结果？", function (r) {
+                if (r) {
+                   Loading(true, "正在提交数据...");
+                    window.setTimeout(function () {
+                        AjaxJson("/ZJManager/PCRawCheck/CHEUNFinish?KeyValue=" + escape(KeyValue), "", function (data) {
+                            tipDialog(data.Message, 3, data.Code);
+                            if (data.Code > 0) {
+                                windowload();
+                            }
+                        });
+                    }, 200);
+                }
+            }); 
+        
+        }
+    }
+
+      //新增
+   function btn_add(){   
+    var title = "新增原料检测";
+    if(PCRAWTYPE=="1"){
+    title = "新增化工检测";
+    }
+     if(PCRAWTYPE=="2"){
+    title = "新增包材检测";
+    }
+  if(PCRAWTYPE=="3"){
+    title = "新增木浆检测";
+    }
+      if(PCRAWTYPE=="5"){
+    title = "新增木片检测";
+    }
+          if(PCRAWTYPE=="7"){
+    title = "新增废纸检测";
+    }
+            AddTabMenu("PCRawCheckForm", "@Url.Content("~/ZJManager/PCRawCheck/PCRawCheckForm")?ModuleId="+ModuleId+'&PCRAWTYPE='+PCRAWTYPE, title, "page_white_add.png", true, true, true);
+   }
+   //编辑
+    function btn_edit() {
+    
+     var AUDITSTATUS = GetJqGridRowValue("#gridTable", "AUDITSTATUS");
+            if (AUDITSTATUS == "1") {
+                tipDialog("数据已审批！", 3,"");
+                return false;
+            }
+                  var CREUSER = GetJqGridRowValue("#gridTable", "CREUSER");
+               if(CreateUserName!=CREUSER){
+                tipDialog("创建人为:"+CREUSER+"，您没有权限修改！", 3,"");
+                return false;
+            }
+     var title = "编辑原料检测";
+    if(PCRAWTYPE=="1"){
+    title = "编辑化工检测";
+    }
+     if(PCRAWTYPE=="2"){
+    title = "编辑包材检测";
+    }
+     if(PCRAWTYPE=="3"){
+    title = "编辑木浆检测";
+    }
+      if(PCRAWTYPE=="5"){
+    title = "编辑木片检测";
+    }
+    if(PCRAWTYPE=="7"){
+    title = "编辑废纸检测";
+    }
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+                AddTabMenu("PCRawCheckForm", "@Url.Content("~/ZJManager/PCRawCheck/PCRawCheckForm")?op=edit&KeyValue=" + KeyValue+"&ModuleId="+ModuleId+'&PCRAWTYPE='+PCRAWTYPE, title, "page_white_edit.png", true, true, true);
+        }
+    }
+
+
+      //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var AUDITSTATUS = GetJqGridRowValue("#gridTable", "AUDITSTATUS");
+            if (AUDITSTATUS == "1") {
+                tipDialog("数据已审批，请取消审批后删除数据！", 3,"");
+                return false;
+            }
+                  var CREUSER = GetJqGridRowValue("#gridTable", "CREUSER");
+               if(CreateUserName!=CREUSER){
+                tipDialog("创建人为:"+CREUSER+"，您没有权限删除！", 3,"");
+                return false;
+            }
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ZJManager/PCRawCheck/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+       //打印 
+   function Print(){
+           var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsCheckeds(KeyValue)) {
+        var Parm_Key_Value = escape("reporttype☻☻true≌KeyValue☻" + KeyValue + "☻true≌");
+         AddTabMenu("JSReportIndex", "@Url.Content("~/ZJManager/PCRawCheck/CheckReportIndex")?Parm_Key_Value=" + Parm_Key_Value+"&ModuleId="+ModuleId, "打印质检报告单", "page_white_edit.png", true, true, true);
+        }
+    }
+
+    function CheckPrint() {
+     var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+           var title = "管理员验证";
+        var url = "/ZJManager/PCRawCheck/SELECTCHECKUSER";
+        var bol=false ;
+         var PRINTCOUNT = GetJqGridRowValue("#gridTable", "PRINTCOUNT");
+            if( PRINTCOUNT>0){
+                bol=true;
+            }else{
+                Print();
+            }
+            if(bol==true) 
+             {
+                 OpenWindows(url,title);
+             }
+        }
+    }
+ function OpenWindows(url,title){
+        openMyDialog(url, "SELECTCHECKUSER", title, 300, 100,
+             function (iframe) {
+                 top.frames[iframe].SelectText();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText();
+             });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+        $("#gridTable2").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    化验单号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制样条码：
+                </th>
+                <td>
+                    <input id="PRINTCODE" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    提交采购扣重：
+                </th>
+                <td>
+                    <select id="ISKZ" name="ISKZ" class="select" style="width: 125px;">
+                        <option value="">---请选择---</option>
+                        <option value="0">是</option>
+                        <option value="1">否</option>
+                    </select>
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    接收公司：
+                </th>
+                <td>
+                    <input id="PK_ORG" type="hidden" />
+                    <input id="ORGNAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    规格：
+                </th>
+                <td>
+                    <input id="MATERIALSPEC" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    卸货地点：
+                </th>
+                <td>
+                    <input id="PK_STORE" type="hidden" />
+                    <input id="STORE" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    入厂厂区：
+                </th>
+                <td>
+                    <select id="CQDEF1" class="txt select" style="width: 125px">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        <option value="6000">盛世热电</option>
+                        <option value="7000">新迈纸业</option>
+                        <option value="8000">阳光王子</option>
+                        <option value="9000">华迈纸业</option>
+                        <option value="9010">科迈制浆</option>
+                    </select>
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+        <table id="gridTable2">
+        </table>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

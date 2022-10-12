@@ -1,0 +1,319 @@
+﻿@{
+    ViewBag.Title = "采购磅单>>补增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var op = GetQuery('op'); //操作类型
+    $(function () {
+        BindAutocomplete("RECEIVESTORE", "PK_RECEIVESTORE", "Store", "", "", "");
+        if (!!KeyValue) {
+            //信息
+            InitControl();
+            if (op == "edit") {
+                //                $("#MAOAMOUNT").attr("readonly", true);
+                //                $("#MAOAMOUNT").attr("class", "txt readonly")
+                //                $("#PIAMOUNT").attr("readonly", true);
+                //                $("#PIAMOUNT").attr("class", "txt readonly")
+            } else {
+                KeyValue = "";
+            }
+        }
+        $("#SENDUNITCODE").change(function () {
+            var SENDUNITNAME = $("#SENDUNITCODE option:selected").text();
+            $("#SENDUNITNAME").val(SENDUNITNAME);
+
+        });
+        $("#MAOAMOUNT").click(function () {
+            $(this).select();
+        }).bind('keyup', function () {
+            GetSuttle(this.id);
+        });
+        $("#PIAMOUNT").click(function () {
+            $(this).select();
+        }).bind('keyup', function () {
+            GetSuttle(this.id);
+        });
+        $("#KOUAMOUNT").click(function () {
+            $(this).select();
+        }).bind('keyup', function () {
+            GetSuttle(this.id);
+        });
+
+    })
+    //计算
+    function GetSuttle(id) {
+        var Gross = $("#MAOAMOUNT").val();
+        var Tare = $("#PIAMOUNT").val();
+        var KNom = $("#KOUAMOUNT").val();
+        if (Tare * 1 > Gross * 1) {
+            top.TipMsg("皮重不能大于毛重！", 4000, "error");
+            $("#PIAMOUNT").val('0');
+            return false;
+        }
+
+        if (Gross != 0 && Gross != undefined && Tare != 0 && Tare != undefined) {
+            var Suttle = FloatSub(Gross, Tare);
+            Suttle = FloatSub(Suttle, KNom);
+            if (Suttle * 1 < 0) {
+                top.TipMsg("净重不能小于零！", 4000, "error");
+                $("#PIAMOUNT").val('0');
+                $("#FACTAMOUNT").val('0');
+                return false;
+            } else {
+                $("#FACTAMOUNT").val(FormatCurrency(Suttle));
+            }
+        } else {
+            $("#FACTAMOUNT").val('0.000');
+        }
+
+    }
+
+
+    function SELECTHYCONVOPER() {
+        var title = "选取铁水转序计划单信息（双击表格添加）";
+        var url = "/WeightManager/TSWeight/SELECTHYCONVOPER";
+        Dialog(url, "SELECTHYCONVOPER", title, 900, 400);
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/WeightManager/TSWeight/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebMyControls(data);
+            });
+        }
+    }
+
+    function SetWebMyControls(data) {
+        try {
+            for (var key in data) {
+                if (op == "add" && (key == "BILLNO" || key == "CARNUM" || key == "MAOAMOUNT" || key == "PIAMOUNT" || key == "FACTAMOUNT" || key == "PITIME" || key == "MAOTIME" )) {
+                    continue;
+                }
+                var id = $('#' + key);
+                if (id.attr('id')) {
+                    var value = $.trim(data[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                    var type = id.attr('type');
+                    switch (type) {
+                        case "checkbox":
+                            if (value == 1) {
+                                id.attr("checked", 'checked');
+                            } else {
+                                id.removeAttr("checked");
+                            }
+                            break;
+                        default:
+                            id.val(value);
+                            break;
+                    }
+                }
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    AjaxJson("/WeightManager/TSWeight/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+     
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            计划单号：
+        </th>
+        <td class="formValue">
+            <input id="PK_EID" type="text" class="txt" onclick="SELECTHYCONVOPER();" />
+        </td>
+        <th class="formTitle">
+            计量单号：
+        </th>
+        <td class="formValue">
+            <input id="BILLNO" maxlength="50" type="text" class="txt readonly" datacol="yes" readonly=readonly
+                    err="计量单号" checkexpession="NotNull"  value="@ViewBag.BillNo"/>
+        </td>
+        <th class="formTitle">
+            发货单位：
+        </th>
+        <td class="formValue">
+ 
+            <input id="SENDUNITNAME" type="hidden" />
+            <select id="SENDUNITCODE" class="txtselect" datacol="yes" err="发货单位" checkexpession="NotNull">
+                <option value="">---请选择---</option>
+                <option value="1001E510000000000A9L">炼铁厂</option>
+                <option value="1001E510000000000AF9">炼铁厂-八高炉作业区</option>
+                <option value="1001E510000000000AFG">炼铁厂-九高炉作业区</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            收货单位：
+        </th>
+        <td class="formValue">
+            <input id="ACCEPTUNITCODE" type="hidden" value="1001E510000000000AG6" />
+            <input id="ACCEPTUNITNAME" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                datacol="no" err="收货单位" checkexpession="NotNull" value="炼钢厂-转炉业务区" />
+        </td>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MTCODE" type="hidden" value="1001A1100000000LV53Q" />
+            <input id="STANDNAME" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                datacol="yes" err="物料" checkexpession="NotNull" value="铁水" />
+        </td>
+        <th class="formTitle">
+            规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALKIND" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+         罐号：
+        </th>
+        <td class="formValue">
+            <input id="CARNUM" type="text" class="txt"   datacol="yes"
+                err="罐号" checkexpession="NotNull" />
+        </td>
+         <th class="formTitle">
+            炉号：
+        </th>
+        <td class="formValue">
+            <input id="STOVENUM" type="text" class="txt" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            预到量：
+        </th>
+        <td class="formValue">
+            <input id="CALCAMOUNT" type="text" class="txt" datacol="yes" err="预到量" checkexpession="NotNull"
+                onfocus="IsMoney(this.id);" maxlength="5" value="0" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            毛重：
+        </th>
+        <td class="formValue">
+            <input id="MAOAMOUNT" type="text" class="txt" datacol="yes" err="毛重" checkexpession="DoubleOrZero"
+                onfocus="IsMoney(this.id);" maxlength="5" value="0" />
+        </td>
+        <th class="formTitle">
+            皮重：
+        </th>
+        <td class="formValue">
+            <input id="PIAMOUNT" type="text" class="txt" datacol="yes" err="皮重" checkexpession="DoubleOrZero"
+                onfocus="IsMoney(this.id);" maxlength="5" value="0" />
+        </td>
+        <th class="formTitle">
+            净重：
+        </th>
+        <td class="formValue">
+            <input id="FACTAMOUNT" type="text" class="txt readonly" datacol="yes" err="净重" readonly="readonly"
+                checkexpession="DoubleOrZero" maxlength="5" value="0" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            皮重时间：
+        </th>
+        <td class="formValue">
+            <input id="PITIME" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+        </td>
+        <th class="formTitle">
+            毛重时间：
+        </th>
+        <td class="formValue">
+            <input id="MAOTIME" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+        onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+        </td>
+        <th class="formTitle">
+            扣减：
+        </th>
+        <td class="formValue">
+            <input id="KOUAMOUNT" type="text" class="txt" datacol="yes" err="扣减" checkexpession="Double"
+                onfocus="IsMoney(this.id);" maxlength="5" value="0" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            称重站点：
+        </th>
+        <td class="formValue">
+            <input id="WEIGHTSTATION" type="text" class="txt readonly" readonly="readonly" dbfield="true"
+                value="H13" />
+        </td>
+        <th class="formTitle">
+            称重人：
+        </th>
+        <td class="formValue">
+            <input name="WEIGHTER" id="WEIGHTER" type="text" class="txt"  dbfield="true" value="@ViewBag.CreateUserName"/>
+        </td>
+        <th class="formTitle">
+            收料部门：
+        </th>
+        <td class="formValue">
+            <input id="PK_DEPARTMENT" type="hidden" value="1001E510000000000AG6" />
+            <input id="DEPARTMENTNAME" type="text" class="txt" onclick='SelectDept1("DEPARTMENTNAME", "PK_DEPARTMENT","COMPANYNAME","PK_COMPANY", "选取部门信息");'
+                datacol="No" err="收料部门" checkexpession="NotNull" value="炼钢厂-转炉业务区" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            创建时间：
+        </th>
+        <td class="formValue">
+            <input id="CREATEDATE" type="text" class="txt readonly" readonly="readonly"
+                        datacol="yes" err="制单时间" checkexpession="NotNull"  value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+        </td>
+        <th class="formTitle">
+            创建人：
+        </th>
+        <td class="formValue">
+            <input id="CREATEUSER" type="text" class="txt readonly" readonly="readonly"  dbfield="true" value="@ViewBag.CreateUserName" />
+        </td>
+        <th class="formTitle">
+            收料单位：
+        </th>
+        <td class="formValue">
+            <input id="PK_COMPANY" type="hidden" value="1001E510000000000A9R" />
+            <input id="COMPANYNAME" type="text" class="txt readonly" readonly="readonly" datacol="No"
+                err="收料单位" checkexpession="NotNull" value="炼钢厂" />
+        </td>
+    </tr>
+</table>
+</form>

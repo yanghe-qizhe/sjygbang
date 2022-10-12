@@ -1,0 +1,190 @@
+﻿@{
+    ViewBag.Title = "物料单价》表单页面";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var op = GetQuery("op");
+    $(function () {
+
+        //仓库
+        InitControl();
+        MateilAutocomplete();
+        BindAutocomplete("SUPPLIERNAME", "PK_SUPPLIER", "Company1", "", "", "");
+    });
+
+    function MateilAutocomplete() {
+        var txtname = "MATERIALNAME";
+        var $txtid = $("#PK_MATERIAL");
+        var $txtname = $("#MATERIALNAME");
+        var $txtspec = $("#MATSPEC");
+        var $txtmatcode = $("#MATCODE");
+        var $txtgrade = $("#GRADE");
+
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtspec.val(data.materialspec);
+            $txtgrade.val(data.classname);
+            $txtmatcode.val(data.code);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 60%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="materialspec" style="width: 40%;">' + (DataJson[i].materialspec !=null?DataJson[i].materialspec :"")+ '</td>';
+                    html += '<td id="classname" style="width: 100px">' + DataJson[i].pk_marbasclassname + '</td>';
+                    html += '<td id="istype" style="display: none;">' + DataJson[i].istype + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtspec.val(data.materialspec);
+                    $txtgrade.val(data.classname);
+                    $txtmatcode.val(data.code);
+                });
+            });
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/MaterialPrice/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        var keyValue = GetQuery('KeyValue');
+        if (op == "copy") {
+            keyValue = "";
+        }
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/MaterialPrice/SubmitOrderForm?KeyValue=" + keyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+    <div id="message" style="display: none">
+    </div>
+    <table class="form">
+        <tr>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="ID" type="hidden" />
+                <input id="MATCODE" type="hidden" />
+                <input id="PK_MATERIAL" type="hidden" />
+                <input id="MATERIALNAME" type="text" class="txt required" datacol="yes" err="物料" checkexpession="NotNull" style="width:220px;" autocomplete="off" />
+            </td>
+            <th class="formTitle">
+                规格：
+            </th>
+            <td class="formValue">
+                <input id="MATSPEC" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                所属工厂：
+            </th>
+            <td class="formValue">
+               
+                <input id="PK_SUPPLIER" type="hidden" />
+                <input id="SUPPLIERNAME" type="text" class="txt required" datacol="yes" err="所属工厂" checkexpession="NotNull" style="width:220px;" autocomplete="off" />
+            </td>
+            <th class="formTitle">
+                物料分类：
+            </th>
+            <td class="formValue">
+                <input id="GRADE" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+
+        </tr>
+        <tr>
+            <th class="formTitle">
+                单价：
+            </th>
+            <td class="formValue">
+                <input id="PRICE" type="text" class="txt required NumDecText" datacol="yes" err="单价" checkexpession="NotNull" autocomplete="off" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                执行开始时间：
+            </th>
+            <td class="formValue">
+                <input id="IMPLEMENTDATE" type="text" class="txt Wdate" onfocus="WdatePicker({dateFmt: &#39;yyyy-MM-dd 00:00:00&#39;})" datacol="yes" err="执行开始时间" checkexpession="NotNull" />
+            </td>
+            @*//新增执行结束时间字段  myt/sxy 220919*@
+            <th class="formTitle">
+                执行结束时间：
+            </th>
+            <td class="formValue">
+                <input id="ENDDATE" type="text" class="txt Wdate" onfocus="WdatePicker({dateFmt: &#39;yyyy-MM-dd 00:00:00&#39;})" datacol="yes" err="执行结束时间" checkexpession="NotNull" />
+            </td>
+            @*//新增执行结束时间字段  myt/sxy 220919*@
+        </tr>
+        <tr>
+            <th class="formTitle">
+                是否启用：
+            </th>
+            <td class="formValue" colspan="3">
+                <select id="ENABLESTATE" class="txtselect" datacol="yes" err="是否启用" checkexpession="NotNull">
+                    <option value="">---请选择---</option>
+                    <option value="0" selected="selected">停用</option>
+                    <option value="1">启用</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+
+            <th class="formTitle">
+                描述：
+            </th>
+            <td class="formValue" colspan="3">
+                <textarea id="VMEMO" name="VMEMO" maxlength="200" class="txtArea" rows="5"></textarea>
+            </td>
+        </tr>
+    </table>
+</form>

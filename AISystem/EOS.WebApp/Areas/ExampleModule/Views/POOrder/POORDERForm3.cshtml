@@ -1,0 +1,270 @@
+﻿@{
+    ViewBag.Title = "POORDERDetail";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        setTimeout(function () {
+            GetGrid();
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ExampleModule/POOrder/GetOrderEntryListD", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    $("#USERID➩" + rowindex).val(rowData.USERID);
+                    $("#USERNAME➩" + rowindex).val(rowData.USERNAME);
+                    $("#MEMO➩" + rowindex).val(rowData.MEMO);
+                    $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').attr("datacol", "yes");
+                    rowindex++;
+                });
+            });
+        }, 300);
+    })
+
+    function InitControl() {
+        var rowindex = 1;
+        var frameid = tabiframeId();
+        var $parentobj = top.frames[frameid];
+        var rowData = $parentobj.SelectDatas();
+        $("#PK_ORDER").val(rowData.PK_ORDER);
+        $("#VBILLCODE").val(rowData.VBILLCODE);
+        $("#SUPPLIERNAME").val(rowData.PK_SUPPLIERNAME);
+        $("#BILLTYPE").val(rowData.BILLTYPE);
+        $("#DBILLDATE").val(rowData.DBILLDATE);
+        $("#DEPNAME").val(rowData.DEPNAME);
+        $("#ACTUALVALIDATE").val(rowData.ACTUALVALIDATE);
+    }
+
+    /*车皮明细begin=======================================*/
+    //订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 315,
+            autowidth: true,
+            colModel: [
+               { label: '散户分组[<font face="宋体">*</font>]', name: "USERNAME", width: 200, sortable: false, align: 'center' },
+               { label: '说明', name: "MEMO", width: 150, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+        //默认添加6行 空行
+        for (var i = 1; i < 51; i++) {
+            var rowdata = {
+                USERNAME: '<input id="USERNAME➩' + i + '" class="editable center" type="text" kstype="6" style="cursor:pointer"  /><input id="USERID➩' + i + '" type="hidden"/>',
+                MEMO: '<input id="MEMO➩' + i + '" class="editable center" type="text" />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+            GROUPAutocomplete(i);
+        }
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var index = $(this).text();
+            $("#USERID➩" + index).val("");
+            $("#USERNAME➩" + index).val("");
+            $("#MEMO➩" + index).val("");
+            if (index == 1) {
+                array = [];
+            }
+        });
+
+    }
+    //分组 
+    function GROUPAutocomplete(rowindex) {
+        var txtname = "USERNAME➩" + rowindex;
+        var $txtid = $("#USERID➩" + rowindex);
+        var $txtname = $("#USERNAME➩" + rowindex);
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+                if (this.value == "") {
+                    $txtid.val("");
+                }
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            if (!IsExist(rowindex, data.id)) {
+                $txtid.val(data.id);
+                $txtname.val(data.name);
+            } else {
+                top.TipMsg("分组已存在,不能重复添加", 4000, "error");
+                return false;
+            }
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Dictionary", { items: '散户分组', keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="code" style="width: 20%;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 80%;">' + DataJson[i].name + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    if (!IsExist(rowindex, data.id)) {
+                        $txtid.val(data.id);
+                        $txtname.val(data.name);
+                    } else {
+                        top.TipMsg("分组已存在,不能重复添加", 4000, "error");
+                        return false;
+                    }
+                });
+            });
+        }
+    }
+    var array = new Array();
+
+    function IsExist(index, code) {
+        if (!ArrayExists(array, code)) {
+            array[index] = code;
+            return false;
+        } else {
+            return true;
+        }
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    var PK_ORDER = $("#PK_ORDER").val();
+                    var VBILLCODE = $("#VBILLCODE").val();
+                    AjaxJson("/ExampleModule/POOrder/SubmitOrderForm3?PK_ORDER=" + PK_ORDER + "&VBILLCODE=" + escape(VBILLCODE), postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        closeDialog();
+                    });
+                }, 200);
+            }
+        });
+    }
+     
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn"><span>
+                        <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            订单编号：
+        </th>
+        <td class="formValue">
+            <input id="PK_ORDER" type="hidden" />
+            <input id="VBILLCODE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            订单类型：
+        </th>
+        <td class="formValue">
+            <input id="BILLTYPE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input id="SUPPLIERNAME" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            采购部门：
+        </th>
+        <td class="formValue">
+            <input id="DEPNAME" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            订单日期：
+        </th>
+        <td class="formValue">
+            <input id="DBILLDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            生效时间：
+        </th>
+        <td class="formValue">
+            <input id="ACTUALVALIDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                明细信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

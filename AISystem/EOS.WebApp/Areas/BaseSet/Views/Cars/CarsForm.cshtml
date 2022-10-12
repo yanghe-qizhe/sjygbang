@@ -1,0 +1,421 @@
+﻿@{
+    ViewBag.Title = "车辆管理》表单页面";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<style>
+    .tableobj
+    {
+        margin: 0px;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    .tableobj tbody td
+    {
+        text-align: left;
+        border-right: 1px solid #ccc;
+        padding: 1px 1px;
+        height: 20px;
+        word-break: break-all;
+    }
+    .tableobj tbody .selected
+    {
+        background-color: #6699cc;
+        color: #fff;
+    }
+    .buttonHuge
+    {
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        -khtml-border-radius: 6px;
+        border-radius: 6px;
+        -moz-box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3);
+        -webkit-box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3);
+        box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3);
+        cursor: pointer;
+        display: inline-block;
+        font-family: "Helvetica Neue" ,Helvetica,Arial,sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+        padding: 10px 16px;
+        outline: none !important;
+        text-align: center;
+        text-decoration: none;
+        position: relative;
+        -moz-box-sizing: border-box !important;
+        line-height: 16px;
+        border-radius: 6px;
+        behavior: url(/Themes/Styles/ie-css3.htc);
+    }
+</style>
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("TRAFFICCOMPANYNAME", "TRAFFICCOMPANY", "TrafficCompany", "200", "120", "");
+        AutocompleteKeyBoard("NAME");
+        InitControl();
+
+    })
+
+    function AutocompleteKeyBoard(id) {
+        $("#" + id).focus(function () {
+            Load_Data(id);
+            //$(this).select();
+        });
+        function Load_Data(id) {
+            var html = "";
+            html += "<tr>";
+            html += "<th colspan=\"3\"><input type=\"text\" id=\"CarsName\" value=\"请输入车号\" class=\"txt\" style=\"margin:5px 0 0 0 ;color:Blue;font-weight: bold;font-size:20px;width:200px;height: 25px;line-height: 25px;\"/></th>";
+            html += "</tr>";
+            html += "<tr><th colspan=\"3\"><table>";
+            html += "<tr>";
+            html += "<th><input type=\"button\" id=\"btnVal3\" value=\"鲁\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"btnVal1\" value=\"豫\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"btnVal2\" value=\"蒙\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal4\" value=\"苏\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal5\" value=\"皖\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal6\" value=\"浙\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal7\" value=\"沪\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal8\" value=\"冀\" class=\"buttonHuge\" /></th>";
+            html += "</tr>";
+
+            html += "<tr>";
+            html += "<th><input type=\"button\" id=\"btnVal9\" value=\"渝\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"btnVal10\" value=\"黑\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"btnVal11\" value=\"桂\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal12\" value=\"甘\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal13\" value=\"陕\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal14\" value=\"吉\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal15\" value=\"赣\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal16\" value=\"湘\" class=\"buttonHuge\" /></th>";
+            html += "</tr>";
+            html += "<tr>";
+            html += "<th><input type=\"button\" id=\"btnVal17\" value=\"云\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"btnVal18\" value=\"辽\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"btnVal19\" value=\"闽\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal20\" value=\"贵\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal21\" value=\"滇\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal22\" value=\"黔\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal23\" value=\"鄂\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal24\" value=\"粤\" class=\"buttonHuge\" /></th>";
+            html += "</tr>";
+
+            html += "<tr>";
+            html += "<th><input type=\"button\" id=\"btnVal3\" value=\"晋\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"btnVal25\" value=\"川\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"btnVal26\" value=\"青\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"btnVal27\" value=\"宁\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal28\" value=\"琼\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal29\" value=\"新\" class=\"buttonHuge\" /></th>";
+            html += "<th> <input type=\"button\" id=\"btnVal30\" value=\"津\" class=\"buttonHuge\" /></th>";
+            html += "<th>&nbsp;</th>";
+            html += "</tr>";
+            html += "</table></th></tr>";
+
+            html += "<tr>";
+            html += "<th><input type=\"button\" id=\"Del\" value=\"←BackSpace\" class=\"buttonHuge\" /></th>";
+            html += " <th><input type=\"button\" id=\"Close\" value=\"确认\" class=\"buttonHuge\" /></th>";
+            html += "<th><input type=\"button\" id=\"Clear\" value=\"清空\" class=\"buttonHuge\" /></th>";
+            html += "</tr>";
+            AutoCompleteKeyBoard(id, "480px", "300px", html, function (r) {
+            });
+        }
+    }
+
+    function AutoCompleteKeyBoard(Objkey, width, height, data, callBack) {
+        if ($('#' + Objkey).attr('readonly') == 'readonly') {
+            return false;
+        }
+        if ($('#' + Objkey).attr('disabled') == 'disabled') {
+            return false;
+        }
+        IndetableRow_autocomplete = 0;
+        scrollTopheight = 0;
+        var X = $("#" + Objkey).offset().top;
+        var Y = $("#" + Objkey).offset().left;
+        $("#div_gridshow").html("");
+        if ($("#div_gridshow").attr("id") == undefined) {
+            $('body').append('<div id="div_gridshow" style="overflow: auto;z-index: 1000;border: 1px solid #A8A8A8;width:' + width + ';height:' + height + ';position: absolute; background-color: #fff; display: none;"></div>');
+        } else {
+            $("#div_gridshow").height(height);
+            $("#div_gridshow").width(width);
+        }
+        var sbhtml = '<table class="tableobj" style="width: 100%;">';
+        if (data != "") {
+            sbhtml += '<tbody>' + data + '</tbody>';
+        } else {
+            sbhtml += '<tbody><tr><td style="color:red;text-align:center;width:' + width + ';">没有找到您要的相关数据！</td></tr></tbody>';
+        }
+        sbhtml += '</table>';
+        $("#div_gridshow").html(sbhtml);
+        $("#div_gridshow").css("left", Y).css("top", X + $('#' + Objkey).height()).show();
+        $("#div_gridshow .grid td").css("border-left", "none").css("padding-left", "2px");
+
+        $("#div_gridshow").find('tbody input').keydown(function (e) {
+            if (!e) e = window.event; //火狐中是 window.event
+            if ((e.keyCode || e.which) == 13) {
+                var val = $("#CarsName").val();
+                if (val != "请输入车号" && val.length > 1) {
+                    $("#" + Objkey).val(val);
+                    $("#div_gridshow").hide();
+                }
+                $("#div_gridshow").hide();
+            }
+        }).click(function () {
+            if ($(this).attr('id') == 'Clear') {
+                $("#" + Objkey).val("");
+                $("#CarsName").val("");
+            } else if ($(this).attr('id') == "Del") {
+                var val = $("#" + Objkey).val();
+                var len = val.length;
+                val = val.substring(0, len - 1);
+                $("#" + Objkey).val(val);
+                val = $("#CarsName").val();
+                len = val.length;
+                val = val.substring(0, len - 1);
+                $("#CarsName").val(val);
+            }
+            else if ($(this).attr('id') == "Close") {
+                var val = $("#CarsName").val();
+                if (val != "请输入车号" && val.length > 1) {
+                    $("#" + Objkey).val(val);
+                    $("#div_gridshow").hide();
+                }
+            } else if ($(this).attr('id') == "CarsName") {
+            } else {
+                $("#CarsName").focus();
+                $("#CarsName").val(this.value);
+                //$("#div_gridshow").hide();
+            }
+        });
+
+        document.onclick = function (e) {
+            var e = e ? e : window.event;
+            var tar = e.srcElement || e.target;
+            if (tar.id != 'div_gridshow') {
+                if ($(tar).attr("id") == 'div_gridshow' || $(tar).attr("id") == Objkey) {
+                    $("#div_gridshow").show();
+                } else {
+                    if ($(tar).attr("id") == "Close") {
+                        $("#div_gridshow").hide();
+                    } else {
+                    }
+                }
+            }
+        }
+
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/Cars/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/Cars/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            内码：
+        </th>
+        <td class="formValue">
+            <input id="CODE" type="text"  class="txt required" datacol="yes" err="内码" checkexpession="NotNull" value="@ViewBag.Code" readonly="readonly"/>
+        </td>
+        <th class="formTitle">
+            车辆类型：
+        </th>
+        <td class="formValue">
+            <select id="CARTYPE" class="txtselect">
+                <option value="0">非倒运</option>
+                <option value="1">倒运</option>
+                <option value="2">工程车辆</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            名称：
+        </th>
+        <td class="formValue">
+            <input id="NAME" type="text" class="txt required" datacol="yes" err="名称" checkexpession="NotNull"
+                maxlength="20" />
+        </td>
+        <th class="formTitle">
+            车型：
+        </th>
+        <td class="formValue">
+            <select id="BRANDMODEL" class="txtselect">
+                <option value="散货车">散货车</option>
+                <option value="汽运集装箱">汽运集装箱</option>
+                <option value="火运集装箱">火运集装箱</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            所属承运商：
+        </th>
+        <td class="formValue">
+            <input id="TRAFFICCOMPANY" type="hidden" datacol="yes" err="所属承运商" checkexpession="NotNull" />
+            <input id="TRAFFICCOMPANYNAME" type="text" class="txt icontree" datacol="yes" err="所属承运商"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            车辆长度：
+        </th>
+        <td class="formValue">
+            <input id="CARL" type="text" class="txt" datacol="no" err="车辆长度" checkexpession="NotNull"
+                maxlength="5" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            车辆高度：
+        </th>
+        <td class="formValue">
+            <input id="CARH" type="text" class="txt" datacol="no" err="车辆高度" checkexpession="NotNull"
+                maxlength="5" />
+        </td>
+        <th class="formTitle">
+            车辆宽度：
+        </th>
+        <td class="formValue">
+            <input id="CARW" type="text" class="txt" datacol="no" err="车辆宽度" checkexpession="NotNull"
+                maxlength="5" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            车辆所有权：
+        </th>
+        <td class="formValue">
+            <input id="OWNERSHIP" type="text" class="txt" datacol="no" err="车辆高度" checkexpession="NotNull"
+                maxlength="50" />
+        </td>
+        <th class="formTitle">
+            车架号：
+        </th>
+        <td class="formValue">
+            <input id="VIN" type="text" class="txt" datacol="no" err="车架号" checkexpession="NotNull"
+                maxlength="50" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            发动机号：
+        </th>
+        <td class="formValue">
+            <input id="ENGINENO" type="text" class="txt" datacol="no" err="发动机号" checkexpession="NotNull"
+                maxlength="50" />
+        </td>
+        <th class="formTitle">
+            核定皮重：
+        </th>
+        <td class="formValue">
+            <input id="TARE" type="text" class="txt" datacol="no" err="皮重" checkexpession="DoubleOrNull"
+                maxlength="5" onkeyup="clearNoNum(this)" value="0" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            最大载重：
+        </th>
+        <td class="formValue">
+            <input id="LOADWEIGHT" type="text" class="txt" datacol="no" err="最大载重" checkexpession="DoubleOrNull"
+                maxlength="5" onkeyup="clearNoNum(this)" />
+        </td>
+        <th class="formTitle">
+            排放标准：
+        </th>
+        <td class="formValue">
+            <select id="EFFLUENTSTD" class="txtselect" datacol="yes" err="排放标准" checkexpession="NotNull">
+                <option value="">请选择</option>
+                <option value="国Ⅱ">国Ⅱ</option>
+                <option value="国Ⅲ">国Ⅲ</option>
+                <option value="国Ⅳ">国Ⅳ</option>
+                <option value="国Ⅴ">国Ⅴ</option>
+                <option value="国Ⅵ">国Ⅵ</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            车辆轴数：
+        </th>
+        <td class="formValue">
+            <select id="NUMOFAXLES" class="txtselect" datacol="No" err="车辆轴数" checkexpession="NotNull">
+                <option value="">请选择</option>
+                <option value="2">2轴</option>
+                <option value="3">3轴</option>
+                <option value="4">4轴</option>
+                <option value="5">5轴</option>
+                <option value="6">6轴单驱</option>
+                <option value="7">6轴双驱</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            车货总重(吨)：
+        </th>
+        <td class="formValue">
+            <input id="TGGWEIGHT" type="text" class="txt" datacol="yes" err="车货总重" checkexpession="DoubleOrNull"
+                maxlength="5" onkeyup="clearNoNum(this)" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            行驶证号：
+        </th>
+        <td class="formValue">
+            <input id="VEHLIC" type="text" class="txt" datacol="No" err="行驶证号" checkexpession="NotNull"
+                maxlength="50" />
+        </td>
+        <th class="formTitle">
+            拉筋：
+        </th>
+        <td class="formValue">
+            <input id="DEF1" type="text" class="txt" datacol="No" err="拉筋" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue" colspan="3">
+            <span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISUSE" />
+                <label for="ISUSE">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="3">
+            <textarea id="MEMO" name="Description" maxlength="200" class="txtArea" rows="1"></textarea>
+        </td>
+    </tr>
+</table>
+</form>

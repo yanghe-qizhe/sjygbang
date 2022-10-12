@@ -1,0 +1,324 @@
+﻿@{
+    ViewBag.Title = "焦化批次追踪管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键 
+    $(function () {     
+        GetGrid();  
+    })
+     
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#BILLNO").val();
+        var PRINTCODE = $("#PRINTCODE").val(); 
+        var MATERIALNAME = $("#MATERIALNAME").val();  
+        var CARNAME = $("#CARNAME").val(); 
+        var PCRAWTYPE=$("#PCRAWTYPE").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJJHManager/ZJJHBatchFind/GetZJJHCYFINDList")?StartTime=" + StartTime + '&EndTime=' + EndTime  + '&BillNo=' + escape(BillNo)+ '&PRINTCODE=' + escape(PRINTCODE)+ '&MATERIALNAME=' + escape(MATERIALNAME) +  '&CARNAME=' + escape(CARNAME) + '&PCRAWTYPE=' + escape(PCRAWTYPE) , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        var PCRAWTYPE=$("#PCRAWTYPE").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJJHManager/ZJJHBatchFind/GetZJJHCYFINDList")?StartTime=" + StartTime + '&EndTime=' + EndTime+'&PCRAWTYPE=' + PCRAWTYPE,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth:true, 
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', width: 180, align: 'left',align:'center',hidden:true }, 
+                { label: '批号', name: 'BILLNO', index: 'BILLNO', width: 80, align: 'left',align:'center' },
+                { label: '条码', name: 'PRINTCODE', index: 'PRINTCODE', width: 80, align: 'left',align:'center' },
+                {
+                    label: '类型', name: 'PCRAWTYPE', index: 'PCRAWTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "汽运"; 
+                        if (cellvalue == '1') return "短流程";  
+                    }
+                }, 
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center'  },
+                { label: '客户', name: 'RECEIVENAME', index: 'RECEIVENAME', width: 120, align: 'center'  },  
+                { label: '采样车数', name: 'CARSNUM', index: 'CARSNUM', width: 80, align: 'center'  }, 
+                { label: '合计扣重', name: 'SUMKZ', index: 'SUMKZ', width: 80, align: 'center'  }, 
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 100, align: 'center' },
+                { label: '质检方案', name: 'FANAME', index: 'FANAME', width: 120, align: 'center'  }, 
+                { label: '是否包含水项', name: 'ISHAVEWATER', index: 'ISHAVEWATER', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>不包含</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>包含</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'></span>";  
+                    }
+                 },
+                { label: '是否包含物理项', name: 'ISHAVEPHYSICAL', index: 'ISHAVEPHYSICAL', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>不包含</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>包含</span>"; 
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'></span>";
+                    }
+                 },
+                { label: '是否包含化学项', name: 'ISHAVECHEMICAL', index: 'ISHAVECHEMICAL', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>不包含</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>包含</span>"; 
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'></span>"; 
+                    }
+                 },
+                { label: '是否包含其他项', name: 'ISHAVEOUTER', index: 'ISHAVEOUTER', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>不包含</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>包含</span>"; 
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'></span>"; 
+                    }
+                 },
+                {
+                    label: '状态', name: 'TYPE', index: 'TYPE', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<span style='color:red;font-size:15px'>创建批号</span>";
+                        if (cellvalue == '2') return "<span style='color:blue;font-size:15px'>组批中</span>";
+                        if (cellvalue == '3') return "<span style='color:green;font-size:15px'>组批完成</span>";
+                    }
+                },
+                {
+                    label: '制样状态', name: 'ISZY', index: 'ISZY', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未制样</span>";
+                        if (cellvalue == '1') return "<span style='color:green;font-size:15px'>已制样</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'>未制样</span>";
+                    }
+                },
+                { label: '制样人', name: 'ZYUSER', index: 'ZYUSER', width: 80, align: 'center' },
+                {
+                    label: '制样日期', name: 'ZYTIME', index: 'ZYTIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                {
+                    label: '送检状态', name: 'ISSEND', index: 'ISSEND', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未送检</span>";
+                        if (cellvalue == '1') return "<span style='color:green;font-size:15px'>已送检</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'>未送检</span>";
+                    }
+                },
+                { label: '送检人', name: 'SENDUSER', index: 'SENDUSER', width: 80, align: 'center' },
+                {
+                    label: '送检日期', name: 'SENDTIME', index: 'SENDTIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '化学收样状态', name: 'ISRECEIVE', index: 'ISRECEIVE', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未收样</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>已收样</span>";   
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'>未收样</span>";
+                    }
+                 },
+                { label: '水收样状态', name: 'ISRECEIVEWATER', index: 'ISRECEIVEWATER', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未收样</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>已收样</span>";   
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'>未收样</span>";
+                    }
+                 },
+                { label: '水检测状态', name: 'WATERSTATUS', index: 'WATERSTATUS', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未检测</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>检测中</span>"; 
+                        if (cellvalue == '2') return "<span style='color:green;font-size:15px'>已完成</span>"; 
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'>未检测</span>";
+                    }
+                 }, 
+                { 
+                    label: '水检测完成时间', name: 'WATERFINISHTIME', index: 'WATERFINISHTIME', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                 }, 
+                { label: '水检测完成人', name: 'WATERFINISHUSER', index: 'WATERFINISHUSER', width: 120, align: 'center'  }, 
+                { label: '物理检测状态', name: 'PHYSTATUS', index: 'PHYSTATUS', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未检测</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>检测中</span>"; 
+                        if (cellvalue == '2') return "<span style='color:green;font-size:15px'>已完成</span>"; 
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'>未检测</span>";
+                    }
+                 },
+                { 
+                    label: '物理测完成时间', name: 'PHYFINISHTIME', index: 'PHYFINISHTIME', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                 }, 
+                { label: '物理检测完成人', name: 'PHYFINISHUSER', index: 'PHYFINISHUSER', width: 120, align: 'center'  }, 
+                { label: '化学检测状态', name: 'CHESTATUS', index: 'CHESTATUS', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未检测</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>检测中</span>"; 
+                        if (cellvalue == '2') return "<span style='color:green;font-size:15px'>已完成</span>"; 
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'>未检测</span>";
+                    }
+                 },
+                { 
+                    label: '化学测完成时间', name: 'CHEFINISHTIME', index: 'CHEFINISHTIME', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                 }, 
+                { label: '化学检测完成人', name: 'CHEFINISHUSER', index: 'CHEFINISHUSER', width: 120, align: 'center'  },
+                
+                { label: '审核状态', name: 'AUDITSTATUS', index: 'AUDITSTATUS', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未审核</span>";
+                        if (cellvalue == '2') return "<span style='color:green;font-size:15px'>已审核</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'>未审核</span>";
+                    }
+                 },
+                { 
+                    label: '审核时间', name: 'AUDITCRETIME', index: 'AUDITCRETIME', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                 },
+                { label: '审核人', name: 'AUDITCREUSER', index: 'AUDITCREUSER', width: 120, align: 'center'  },
+                { label: '发布状态', name: 'AUDITRELEASE', index: 'AUDITRELEASE', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未发布</span>";
+                        if (cellvalue == '1') return "<span style='color:green;font-size:15px'>已发布</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:15px'>未发布</span>";
+                    }
+                 },
+                { 
+                    label: '发布时间', name: 'RELEASECRETIME', index: 'RELEASECRETIME', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                 },
+                { label: '发布人', name: 'RELEASECREUSER', index: 'RELEASECREUSER', width: 120, align: 'center'  }, 
+                { label: '方案时间周期', name: 'TIMECYCLE', index: 'TIMECYCLE', width: 100, align: 'center'  },
+                { label: '时间差', name: 'DIFFTIME', index: 'DIFFTIME', width: 100, align: 'center'  }, 
+                { label: '是否超时', name: 'ISTIMEOUT', index: 'ISTIMEOUT', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (!IsNull(cellvalue)) {
+                            return "";
+                        } else if (parseFloat(cellvalue) >0) {
+                            return "<span style='color:red;font-size:15px'>超时</span>";
+                        } else {
+                            return "<span style='color:green;font-size:15px'>未超时</span>";
+                        } 
+                    }
+                 },   
+                { label: '是否最终完成', name: 'AUDITRELEASETYPE', index: 'AUDITRELEASETYPE', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未完成</span>";
+                        if (cellvalue == '1') return "<span style='color:green;font-size:15px'>已完成</span>";
+                    }
+                 },  
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 80, align: 'center' },
+                {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false 
+        });
+        
+    }
+      
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    类型：
+                </th>
+                <td>
+                    <select id="PCRAWTYPE" class="txtselect" style="width: 105px">
+                        <option value="0" selected="selected">汽运</option>
+                        <option value="1">短流程</option>
+                    </select>
+                </td>
+                <th>
+                    批号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    条码：
+                </th>
+                <td>
+                    <input id="PRINTCODE" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CARNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

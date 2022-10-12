@@ -1,0 +1,477 @@
+﻿@{
+    ViewBag.Title = "原料组大批新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+    CreateReport("Report");
+    $(function () {
+        $("#Report").css("display", "none");
+        Report.LoadFromURL(RootPath() + "/Content/GRF/ReportView/PrintCode1.grf");
+        GetGrid();
+        BindAutocomplete("SUPPLYNAME", "SUPPLY", "Supply", "200", "150", "");
+        MaterialAutocomplete();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ZJManager/PCRawCY/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var rowdata = {
+                        ID: '<input id="ID➩' + rowindex + '" type="hidden" value="' + rowData.ID + '" />',
+                        YBILLNO: '<input id="YBILLNO➩' + rowindex + '" type="hidden" value="' + rowData.YBILLNO + '" />',
+                        YMAINBILLNO: '<input readonly id="YMAINBILLNO➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.YMAINBILLNO + '"/><input id="YMAINID➩' + rowindex + '" type="hidden" value="' + rowData.YMAINID + '" />',
+
+                        CARSNAME: '<input readonly id="CARSNAME➩' + rowindex + '" maxlength="10"  class="editable center" type="text" value="' + rowData.CARSNAME + '"/><input id="CARS➩' + rowindex + '" type="hidden" value="' + rowData.CARS + '" />',
+                        PCID: '<input readonly id="PCID➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.PCID + '"/><input id="PCITEMID➩' + rowindex + '" type="hidden" value="' + rowData.PCITEMID + '" />',
+                        SUPPLYNAME: '<input readonly id="SUPPLYNAME➩' + rowindex + '" class="editable center" type="text" value="' + rowData.SUPPLYNAME + '"/><input id="SUPPLY➩' + rowindex + '" type="hidden" value="' + rowData.SUPPLY + '" />',
+                        MATERIALNAME: '<input readonly id="MATERIALNAME➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.MATERIALNAME + '"/><input id="MATERIAL➩' + rowindex + '" type="hidden" value="' + rowData.MATERIAL + '" />',
+                        MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.MATERIALSPEC + '"/>',
+                        KZ: '<input id="KZ➩' + rowindex + '" class="editable decimal center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.KZ + '"/>',
+                        WEIGHTDATE: '<input readonly id="WEIGHTDATE➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.WEIGHTDATE == null ? "" : rowData.WEIGHTDATE) + '"/><input id="BILLNO➩' + rowindex + '" type="hidden" class="txt" value="' + rowData.BILLNO + '"/>',
+                        GROSS: '<input readonly id="GROSS➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.GROSS + '"/>',
+                        WEIGHTNAME: '<input readonly id="WEIGHTNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.WEIGHTNAME == null ? "" : rowData.WEIGHTNAME) + '"/>',
+                        DEF3: '<input readonly id="DEF3➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.DEF3 + '"/><input id="DEF4➩' + rowindex + '" type="hidden" value="' + rowData.DEF4 + '" />',
+                        CRETIME: '<input readonly id="CRETIME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"/>',
+                        ORGNAME: '<input readonly id="ORGNAME➩' + rowindex + '" class="editable center" type="text" value="' + rowData.ORGNAME + '"/><input id="ORG➩' + rowindex + '" type="hidden" value="' + rowData.ORG + '" />',
+                        DEPTNAME: '<input readonly id="DEPTNAME➩' + rowindex + '" class="editable center" type="text" value="' + rowData.DEPTNAME + '"/><input id="PK_DEPT➩' + rowindex + '" type="hidden" value="' + rowData.PK_DEPT + '" />',
+                        DEF8: '<input readonly id="DEF8➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.DEF8 + '"/><input id="DEF9➩' + rowindex + '" type="hidden" value="' + rowData.DEF9 + '" /><input id="DEF7➩' + rowindex + '" type="hidden" value="' + rowData.DEF7 + '" />',
+                        DEF2: '<input readonly id="DEF2➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.DEF2 + '"/>',
+                        MEMO: '<input id="MEMO➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value=""/>'
+                    }
+                    $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                });
+                Conversion(0);
+                $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+                $("#gridTable").find('.center').css('text-align', 'center')
+                $('.jqgrid-rownum').attr('title', '双击删除一行');
+                $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+                    var rowindex = $(this).text();
+                    $('#gridTable').jqGrid('delRowData', rowindex);
+                    Conversion(rowindex);
+                });
+                $("#gridTable").find('.decimal').focus(function () {
+                    IsMoney(this.id)
+                    var val = this.value;
+                    if (val == "0" || val == "0.000" || val == "0.00") {
+                        this.value = "";
+                    } else {
+                        $(this).select();
+                    }
+                });
+                $("#gridTable").find('.decimal').blur(function () {
+                    var val = this.value;
+                    if (val == "") {
+                        this.value = "0";
+                    }
+                });
+            });
+        }
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJManager/PCRawAllBatch/SetForm", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    //多选采样批次
+    function SelectBatch() {
+        var MATERIAL = $("#MATERIAL").val();
+        var MATERIALNAME = $("#MATERIALNAME").val();
+        var SUPPLY = $("#SUPPLY").val();
+        var SUPPLYNAME = $("#SUPPLYNAME").val();
+        var url = "/ZJManager/PCRawAllBatch/PCRawAllBatchSelect?Type=0&FormID=@ViewBag.FormID&MATERIAL=" + escape(MATERIAL) + "&SUPPLY=" + escape(SUPPLY) + "&MATERIALNAME=" + escape(MATERIALNAME) + "&SUPPLYNAME=" + escape(SUPPLYNAME);
+        Dialog(url, "PCRawAllBatchSelect", "选取采样批次", 900, 400);
+    }
+
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 270,
+            autowidth: true,
+            colModel: [
+              { label: 'ID', name: 'ID', hidden: true },
+              { label: 'YBILLNO', name: 'YBILLNO', hidden: true },
+              { label: '采样单号', name: "YMAINBILLNO", width: 120, sortable: false, align: 'center', hidden: true },
+              { label: '车号', name: 'CARSNAME', width: 120, sortable: false, align: 'center' },
+              { label: '通知单号[<font face="宋体">*</font>]', name: "PCID", width: 120, sortable: false, align: 'center' },
+              { label: '供应商', name: "SUPPLYNAME", width: 120, sortable: false, align: 'center' },
+              { label: '物料', name: "MATERIALNAME", width: 120, sortable: false, align: 'center' },
+              { label: '规格', name: "MATERIALSPEC", width: 120, sortable: false, align: 'center' },
+              { label: '扣杂', name: "KZ", width: 80, sortable: false, align: 'center' },
+              { label: '毛重时间', name: "WEIGHTDATE", width: 120, sortable: false, align: 'center' },
+              { label: '毛重', name: "GROSS", width: 80, sortable: false, align: 'center' },
+              { label: '毛重磅房', name: "WEIGHTNAME", width: 80, sortable: false, align: 'center' },
+              { label: '订单编号', name: "DEF3", width: 120, sortable: false, align: 'center' },
+              { label: '日期', name: "CRETIME", width: 120, sortable: false, align: 'center' },
+              { label: '接收公司', name: "ORGNAME", width: 120, sortable: false, align: 'center' },
+              { label: '接收组织', name: "DEPTNAME", width: 120, sortable: false, align: 'center' },
+              { label: '承运商', name: "DEF8", width: 120, sortable: false, align: 'center' },
+              { label: '单位', name: "DEF2", width: 80, sortable: false, align: 'center' },
+              { label: '备注', name: "MEMO", width: 120, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计
+                $(this).footerData("set", {
+                    "PCID": "合计",
+                    "CARSNAME": "<span id='TotalCARSNUM'>0</span>",
+                    "KZ": "<span id='TotalKZ'>0.00</span>"
+                });
+            }
+        });
+    }
+
+    function InitGridData(datas) {
+        var keys = [];
+        $.each(datas, function (i) {
+            var rowData = datas[i];
+            keys.push(rowData.ID);
+        });
+        var KeyValue = keys.join(',');
+        var postData = { KeyValue: KeyValue };
+        AjaxJson("/ZJManager/PCRawCY/GetOrderEntryList1", postData, function (data) {
+            var JsonData = data.rows;
+            InitGrid1(JsonData);
+        });
+    }
+
+
+    function InitGrid1(JsonData) {
+        var rowindex = 1;
+        $.each(JsonData, function (i) {
+            var rowData = JsonData[i];
+            if ($("#gridTable").find("input[value='" + rowData.ID + "']").length <= 0) {
+                var rowdata = {
+                    ID: '<input id="ID➩' + rowindex + '" type="hidden" value="' + rowData.ID + '" />',
+                    YBILLNO: '<input id="YBILLNO➩' + rowindex + '" type="hidden" value="' + rowData.YBILLNO + '" />',
+                    YMAINBILLNO: '<input id="YMAINBILLNO➩' + rowindex + '"   type="hidden" value="' + rowData.MAINBILLNO + '"/><input id="YMAINID➩' + rowindex + '" type="hidden" value="' + rowData.MAINID + '" />',
+                    CARSNAME: '<input readonly id="CARSNAME➩' + rowindex + '" maxlength="10"  class="editable center" type="text" value="' + rowData.CARSNAME + '"/><input id="CARS➩' + rowindex + '" type="hidden" value="' + rowData.CARS + '" />',
+                    PCID: '<input readonly id="PCID➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.PCID + '"/><input id="PCITEMID➩' + rowindex + '" type="hidden" value="' + rowData.PCITEMID + '" />',
+                    SUPPLYNAME: '<input readonly id="SUPPLYNAME➩' + rowindex + '" class="editable center" type="text" value="' + rowData.SUPPLYNAME + '"/><input id="SUPPLY➩' + rowindex + '" type="hidden" value="' + rowData.SUPPLY + '" />',
+                    MATERIALNAME: '<input readonly id="MATERIALNAME➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.MATERIALNAME + '"/><input id="MATERIAL➩' + rowindex + '" type="hidden" value="' + rowData.MATERIAL + '" />',
+                    MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.MATERIALSPEC + '"/>',
+                    KZ: '<input readonly id="KZ➩' + rowindex + '" class="editable decimal center" type="text"  style="cursor:pointer"  value="' + rowData.KZ + '"/>',
+                    WEIGHTDATE: '<input readonly id="WEIGHTDATE➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.WEIGHTDATE == null ? "" : rowData.WEIGHTDATE) + '"/><input id="BILLNO➩' + rowindex + '" type="hidden" class="txt" value="' + rowData.BILLNO + '"/>',
+                    GROSS: '<input readonly id="GROSS➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.GROSS + '"/>',
+                    WEIGHTNAME: '<input readonly id="WEIGHTNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.WEIGHTNAME == null ? "" : rowData.WEIGHTNAME) + '"/>',
+                    DEF3: '<input readonly id="DEF3➩' + rowindex + '"  class="editable center" type="text" value="' + (rowData.DEF3 == null ? "" : rowData.DEF3) + +'"/><input id="DEF4➩' + rowindex + '" type="hidden" value="' + rowData.DEF4 + '" />',
+                    CRETIME: '<input readonly id="CRETIME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"/>',
+                    ORGNAME: '<input readonly id="ORGNAME➩' + rowindex + '" class="editable center" type="text" value="' + (rowData.ORGNAME == null ? "" : rowData.ORGNAME) + '"/><input id="ORG➩' + rowindex + '" type="hidden" value="' + (rowData.ORG == null ? "" : rowData.ORG) + '" />',
+                    DEPTNAME: '<input readonly id="DEPTNAME➩' + rowindex + '" class="editable center" type="text" value="' + (rowData.DEPTNAME == null ? "" : rowData.DEPTNAME) + '"/><input id="PK_DEPT➩' + rowindex + '" type="hidden" value="' + (rowData.PK_DEPT == null ? "" : rowData.PK_DEPT) + '" />',
+                    DEF8: '<input readonly id="DEF8➩' + rowindex + '"  class="editable center" type="text" value="' + (rowData.DEF8 == null || rowData.DEF8 == "null" ? "" : rowData.DEF8) + '"/><input id="DEF9➩' + rowindex + '" type="hidden" value="' + (rowData.DEF9 == null ? "" : rowData.DEF9) + '" /><input id="DEF7➩' + rowindex + '" type="hidden" value="' + (rowData.DEF7 == null ? "" : rowData.DEF7) + '" />',
+                    DEF2: '<input readonly id="DEF2➩' + rowindex + '"  class="editable center" type="text" value="' + (rowData.DEF2 == null ? "" : rowData.DEF2) + '"/>',
+                    MEMO: '<input id="MEMO➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value=""/>'
+                }
+                $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                if (rowindex == 1) {
+                    $("#MATERIAL").val(rowData.MATERIAL);
+                    $("#MATERIALNAME").val(rowData.MATERIALNAME);
+                    if (rowData.MATERIALSPEC == "&nbsp;") {
+                        $("#MATERIALSPEC").val("");
+                    } else {
+                        $("#MATERIALSPEC").val(rowData.MATERIALSPEC);
+                    }
+                    $("#SUPPLY").val(rowData.SUPPLY);
+                    $("#SUPPLYNAME").val(rowData.SUPPLYNAME);
+                    $("#DEF19").val(rowData.PK_ORG);
+                    $("#DEF20").val(rowData.ORGNAME);
+                    $("#DEF9").val(rowData.DEF9);
+                    $("#DEF8").val(rowData.DEF8);
+                }
+                rowindex++;
+            }
+        });
+        Conversion(0);
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $('.jqgrid-rownum').attr('title', '双击删除一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var rowindex = $(this).text();
+            $('#gridTable').jqGrid('delRowData', rowindex);
+            Conversion(rowindex);
+        });
+
+    }
+
+    function Conversion(rowindex) {
+        //统计合计
+        var TotalCARSNUM = 0, TotalKZ = 0.0;
+        $("#gridTable tbody tr").each(function (i) {
+            var BILLNO = $(this).find('td:eq(3)').find('input').val();
+            if (BILLNO != "" && BILLNO != undefined) {
+                TotalCARSNUM = TotalCARSNUM + 1;
+            }
+            var KZ = $(this).find('td:eq(8)').find('input').val();
+            if (KZ != "" && KZ != undefined) {
+                TotalKZ += Number(KZ);
+            }
+        });
+
+        $("#CARSNUM").val(TotalCARSNUM);
+        $("#TotalCARSNUM").text(TotalCARSNUM);
+        $("#TotalKZ").text(FormatCurrency(TotalKZ));
+        $("#SUMKZ").val(TotalKZ);
+
+    }
+    //打印条码
+    function Print1(KeyValue) {
+        if (IsChecked(KeyValue)) {
+            Report.LoadDataFromURL("/ZJManager/PCRawZY/ZYPrintCode1?KeyValue=" + KeyValue);
+            //Report.Print(true);
+            Report.PrintPreview(true);
+        }
+    }
+
+    function MaterialAutocomplete() {
+        var txtname = "MATERIALNAME";
+        var $txtid = $("#MATERIAL");
+        var $txtname = $("#MATERIALNAME");
+        var $txtspec = $("#MATERIALSPEC");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtpsd.val(data.materialspec);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 60%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="materialspec" style="width: 40%;">' + DataJson[i].materialspec + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtspec.val(data.materialspec);
+                });
+            });
+        }
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControlsForTrue("#tb_OrderFrom");
+            postData["PCRAWCYDetailJson"] = GetTableDataJson("#gridTable");
+            AjaxJson("/ZJManager/PCRawAllBatch/PCRawAllBatchSave1?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code == "1") {
+                    top.frames["tabs_iframe_" + ModuleId].windowload();
+                    Print1(data.BillNo);
+                    ThisCloseTab();
+                }
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存 </b></span></a><a id="button_Commit_SelectBatch" title="选择批次" onclick="SelectBatch()"
+                        class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/advanced_data_grid.png")) 50% 4px no-repeat;">
+                            选择批次 </b></span></a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                    离开 </b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            组批单号：
+        </th>
+        <td class="formValue">
+            <input id="ISZY" type="hidden" dbfield="true" value="1" />
+            <input id="TYPE" type="hidden" dbfield="true" value="4" />
+            <input id="PCRAWTYPE" type="hidden" datacol="yes" value="4" dbfield="true" />
+            <input id="BILLNO" maxlength="50" type="text" dbfield="true" class="txt readonly"  readonly="readonly" datacol="yes" err="组批单号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+        </td>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input id="SUPPLY" type="hidden" dbfield="true" datacol="yes" err="供应商" checkexpession="NotNull" />
+            <input id="SUPPLYNAME" type="text" class="txt" datacol="yes" err="供应商" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            接收公司：
+        </th>
+        <td class="formValue">
+            <input name="DEF19" id="DEF19" type="hidden" />
+            <input id="DEF20" name="DEF20" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            承运商：
+        </th>
+        <td class="formValue">
+            <input name="DEF9" id="DEF9" type="hidden" dbfield="true" />
+            <input id="DEF8" name="DEF8" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" dbfield="true" />
+            <input id="MATERIALNAME" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPEC" type="text" dbfield="true" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            扣杂：
+        </th>
+        <td class="formValue">
+            <input id="SUMKZ" name="SUMKZ" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+        <th class="formTitle">
+            组批数量：
+        </th>
+        <td class="formValue">
+            <input id="CARSNUM" type="text" class="txt required readonly" readonly="readonly"
+                dbfield="true" err="组批车数" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            组批日期：
+        </th>
+        <td class="formValue">
+            <input id="CYDATE" type="text" class="txt Wdate" dbfield="true" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})"  datacol="yes" err="组批日期" checkexpession="NotNull"/>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREUSER" type="text" class="txt readonly" readonly="readonly"
+                               err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+        </td>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                               err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+        </td>
+        <th class="formTitle">
+            班组：
+        </th>
+        <td class="formValue">
+            <select id="DEF1" class="txtselect" dbfield="true">
+                <option value="">请选择</option>
+                <option value="甲" selected="selected">甲</option>
+                <option value="乙">乙</option>
+                <option value="丙">丙</option>
+                <option value="丁">丁</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="5">
+            <input id="MEMO" type="text" class="txt" err="描述" dbfield="true" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                组批明细</div>
+        </div>
+    </div>
+</div>
+<div class="line">
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

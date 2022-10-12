@@ -1,0 +1,368 @@
+﻿@{
+    ViewBag.Title = "工序转序单》列表";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+ var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+         //秤点
+        DictionaryAutocomplete();
+        GetGrid();
+    })
+       function DictionaryAutocomplete() {
+        var txtname = "SCALENAME";
+        var $txtid = $("#PK_SCALE");
+        var $txtname = $("#SCALENAME");
+
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >=2) {
+                    var parm = "keywords=" + escape(keyvalue);
+                    var items = $(this).attr("items");
+                    if (items != null && items != "") {
+                        parm += "&items=" + escape(items);
+                    }
+                    DataSource(parm);
+                }
+            }
+        }).focus(function () {
+            var parm = "keywords=";
+            $(this).select();
+            var items = $(this).attr("items"); //添加items属性值为职称查找职称字典数据
+            if (items != null && items != "") {
+                parm += "&items=" + items;
+            }
+            DataSource(parm);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.code);
+            $txtname.val(data.name);
+        });
+        //获取数据源
+        function DataSource(parm) {
+            AjaxJson("/AutoData/Dictionary", parm, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].code + "-" + DataJson[i].name + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                    $txtid.val(data.code);
+                    $txtname.val(data.name);
+                });
+            });
+        }
+    }
+    //搜索
+    function btn_Search() {
+        var PK_SCALE = $("#PK_SCALE").val();
+        var MATERIALSPEC = $("#MATERIALSPEC").val();
+        var DEF2 = $("#DEF2").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/GXCONVOPER/GetGXOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&PK_SCALE=' + PK_SCALE+ '&MATERIALSPEC=' + MATERIALSPEC+ '&DEF2=' + DEF2, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/GXCONVOPER/GetGXOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [ 
+            { label: '主键单号', name: 'ID',hidden: true  },
+            { label: '单据编号', name: 'TASKNO', index: 'TASKNO', width: 100, align: 'center' },
+            { label: '业务状态PK', name: 'STATUS', hidden: true },
+            { label: '业务状态', name: 'STATUSNAME', index: 'STATUSNAME', width: 60, align: 'center',
+             formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '0') 
+                    return "<span style='color:red;'>未使用</span>";
+                    if (cellvalue == '1')
+                    return "<span style='color: blue; font-weight: bold;'>已使用</span>";
+                }
+             },
+            { label: '单据状态PK', name: 'ISUSE', hidden: true },
+            { label: '单据状态', name: 'ISUSENAME', index: 'ISUSENAME', width: 60, align: 'center',
+             formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '0') 
+                    return "<span style='color:red;'>未启用</span>";
+                    if (cellvalue == '1')
+                    return "<span style='color: blue; font-weight: bold;'>已启用</span>";
+                }
+             },
+//                   { label: '件数', name: 'MATERPIECENUM', index: 'MATERPIECENUM', width: 80, align: 'left' },
+//                      { label: '单根重', name: 'MATERIALWEI', index: 'MATERIALWEI', width: 80, align: 'left' },
+//                         { label: '件根数', name: 'MATERIALNUM', index: 'MATERIALNUM', width: 80, align: 'left' },
+//              { label: '总根数', name: 'MATERIALSNUM', index: 'MATERIALSNUM', width: 80, align: 'left' },
+//               { label: '理重', name: 'MATERIALSUTTLE', index: 'MATERIALSUTTLE', width: 80, align: 'left' },
+              
+            { label: '发货单位', name: 'SENDUNITNAME', index: 'SENDUNITNAME', width: 150, align: 'left' },
+            { label: '收货单位', name: 'ACCEPTUNITNAME', index: 'ACCEPTUNITNAME', width: 150, align: 'left' },
+            { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 150, align: 'left' },
+             { label: '物料内码', name: 'MATERIALCODE', index: 'MATERIALCODE', width: 100, align: 'left' },
+            { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'left' },
+            { label: '长度', name: 'MATERIALSPECNAME', index: 'MATERIALSPECNAME', width:80, align: 'left' },
+                { label: '长度内码', name: 'MATERIALSPECCODE', index: 'MATERIALSPECCODE', width: 80, align: 'left' },
+            { label: '秤点名称', name: 'SCALENAME', index: 'SCALENAME', width: 120, align: 'left' },
+             { label: '牌号', name: 'DEF2', index: 'DEF2', width: 100, align: 'left' },
+            { label: '开始时间', name: 'STARTTIME', index: 'STARTTIME', width: 100, align: 'left' },
+            { label: '结束时间', name: 'ENDTIME', index: 'ENDTIME', width: 100, align: 'left' },
+
+            {  label: '制单时间', name: 'CRETIME', index: 'CRETIME', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+             },
+            { label: '备注', name: 'MEMO', index: 'MEMO', width:150, align: 'center' } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true 
+        });
+        
+    }
+    //新增
+    function btn_add() {
+        AddTabMenu("GXBillCOFBATCHForm", "@Url.Content("~/ExampleModule/GXCONVOPER/GXBillCOFBATCHForm")?ModuleId="+ModuleId, "新增工序转序", "page_white_add.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (status == "1") {
+                tipDialog("此单据属于已使用状态,无法继续编辑！", 3, "");
+                return false;
+            }
+            if (isuse == "1") {
+                tipDialog("此单据属于已启用用状态,无法继续编辑，请先停用！", 3, "");
+                return false;
+            }
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            if(status=="0"&&isuse == "0"){
+               AddTabMenu("GXBillCOFForm", "@Url.Content("~/ExampleModule/GXCONVOPER/GXBillCOFForm")?KeyValue=" + KeyValue+"&ModuleId="+ModuleId, "编辑工序任务单", "page_white_edit.png", true, true, true);
+            }
+        }
+    }
+    //作废
+    function btn_Invalid(){
+      var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (isuse == "4") {
+                tipDialog("数据已作废，不能进行作废操作！", 3, "");
+                return false;
+            }
+            if (isuse != "1" && isuse != "5") {
+                tipDialog("数据已入厂，不能进行作废操作！", 3, "");
+                return false;
+           }
+             if (isuse == "6") {
+                tipDialog("数据已出厂，不能进行作废操作！", 3,"");
+                return false;
+            }
+            if (isuse == "3") {
+                tipDialog("数据已过重车，不能进行作废操作！", 3, "");
+                return false;
+            }
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GXCONVOPER/InvalidOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+    //出厂
+    function btn_Out() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (isuse == "4") {
+                tipDialog("数据已作废，不能进行出厂操作！", 3, "");
+                return false;
+            }
+
+             if (isuse == "6") {
+                tipDialog("数据已出厂，不能进行出厂操作！", 3,"");
+                return false;
+            }
+            if (isuse != "3") {
+                tipDialog("数据未过空车，不能进行出厂操作！", 3, "");
+                return false;
+            }
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GXCONVOPER/OutOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+
+    //启用
+    function btn_Check(){
+       var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+         var status = GetJqGridRowValue("#gridTable", "STATUS");
+          if (status == "1") {
+                     tipDialog("此单据已启用,无法重复启用！", 3, ""); 
+                     return false;
+                }
+          var isuse = GetJqGridRowValue("#gridTable", "ISDEL");
+           if (isuse == "1") {
+                     tipDialog("此单据已启用,无法启用操作！", 3, "");
+                     return false;
+                }
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GXCONVOPER/CheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+    //停用
+    function btn_UnCheck(){
+      var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+         var status = GetJqGridRowValue("#gridTable", "STATUS");
+          if (status == "1") {
+                     tipDialog("此单据已使用,无法继续停用！", 3, ""); 
+                     return false;
+                }
+          var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+          if (isuse == "0") {
+                     tipDialog("此单据已停用,无法停用操作！", 3, "");
+                     return false;
+                }
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GXCONVOPER/UnCheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+           var status = GetJqGridRowValue("#gridTable", "STATUS");
+            if (status  == "1") {
+                tipDialog("单据已使用，不可删除！！", 3,"");
+                return false;
+            }
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (isuse == "1") {
+                tipDialog("单据已启用，请停用再删除！！", 3,"");
+                return false;
+            }
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ExampleModule/GXCONVOPER/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("GXBillCOFDetail", "@Url.Content("~/ExampleModule/GXCONVOPER/GXBillCOFDetail")?KeyValue=" + KeyValue, "工序详细信息", "page_white_edit.png", true, true, true);
+        }
+    }
+    //查询
+    function btn_query() {
+        QueryDialog("/ExampleModule/GXCONVOPER/GXBillCOFQuery", "PCBillSOFQuery", "查询过滤",350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/GXCONVOPER/GetOrderList")?" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    过秤点：
+                </th>
+                <td>
+                    <input id="PK_SCALE" type="hidden" />
+                    <input id="SCALENAME" type="text" class="txt" style="width: 120px" items="计量称点" />
+                </td>
+                <th>
+                    规格：
+                </th>
+                <td>
+                    <input id="MATERIALSPEC" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    牌号：
+                </th>
+                <td>
+                    <input id="DEF2" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate"  style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

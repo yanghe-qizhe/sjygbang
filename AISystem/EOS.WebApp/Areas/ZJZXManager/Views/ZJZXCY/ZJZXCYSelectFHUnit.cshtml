@@ -1,0 +1,81 @@
+﻿@{
+    ViewBag.Title = "选择发货单位";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript"> 
+    var FormID = GetQuery('FormID'); 
+    var KeyValue = GetQuery('KeyValue');;
+    $(function () {   
+        setTimeout(function(){
+            GetGrid(); 
+        },200);
+    })  
+    function btn_OK(){ 
+        var PK_LEADERDEPAS =  GetJqGridRowValue("#gridTable", "PK_LEADERDEPAS");
+        var LEADERDEPAS =  GetJqGridRowValue("#gridTable", "LEADERDEPAS");
+        if (IsNull(PK_LEADERDEPAS)) { 
+           if(IsNull(FormID)){
+                     $parentobj = top.frames[FormID]; 
+                } else{
+                     $parentobj = top.frames[tabiframeId()];
+                } 
+                $parentobj.CallBackEventFHUnit(KeyValue,PK_LEADERDEPAS,LEADERDEPAS); 
+                closeDialog();  
+        } else{
+            tipDialog('请选择一个发货单位', 4, 'warning');
+        }
+    }
+      
+    //加载表格
+    function GetGrid() { 
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJZXManager/ZJZXCY/GetZXFHUnitList")?KeyValue=" + escape(KeyValue),
+            datatype: "json",
+            height: $(window).height() - 120,
+            autowidth: true,
+            colModel: [ 
+            { label: 'PK_LEADERDEPAS', name: 'PK_LEADERDEPAS',  width: 120, hidden:true },   
+            { label: '发货单位', name: 'LEADERDEPAS',  width: 120, align: 'left' },   
+            { label: '车数', name: 'CARS', index: 'CARS', width: 80, align: 'left' }
+            ],
+            multiselect: false,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'PK_LEADERDEPAS',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true 
+        });
+        
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <td>
+                    <input id="btnOK" type="button" class="btnSearch" value="确 定" onclick="btn_OK()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

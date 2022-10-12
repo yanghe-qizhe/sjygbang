@@ -1,0 +1,89 @@
+﻿@{
+    ViewBag.Title = "司机管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/QualityPost/GetQualityPostList")?StartTime=" + StartTime + '&EndTime=' + EndTime  ,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', width: 80, align: 'left', hidden: true },
+                { label: '岗位编号', name: 'WORK_ID', index: 'WORK_ID', width: 100, align: 'center' },
+                { label: '岗位名称', name: 'WORK_NAME', index: 'WORK_NAME', width: 150, align: 'center' },
+                { label: '岗位数量', name: 'WORK_AMOUNT', index: 'WORK_AMOUNT', width: 150, align: 'center' },
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+ 
+        });
+        //////////////////////////
+    }
+     //新增
+    function btn_add() {
+        var url = "/BaseSet/QualityPost/QualityPostForm?ModuleId="+ModuleId;
+        openDialog(url, "Form11111", "新增验级员", 650, 380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/QualityPost/QualityPostForm?KeyValue=" + KeyValue+"&ModuleId="+ModuleId;
+            openDialog(url, "Form11111", "编辑验级员", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue ;
+            delConfig('/BaseSet/QualityPost/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+ 
+    
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,231 @@
+﻿Object Report
+	Version='6.0.0.6'
+	Title='原料检验报表'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		Height=29.7
+		Oriention=Landscape
+		LeftMargin=0.5
+		TopMargin=1
+		RightMargin=0.5
+		BottomMargin=1
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=SQLOLEDB.1;Password=123;Persist Security Info=True;User ID=sa;Initial Catalog=FGSX;Data Source=T6S7VDEX3ALXHTX\\SQL2008;Use Procedure for Prepare=1;Auto Translate=True;Packet Size=4096;Workstation ID=T6S7VDEX3ALXHTX;Use Encryption for Data=False;Tag with column collation when possible=False'
+			QuerySQL='select * from dbo.Sheet1$ where pk_batchno in ('817+042','117+044')'
+			Items Field
+				Item
+					Name='PK_BATCHNO'
+				End
+				Item
+					Name='PK_CASTERNO'
+				End
+				Item
+					Name='ITEM1'
+				End
+				Item
+					Name='C_ITEM1'
+					Type=Float
+				End
+			End
+		End
+		Items Column
+			Item
+				Name='PK_BATCHNO'
+			End
+			Item
+				Name='PK_CASTERNO'
+			End
+			Item
+				Name='ITEM1'
+			End
+			Item
+				Name='C_ITEM1'
+			End
+		End
+		Object ColumnContent
+			CanGrow=T
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Items ColumnContentCell
+				Item
+					Column='PK_BATCHNO'
+					DataField='PK_BATCHNO'
+				End
+				Item
+					Column='PK_CASTERNO'
+					DataField='PK_CASTERNO'
+				End
+				Item
+					Column='ITEM1'
+					DataField='ITEM1'
+				End
+				Item
+					Column='C_ITEM1'
+					DataField='C_ITEM1'
+				End
+			End
+		End
+		Object ColumnTitle
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Bold=T
+				Charset=134
+			End
+			Items ColumnTitleCell
+				Item
+					GroupTitle=F
+					Column='PK_BATCHNO'
+					TextAlign=MiddleCenter
+					Text='批号'
+				End
+				Item
+					GroupTitle=F
+					Column='PK_CASTERNO'
+					TextAlign=MiddleCenter
+					Text='炉号'
+				End
+				Item
+					GroupTitle=F
+					Column='ITEM1'
+					TextAlign=MiddleCenter
+					Text='物理'
+				End
+				Item
+					GroupTitle=F
+					Column='C_ITEM1'
+					TextAlign=MiddleCenter
+					Text='化学'
+				End
+			End
+		End
+	End
+	Object PageHeader
+		Height=0
+	End
+	Object PageFooter
+		Height=0.79375
+		Items Control
+			Item
+				Type=MemoBox
+				Name='MemoBox2'
+				Anchor=[Top|Right]
+				Left=24.7915
+				Width=3.59833
+				Height=0.608542
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+			End
+		End
+	End
+	Items Parameter
+		Item
+			Name='title'
+		End
+		Item
+			Name='start_Date'
+		End
+		Item
+			Name='end_Date'
+		End
+		Item
+			Name='Query'
+		End
+	End
+	Items ReportHeader
+		Item
+			Height=2.40771
+			Items Control
+				Item
+					Type=MemoBox
+					Name='至'
+					Left=3.06917
+					Top=1.05833
+					Width=0.582083
+					Height=0.582083
+					Text='至'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox4'
+					Left=0.238125
+					Top=1.05833
+					Width=2.75167
+					Height=0.608542
+					Parameter='start_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox5'
+					Left=3.59833
+					Top=1.05833
+					Width=3.20146
+					Height=0.635
+					Parameter='end_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox6'
+					Left=1.40229
+					Top=1.71979
+					Width=16.0073
+					Height=0.608542
+					Text='StaticBox6'
+					Parameter='Query'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox7'
+					Left=0.238125
+					Top=1.71979
+					Width=1.19063
+					Height=0.608542
+					Text='条件：'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox14'
+					Center=Horizontal
+					Left=0.873125
+					Top=0.211667
+					Width=26.961
+					Height=0.79375
+					Object Font
+						Name='宋体'
+						Size=180000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Text='逐车明细表'
+					Parameter='title'
+				End
+			End
+		End
+	End
+End

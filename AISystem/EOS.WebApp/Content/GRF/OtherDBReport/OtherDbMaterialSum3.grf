@@ -1,0 +1,631 @@
+﻿Object Report
+	Version='6.7.5.6'
+	Title='转序物料汇总报表'
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		LeftMargin=1
+		TopMargin=1
+		RightMargin=1
+		BottomMargin=1
+	End
+	Object DetailGrid
+		CenterView=T
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=CZGT2017es;User ID=c##czgtmqis;Data Source=192.168.7.18/orclczgt'
+			QuerySQL='select SENDSTORE,RECEIVESTORE,Material,count(1) as CarsNum,sum(gross) gross,sum(tare) tare,sum(suttle) suttle from \r\n  vwb_weightbs_zx\r\n  where finish=1 and suttle>0   \r\n  group by SENDSTORE,RECEIVESTORE,Material\r\n  order by  SENDSTORE desc,RECEIVESTORE desc'
+			Items Field
+				Item
+					Name='MATERIAL'
+				End
+				Item
+					Name='MATERIALKIND'
+				End
+				Item
+					Name='CARSNUM'
+					Type=Float
+				End
+				Item
+					Name='GROSS'
+					Type=Float
+				End
+				Item
+					Name='TARE'
+					Type=Float
+				End
+				Item
+					Name='SUTTLE'
+					Type=Float
+				End
+				Item
+					Name='SENDSTORE'
+				End
+				Item
+					Name='RECEIVESTORE'
+				End
+				Item
+					Name='RECEIVESTORE1'
+				End
+				Item
+					Name='JSSUTTLE'
+					Type=Float
+				End
+				Item
+					Name='BATHNO'
+				End
+				Item
+					Name='DEF4'
+				End
+				Item
+					Name='DEF15'
+				End
+				Item
+					Name='RECBATCHNO'
+				End
+				Item
+					Name='DEF16'
+				End
+					End
+	End
+	Items Column
+		Item
+			Name='MATERIAL'
+			Width=3.57188
+		End
+		Item
+			Name='SENDSTORE'
+			Width=2.98979
+		End
+		Item
+			Name='DEF4'
+			Width=1.42875
+		End
+		Item
+			Name='RECEIVESTORE'
+			Width=3.38667
+		End
+		Item
+			Name='BATHNO'
+			Width=2.61938
+		End
+		Item
+			Name='RECEIVESTORE1'
+		End
+		Item
+			Name='RECBATCHNO'
+			Width=1.95792
+		End
+		Item
+			Name='CARSNUM'
+			Width=1.64042
+		End
+		Item
+			Name='DEF15'
+			Width=1.77271
+		End
+		Item
+			Name='DEF16'
+			Width=2.43417
+		End
+		Item
+			Name='SUTTLE'
+			Width=1.82563
+		End
+		Item
+			Name='JSSUTTLE'
+			Width=1.95792
+		End
+	End
+Object ColumnContent
+	Height=0.740833
+	Object Font
+		Name='宋体'
+		Size=90000,0
+		Weight=400
+		Charset=134
+	End
+	Items ColumnContentCell
+		Item
+			Column='MATERIAL'
+			TextAlign=MiddleCenter
+			DataField='MATERIAL'
+		End
+		Item
+			Column='SENDSTORE'
+			TextAlign=MiddleCenter
+			DataField='SENDSTORE'
+		End
+		Item
+			Column='DEF4'
+			DataField='DEF4'
+		End
+		Item
+			Column='RECEIVESTORE'
+			TextAlign=MiddleCenter
+			DataField='RECEIVESTORE'
+		End
+		Item
+			Column='BATHNO'
+			DataField='BATHNO'
+		End
+		Item
+			Column='RECEIVESTORE1'
+			DataField='RECEIVESTORE1'
+		End
+		Item
+			Column='RECBATCHNO'
+			DataField='RECBATCHNO'
+		End
+		Item
+			Column='CARSNUM'
+			TextAlign=MiddleCenter
+			DataField='CARSNUM'
+		End
+		Item
+			Column='DEF15'
+			DataField='DEF15'
+		End
+		Item
+			Column='DEF16'
+			DataField='DEF16'
+		End
+		Item
+			Column='SUTTLE'
+			TextAlign=MiddleRight
+			DataField='SUTTLE'
+		End
+		Item
+			Column='JSSUTTLE'
+			TextAlign=MiddleRight
+			DataField='JSSUTTLE'
+		End
+	End
+End
+Object ColumnTitle
+	Height=0.79375
+	RepeatStyle=OnPage
+	Items ColumnTitleCell
+		Item
+			GroupTitle=F
+			Column='MATERIAL'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='物料'
+		End
+		Item
+			GroupTitle=F
+			Column='SENDSTORE'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='车间'
+		End
+		Item
+			GroupTitle=F
+			Column='DEF4'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='班组'
+		End
+		Item
+			GroupTitle=F
+			Column='RECEIVESTORE'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='发货库位'
+		End
+		Item
+			GroupTitle=F
+			Column='BATHNO'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='原批次'
+		End
+		Item
+			GroupTitle=F
+			Column='RECEIVESTORE1'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='收货仓库'
+		End
+		Item
+			GroupTitle=F
+			Column='RECBATCHNO'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='现批次'
+		End
+		Item
+			GroupTitle=F
+			Column='CARSNUM'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='车数'
+		End
+		Item
+			GroupTitle=F
+			Column='DEF15'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='包数'
+		End
+		Item
+			GroupTitle=F
+			Column='DEF16'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='包重'
+		End
+		Item
+			GroupTitle=F
+			Column='SUTTLE'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='总重'
+		End
+		Item
+			GroupTitle=F
+			Column='JSSUTTLE'
+			Object Font
+				Name='宋体'
+				Size=105000,0
+				Bold=T
+				Charset=134
+			End
+			TextAlign=MiddleCenter
+			Text='结算净重'
+		End
+	End
+End
+Items Group
+	Item
+		Name='TotalGroup'
+		Object GroupHeader
+			Height=0
+		End
+		Object GroupFooter
+			Height=0.8
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Items Control
+				Item
+					Type=StaticBox
+					Name='StaticBox3'
+					BackColor=00ECEBD5
+					AlignColumn='SENDSTORE'
+					AlignColumnEx='MATERIAL'
+					Width=6.53521
+					Height=0.8
+					Object Font
+						Name='宋体'
+						Size=105000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleRight
+					Text='总计'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox22'
+					AlignColumn='CARSNUM'
+					Left=18.9177
+					Width=1.66688
+					Height=0.8
+					Object Border
+						Styles=[DrawLeft|DrawRight]
+					End
+					TextAlign=MiddleCenter
+					DataField='CARSNUM'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox23'
+					AlignColumn='SUTTLE'
+					Left=24.765
+					Width=1.85208
+					Height=0.75
+					Object Border
+						Styles=[DrawLeft|DrawRight]
+					End
+					TextAlign=MiddleRight
+					DataField='SUTTLE'
+					Format='0.00'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox24'
+					AlignColumn='JSSUTTLE'
+					Left=26.5906
+					Width=1.98438
+					Height=0.75
+					Object Border
+						Styles=[DrawLeft|DrawRight]
+					End
+					TextAlign=MiddleRight
+					DataField='JSSUTTLE'
+					Format='0.00'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox25'
+					AlignColumn='DEF15'
+					Left=20.5581
+					Width=1.79917
+					Height=0.75
+					Object Border
+						Styles=[DrawLeft|DrawRight]
+					End
+					TextAlign=MiddleRight
+					DataField='DEF15'
+					Format='0'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox26'
+					AlignColumn='DEF16'
+					Left=22.3308
+					Width=2.46063
+					Height=0.75
+					Object Border
+						Styles=[DrawLeft|DrawRight]
+					End
+					TextAlign=MiddleRight
+					DataField='DEF16'
+					Format='0.00'
+				End
+					End
+	End
+End
+Item
+	Name='SubGroup'
+	Object GroupHeader
+		Height=0
+		OccupyColumn=T
+		IncludeFooter=T
+		VAlign=Middle
+	End
+	Object GroupFooter
+		BackColor=00CCFFFF
+		Height=0
+		Object Font
+			Name='宋体'
+			Size=90000,0
+			Weight=400
+			Charset=134
+		End
+		Items Control
+			Item
+				Type=StaticBox
+				Name='StaticBox1'
+				BackColor=00ECEBD5
+				AlignColumn='SENDSTORE'
+				AlignColumnEx='MATERIAL'
+				Width=6.56167
+				Height=0.75
+				Object Border
+					Styles=[DrawRight]
+				End
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Bold=T
+					Charset=134
+				End
+				TextAlign=MiddleRight
+				Text='小计'
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox13'
+				BackColor=White
+				AlignColumn='CARSNUM'
+				Left=18.9177
+				Width=1.66688
+				Height=0.65
+				Object Border
+					Styles=[DrawLeft|DrawRight]
+				End
+				TextAlign=MiddleCenter
+				DataField='CARSNUM'
+			End
+			Item
+				Type=SummaryBox
+				Name='SummaryBox15'
+				BackColor=White
+				AlignColumn='SUTTLE'
+				Left=24.765
+				Width=1.85208
+				Height=0.75
+				Object Border
+					Styles=[DrawLeft|DrawRight]
+				End
+				TextAlign=MiddleRight
+				DataField='GROSS'
+				Format='0.00'
+			End
+			End
+End
+End
+Item
+	Name='Group1'
+	Object GroupHeader
+		Height=0
+		OccupyColumn=T
+	End
+	Object GroupFooter
+		Height=0
+	End
+End
+End
+End
+Object PageHeader
+	Height=0
+End
+Object PageFooter
+	Height=0.65
+	Items Control
+		Item
+			Type=MemoBox
+			Name='MemoBox2'
+			Anchor=[Top|Right]
+			Left=24.8708
+			Width=2.59292
+			Height=0.608542
+			Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+		End
+	End
+End
+Items Parameter
+	Item
+		Name='title'
+	End
+	Item
+		Name='end_Date'
+	End
+	Item
+		Name='start_Date'
+	End
+	Item
+		Name='Query'
+	End
+End
+Items ReportHeader
+	Item
+		Name='ReportHeader1'
+		Height=2.5
+		Items Control
+			Item
+				Type=StaticBox
+				Name='StaticBox14'
+				Left=0.211667
+				Top=0.211667
+				Width=18.6002
+				Height=0.79375
+				Object Font
+					Name='宋体'
+					Size=180000,0
+					Bold=T
+					Charset=134
+				End
+				TextAlign=MiddleCenter
+				Text='物料统计报表'
+				Parameter='title'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox4'
+				Left=4.81542
+				Top=1.19063
+				Width=4.78896
+				Height=0.608542
+				Text='StaticBox4'
+				Parameter='end_Date'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox9'
+				AlignColumnSide=Right
+				Left=0.264583
+				Top=1.19063
+				Width=3.99521
+				Height=0.608542
+				Text='StaticBox3'
+				Parameter='start_Date'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox12'
+				Left=1.48167
+				Top=1.74625
+				Width=25.1619
+				Height=0.608542
+				Parameter='Query'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox11'
+				Left=0.238125
+				Top=1.74625
+				Width=1.13771
+				Height=0.608542
+				Text='条件：'
+			End
+			Item
+				Type=StaticBox
+				Name='StaticBox5'
+				Left=4.31271
+				Top=1.19063
+				Width=0.423333
+				Height=0.608542
+				TextAlign=MiddleCenter
+				Text='至'
+			End
+			End
+	RepeatOnPage=T
+End
+End
+End

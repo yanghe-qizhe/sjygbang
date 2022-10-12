@@ -1,0 +1,295 @@
+﻿@{
+    ViewBag.Title = "木片加扣杂质";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键 
+          var PCRAWTYPE = GetQuery("PCRAWTYPE");
+    $(function () {
+      BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+   
+        GetGrid();     
+    })
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var PRINTCODE = $("#PRINTCODE").val(); 
+         var Material = $("#Material").val();
+          var CARSNAME = $("#CARSNAME").val(); 
+          var AUDITSTATUS = $("#AUDITSTATUS").val(); 
+         var CQDEF1 = $("#CQDEF1").val(); 
+           var DATETYPE = $("#DATETYPE").val();  
+            var CYUSER = $("#CYUSER").val();  
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJManager/PCRawCheck/GetOrderList2")?ISKZ1=1&StartTime=" + StartTime + '&EndTime=' + EndTime + '&PRINTCODE=' + escape(PRINTCODE)+'&PCRAWTYPE='+PCRAWTYPE+ '&Material=' + Material+'&CARSNAME='+escape(CARSNAME)+'&AUDITSTATUS='+AUDITSTATUS+"&CQDEF1="+CQDEF1+"&DATETYPE="+DATETYPE+'&CYUSER='+escape(CYUSER)  , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJManager/PCRawCheck/GetOrderList2")?ISKZ1=1&StartTime=" + StartTime + '&EndTime=' + EndTime +'&PCRAWTYPE='+PCRAWTYPE,
+            datatype: "json",
+          height: $(window).height() - 180,
+        autowidth: true,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', width: 100,align:'center',hidden:true }, 
+                  { label: 'CYID', name: 'CYID', index: 'CYID', width: 100,align:'center',hidden:true }, 
+                 { label: 'MAINID', name: 'MAINID', index: 'MAINID', width: 100,align:'center',hidden:true }, 
+                { label: '过磅日期', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 110, align: 'center' },
+               { label: '物料编码', name: 'MATERIALCODE', index: 'MATERIALCODE', width: 80, align: 'center'  }, 
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 100, align: 'center'  },  
+                 { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'center'  }, 
+                  { label: 'SUPPLY', name: 'SUPPLY', index: 'SUPPLY', width: 100,  align:'center',hidden:true }, 
+                  { label: '供应商', name: 'SUPPLYNAME', index: 'SUPPLYNAME', width: 150, align: 'center'  }, 
+                 { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 120, align: 'left'  }, 
+                { label: 'CARS', name: 'CARS', index: 'CARS', width: 100,align:'center',hidden:true }, 
+                { label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 60, align: 'left'  }, 
+              { label: '来源地区', name: 'LYDEF3', index: 'LYDEF3', width: 100, align: 'left'  }, 
+              { label: '净重', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center'  },
+             { label: '检验结果', name: 'ZJRESULTMEMO', index: 'ZJRESULTMEMO', width: 220, align: 'center' },
+              { label: '杂质1', name: 'KZ', index: 'KZ', width: 60, align: 'center'  },
+               { label: '杂质2', name: 'KS', index: 'KS', width: 60, align: 'center'  },
+                { label: '扣杂总量', name: 'SUMKZ', index: 'SUMKZ', width: 60, align: 'center'  },
+               { label: '制样码', name: 'PRINTCODE', index: 'PRINTCODE', width: 160, align: 'left',align:'center' }, 
+               { label: 'ZJRESULT', name: 'ZJRESULT', index: 'ZJRESULT', width: 100,  align:'center',hidden:true },
+               {
+                    label: '合格判定', name: 'ZJRESULTNAME', index: 'ZJRESULTNAME', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:blue;font-size:15px'>检验合格</span>";
+                        if (cellvalue == '1') return "<span style='color:red;font-size:15px'>检验不合格</span>"; 
+                    }
+                },  
+                { label: 'AUDITSTATUS', name: 'AUDITSTATUS', index: 'AUDITSTATUS', width: 100, align: 'center', hidden: true },
+                {
+                    label: '提交状态', name: 'AUDITSTATUSNAME', index: 'AUDITSTATUSNAME', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未提交</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>已提交</span>"; 
+                    }
+                },
+                { label: '提交人', name: 'AUDITUSER', index: 'AUDITUSER', width: 60, align: 'center' },
+                 { label: '扣杂人', name: 'DEF15', index: 'DEF15', width: 60, align: 'left' },
+                 { label: '监督员', name: 'CYUSER', index: 'CYUSER', width: 60, align: 'left'  } ,
+                 { label: '采样人', name: 'CYUSER1', index: 'CYUSER1', width: 60, align: 'left'  } ,
+                 { label: '采样时间', name: 'CYDATE', index: 'CYDATE', width: 110, align: 'left'  },
+               
+                { label: '入厂厂区', name: "CQDEF1", width: 100, sortable: false, align: 'center' ,
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1000')
+                            return "阳光纸业";
+                        else if (cellvalue == '6000')
+                            return "盛世热电";
+                        else if (cellvalue == '7000')
+                            return "新迈纸业";
+                        else if (cellvalue == '8000')
+                            return "阳光王子";
+                        else if (cellvalue == '9000')
+                            return "华迈纸业";
+                        else if (cellvalue == '9010')
+                            return "科迈制浆";
+                            else
+                             return "";
+                }
+                 },
+                { label: '接收公司', name: 'ORGNAME', index: 'ORGNAME', width: 120, align: 'left' } ,
+                { label: '计量委托', name: 'PCID', index: 'PCID', width: 120, align: 'left'  }, 
+                { label: '过磅单号', name: 'JLBILLNO', index: 'JLBILLNO', width: 120, align: 'left',align:'center' },
+                { label: '否决原因', name: 'AUDITMEMO', index: 'AUDITMEMO', width: 150, align: 'center' }
+            ],
+            viewrecords: true,
+            rownumbers:true, 
+            multiselect: true ,
+          multiboxonly: true,   
+           rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false 
+
+        });
+        
+    }
+      
+   
+   function SelectDatas() {
+        var datas = [];
+         var arr = new Array;
+        var ids = $("#gridTable").getGridParam('selarrrow');
+        $.each(ids, function (i, o) {
+            var rowData = $("#gridTable").jqGrid("getRowData", ids[i]);
+            datas.push(rowData);
+        })
+        return datas;
+    }
+ 
+ 
+   //编辑
+      function btn_edit() {
+        var status = GetJqGridRowValue("#gridTable", "AUDITSTATUS");
+    var arrstatus= status.split(",");
+    var arr =$.grep(arrstatus,
+         function(n,i){
+            return n=="1"
+        }); 
+            if(arr.length>0){
+                tipDialog('当前选中数据有提交单据,无法做扣杂操作！', 4, 'warning');
+                return false;
+            } 
+        var datas = [];
+         var arr = new Array;
+        var ids = $("#gridTable").getGridParam('selarrrow');
+        $.each(ids, function (i, o) {
+            var rowData = $("#gridTable").jqGrid("getRowData", ids[i]);
+            datas.push(rowData);
+        })
+       if(datas.length==0){
+        top.TipMsg("您没有选中任何项，请您选中后再操作！", 4000, "error");
+            return false;
+       }
+               var title = "木片原料扣杂";
+    var url = "/ZJManager/PCRawCheck/PCRawCheckForm3?ModuleId=" + ModuleId  ;
+     FullDialog(url,"PCRawCheckForm1",title);
+     }
+
+          function btn_Check() {
+            var printcode = GetJqGridRowValue("#gridTable", "PRINTCODE");
+    var arrprintcode= printcode.split(",");
+    var arrzj=$.grep(arrprintcode,
+         function(n,i){
+            return n==""
+        }); 
+            if(arrzj.length>0){
+                tipDialog('当前选中批次未制样化验,无法做审批的操作！', 4, 'warning');
+                return false;
+            } 
+        var datas = [];
+         var arr = new Array;
+        var ids = $("#gridTable").getGridParam('selarrrow');
+        $.each(ids, function (i, o) {
+            var rowData = $("#gridTable").jqGrid("getRowData", ids[i]);
+            datas.push(rowData);
+        })
+       if(datas.length==0){
+        top.TipMsg("您没有选中任何项，请您选中后再操作！", 4000, "error");
+            return false;
+       }
+     var title = "木片扣杂审批";
+    var url = "/ZJManager/PCRawCheck/PCRawCheckForm4?ModuleId=" + ModuleId  ;
+     FullDialog(url,"PCRawCheckForm4",title);
+     }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    日期类型：
+                </th>
+                <td>
+                    <select id="DATETYPE" name="DATETYPE" class="select" style="width: 100px;">
+                        <option value="0">采样日期</option>
+                        <option value="1">计量日期</option>
+                    </select>
+                </td>
+                <th>
+                    日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 100px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 100px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制样条码：
+                </th>
+                <td>
+                    <input id="PRINTCODE" type="text" class="txt" style="width: 150px" />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    提交状态：
+                </th>
+                <td>
+                    <select id="AUDITSTATUS" name="AUDITSTATUS" class="select" style="width: 100px;">
+                        <option value="">请选择</option>
+                        <option value="0">未提交</option>
+                        <option value="1">已提交</option>
+                    </select>
+                </td>
+                <th>
+                    入厂厂区：
+                </th>
+                <td>
+                    <select id="CQDEF1" class="txt select" style="width: 105px">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        <option value="6000">盛世热电</option>
+                        <option value="7000">新迈纸业</option>
+                        <option value="8000">阳光王子</option>
+                        <option value="9000">华迈纸业</option>
+                        <option value="9010">科迈制浆</option>
+                    </select>
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CARSNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    监督人：
+                </th>
+                <td>
+                    <input id="CYUSER" type="text" class="txt" style="width: 120px" />
+                </td>
+                <td>
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

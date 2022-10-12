@@ -1,0 +1,305 @@
+﻿@{
+    ViewBag.Title = "选择采样批次";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript"> 
+    var FormID = GetQuery('FormID'); 
+    var MATERIAL = GetQuery('MATERIAL'); 
+    var MATERIALNAME = GetQuery('MATERIALNAME'); 
+    var SUPPLY = GetQuery('SUPPLY'); 
+    var SUPPLYNAME = GetQuery('SUPPLYNAME');
+    var ZJZPStatus;
+    $(function () {  
+        if(IsNull(MATERIAL)){
+            $("#MATERIALNAME").attr("disabled","disabled");
+            $("#MATERIAL").val(MATERIAL);
+            $("#MATERIALNAME").val(MATERIALNAME);
+        }
+        if(IsNull(SUPPLY)){
+            $("#SUPPLYNAME").attr("disabled","disabled");
+            $("#SUPPLY").val(SUPPLY);
+            $("#SUPPLYNAME").val(SUPPLYNAME);
+        }
+        setTimeout(function(){
+            GetGrid(); 
+        },500);
+    }) 
+       function btn_OK() {
+        var datas = [];
+        var ids = $("#gridTable").getGridParam('selarrrow');
+         var arr = new Array;
+        $.each(ids, function (i, o) {
+            var rowData = $("#gridTable").jqGrid("getRowData", ids[i]);
+               datas.push(rowData);
+               var json = { "SUPPLY": rowData.SUPPLY.toLowerCase(), "MATERIAL": rowData.MATERIAL.toLowerCase() }
+               arr[i] = json;
+        })
+        if(datas.length>0){
+          var res = arr.Contains(arr[0]);
+                if (res == 0) {
+                    var frameid = tabiframeId();
+                    var $parentobj = top.frames[frameid];
+                    $parentobj.InitGridData(datas);
+                    closeDialog();
+                }else{
+                    tipDialog("请选择同一供应商、物料的数据！", 3, 0);
+                    return;
+                }
+        }else{
+         tipDialog("请至少选择一个批次！", 3, 0);
+        return;
+        }
+    }
+        
+        Array.prototype.Contains = function (m) {
+            var res = 0, j = 0; s = 0;
+            $.each(this, function (i, n) {
+                if (n.SUPPLY==m.SUPPLY  && n.MATERIAL == m.MATERIAL) {
+                    j++;
+                }
+            });
+            if (j == this.length) {
+                res = 0;
+            }
+            else {
+                res = 1;
+            }
+            return res;
+        };
+
+            //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    var CardNumber = "";
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+              tipDialog("打开读卡器失败！", 3, "");
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+          tipDialog(version, 3, "");
+            CardNumber = MWRFATL.OpenCard(1);
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                  tipDialog("IC卡没有放在读卡器上！", 3, "");
+            }
+            else {
+                res = 0;
+                $('#msg').text(CardNumber);
+            }
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        return res;
+    }
+
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var len = arr.length - 1;
+          for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        var cid = parseInt(num, 16);
+        return cid;
+    }
+
+
+     function ReadCard() {
+        CardOpen();
+        var ICCard = "";
+        if (IsNullOrEmpty(CardNumber)) {
+            ICCard = SetCardNo(CardNumber);
+            $("#DEF6").val(ICCard);
+            btn_Search();
+        }
+        if (ICCard == "") {
+            tipDialog("读IC卡失败，IC卡序号为空！", 3, "");
+            return false;
+        }
+    }
+  
+    //搜索
+    function btn_Search() { 
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        MATERIAL = $("#MATERIAL").val();
+        MATERIALNAME = $("#MATERIALNAME").val();
+        SUPPLY = $("#SUPPLY").val();
+        SUPPLYNAME = $("#SUPPLYNAME").val();
+        var BILLNO = $("#BILLNO").val();
+            var DEF6 = $("#DEF6").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJManager/PCRawAllBatch/GetPCRawCYList")?iszp=0&TYPE=1&PCRAWTYPE=10&StartTime=" + StartTime + '&EndTime=' + EndTime+ '&MATERIAL=' + escape(MATERIAL)+ '&SUPPLY=' + escape(SUPPLY)+ '&MATERIALNAME=' + escape(MATERIALNAME)+ '&SUPPLYNAME=' + escape(SUPPLYNAME)+'&BILLNO='+escape(BILLNO) +'&DEF6='+escape(DEF6)  , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        MATERIAL = $("#MATERIAL").val();
+        MATERIALNAME = $("#MATERIALNAME").val();
+        SUPPLY = $("#SUPPLY").val();
+        SUPPLYNAME = $("#SUPPLYNAME").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJManager/PCRawAllBatch/GetPCRawCYList")?iszp=0&TYPE=1&PCRAWTYPE=10&tartTime=" + StartTime + '&EndTime=' + EndTime+ '&MATERIAL=' + escape(MATERIAL)+ '&SUPPLY=' + escape(SUPPLY)+ '&MATERIALNAME=' + escape(MATERIALNAME)+ '&SUPPLYNAME=' + escape(SUPPLYNAME),
+            datatype: "json",
+            height: $(window).height() - 180,
+            autowidth: true,
+            colModel: [ 
+               { label: 'ID', name: 'ID', index: 'ID', width: 180, align: 'left',align:'center',hidden:true }, 
+                { label: '采样单号', name: 'BILLNO', index: 'BILLNO', width: 100, align: 'left',align:'center' },
+                 { label: 'TYPE', name: 'TYPE', index: 'TYPE',  hidden: true },
+                {
+                    label: '状态', name: 'TYPENAME', index: 'TYPENAME', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<span style='color:red;font-size:18px'>采样</span>";
+                             if (cellvalue == '2') return "<span style='color:blue;font-size:18px'>组批中</span>";
+                      if (cellvalue == '3') return "<span style='color:blue;font-size:18px'>组批完成</span>";
+                        if (cellvalue == '4') return "<span style='color:black;font-size:18px'>制样</span>";
+                        if (cellvalue == '5') return "<span style='color:green;font-size:18px'>化验</span>";
+                    }
+                },
+             { label: 'ISSEND', name: 'ISSEND', index: 'ISSEND',  hidden: true },
+                {
+                    label: '送检状态', name: 'ISSENDNAME', index: 'ISSENDNAME', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:18px'>未送检</span>";
+                        if (cellvalue == '1') return "<span style='color:green;font-size:18px'>已送检</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:18px'>未送检</span>";
+                    },  hidden: true
+                },           
+                { label: '物料编号', name: 'MATERIAL', index: 'MATERIAL', width: 120, align: 'center',  hidden: true  }, 
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center'  }, 
+                 { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 120, align: 'center'  }, 
+                 { label: '供应商编号', name: 'SUPPLY', index: 'SUPPLY', width: 150, align: 'center',  hidden: true  }, 
+                { label: '供应商 ', name: 'SUPPLYNAME', index: 'SUPPLYNAME', width: 150, align: 'center'  }, 
+                { label: '采样车数', name: 'CARSNUM', index: 'CARSNUM', width: 80, align: 'center'  }, 
+                 { label: '异型卡号', name: 'DEF6', index: 'DEF6' , hidden: true }, 
+                { label: '承运商', name: 'DEF9', index: 'DEF9' , hidden: true }, 
+                { label: '承运商', name: 'DEF8', index: 'DEF8', width: 120, align: 'center'  }, 
+                { label: '接收公司', name: 'DEF19', index: 'DEF19' , hidden: true }, 
+                { label: '接收公司', name: 'DEF20', index: 'DEF20', width: 120, align: 'center'  }, 
+                { label: '合计扣重', name: 'SUMKZ', index: 'SUMKZ', width: 100, align: 'center',  hidden: true}, 
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 110, align: 'center' },
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 100, align: 'center' },
+                {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CYDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true 
+        });
+        
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_Commit_Save" title="读卡" onclick="ReadCard()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    读卡 </b></span></a><a id="btn_ReadAddRow" title="交接制样" onclick="btn_OK()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                            确定</b></span></a><a title="关闭当前窗口(Esc)" onclick="closeDialog();" class="tools_btn">
+                                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                    离开</b></span></a>
+</div>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    开始日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="SUPPLY" type="hidden" dbfield="true" />
+                    <input id="SUPPLYNAME" type="text" class="txt" err="供户" />
+                </td>
+                <th>
+                    异型卡号：
+                </th>
+                <td>
+                    <input id="DEF6" type="text" class="txt" dbfield="true" />
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    截止日期：
+                </th>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIAL" type="hidden" dbfield="true" />
+                    <input id="MATERIALNAME" type="text" class="txt" err="物料" />
+                </td>
+                <th>
+                    采样单号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" err="批号" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

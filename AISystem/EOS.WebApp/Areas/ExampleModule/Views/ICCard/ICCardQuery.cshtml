@@ -1,0 +1,108 @@
+﻿@{
+    ViewBag.Title = "ICCardQuery";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+        BindAutocomplete("CarsName", "Cars", "Cars", "200", "150", "");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#BillNo").val();
+        var Cars = $("#CarsName").val();
+        var Material = $("#MaterialName").val();
+        var Type = $("#Type").val();
+        var Status = $("#Status").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&BillNo=" + BillNo;
+        url += "&Cars=" + escape(Cars) + "&Material=" + escape(Material);
+        url += "&Type=" + escape(Type) + "&Status=" + escape(Status);
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                门禁单号：
+            </th>
+            <td>
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                车号：
+            </th>
+            <td>
+                <input id="Cars" type="hidden" />
+                <input id="CarsName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="Material" type="hidden" />
+                <input id="MaterialName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                业务类型：
+            </th>
+            <td>
+                <select id="Type" class="txtselect" style="width: 205px">
+                    <option value="">---请选择---</option>
+                    <option value="采购">采购</option>
+                    <option value="销售">销售</option>
+                    <option value="其它入库">其它入库</option>
+                    <option value="其它出库">其它出库</option>
+                    <option value="工程车">工程车</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                状态：
+            </th>
+            <td>
+                <select id="Status" class="txtselect" style="width: 205px">
+                    <option value="">---请选择---</option>
+                    <option value="入厂">入厂</option>
+                    <option value="发卡">发卡</option>
+                    <option value="装车">一次过磅</option>
+                    <option value="完成">二次过磅</option>
+                    <option value="出厂">出厂</option>
+                    <option value="作废">作废</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>

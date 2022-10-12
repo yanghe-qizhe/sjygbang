@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:p1="http://sjyg.com/unmanned2erp/ZFMM096/if" xmlns:rfc="urn:sap-com:document:sap:rfc:functions" name="SI_ZFMM096_OUT" targetNamespace="http://sjyg.com/unmanned2erp/ZFMM096/if" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:documentation />
+  <wsp:UsingPolicy wsdl:required="true" />
+  <wsp:Policy wsu:Id="OP_SI_ZFMM096_OUT" />
+  <wsdl:types>
+    <xsd:schema xmlns="urn:sap-com:document:sap:rfc:functions" targetNamespace="urn:sap-com:document:sap:rfc:functions" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="ZFMM096">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="T_OUTTAB">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="item" type="rfc:ZSFMM096" />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:element minOccurs="0" name="T_RETURN">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="item" type="rfc:ZTFMM096" />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ZFMM096.Response">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="T_OUTTAB">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="item" type="rfc:ZSFMM096" />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:element minOccurs="0" name="T_RETURN">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="item" type="rfc:ZTFMM096" />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:complexType name="ZSFMM096">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="AUFNR">
+            <xsd:annotation>
+              <xsd:documentation>Order Number</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="12" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="WERKS">
+            <xsd:annotation>
+              <xsd:documentation>Plant</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="4" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="PHAS0">
+            <xsd:annotation>
+              <xsd:documentation>Phase "Order Created"</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="1" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="PHAS2">
+            <xsd:annotation>
+              <xsd:documentation>Phase "Order Completed"</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="1" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="PHAS3">
+            <xsd:annotation>
+              <xsd:documentation>Phase "Order Closed"</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="1" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ZTFMM096">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="EBELN">
+            <xsd:annotation>
+              <xsd:documentation>Purchasing Document Number</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="10" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="EBELP">
+            <xsd:annotation>
+              <xsd:documentation>Item Number of Purchasing Document</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="5" />
+                <xsd:pattern value="\d+" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="LOEKZ">
+            <xsd:annotation>
+              <xsd:documentation>Asset class marked for deletion</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="1" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="ELIKZ">
+            <xsd:annotation>
+              <xsd:documentation>"Delivery Completed" Indicator</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="1" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="ZSLBZ">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="1" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="rfc.ZFMM096">
+    <wsdl:documentation />
+    <wsdl:part name="ZFMM096" element="rfc:ZFMM096" />
+  </wsdl:message>
+  <wsdl:message name="rfc.ZFMM096.Response">
+    <wsdl:documentation />
+    <wsdl:part name="ZFMM096.Response" element="rfc:ZFMM096.Response" />
+  </wsdl:message>
+  <wsdl:portType name="SI_ZFMM096_OUT">
+    <wsdl:documentation />
+    <wsdl:operation name="SI_ZFMM096_OUT">
+      <wsdl:documentation />
+      <wsp:Policy>
+        <wsp:PolicyReference URI="#OP_SI_ZFMM096_OUT" />
+      </wsp:Policy>
+      <wsdl:input message="p1:rfc.ZFMM096" />
+      <wsdl:output message="p1:rfc.ZFMM096.Response" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SI_ZFMM096_OUTBinding" type="p1:SI_ZFMM096_OUT">
+    <binding transport="http://schemas.xmlsoap.org/soap/http" xmlns="http://schemas.xmlsoap.org/wsdl/soap/" />
+    <wsdl:operation name="SI_ZFMM096_OUT">
+      <operation soapAction="http://sap.com/xi/WebService/soap1.1" xmlns="http://schemas.xmlsoap.org/wsdl/soap/" />
+      <wsdl:input>
+        <body use="literal" xmlns="http://schemas.xmlsoap.org/wsdl/soap/" />
+      </wsdl:input>
+      <wsdl:output>
+        <body use="literal" xmlns="http://schemas.xmlsoap.org/wsdl/soap/" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SI_ZFMM096_OUTService">
+    <wsdl:port name="HTTP_Port" binding="p1:SI_ZFMM096_OUTBinding">
+      <address location="http://poprd01.sunshinepaper.com.cn:50000/XISOAPAdapter/MessageServlet?senderParty=&amp;senderService=BS_OA_P&amp;receiverParty=&amp;receiverService=&amp;interface=SI_ZFMM096_OUT&amp;interfaceNamespace=http%3A%2F%2Fsjyg.com%2Funmanned2erp%2FZFMM096%2Fif" xmlns="http://schemas.xmlsoap.org/wsdl/soap/" />
+    </wsdl:port>
+    <wsdl:port name="HTTPS_Port" binding="p1:SI_ZFMM096_OUTBinding">
+      <address location="https://poprd01.sunshinepaper.com.cn:50001/XISOAPAdapter/MessageServlet?senderParty=&amp;senderService=BS_OA_P&amp;receiverParty=&amp;receiverService=&amp;interface=SI_ZFMM096_OUT&amp;interfaceNamespace=http%3A%2F%2Fsjyg.com%2Funmanned2erp%2FZFMM096%2Fif" xmlns="http://schemas.xmlsoap.org/wsdl/soap/" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,227 @@
+﻿@{
+    ViewBag.Title = "移入组批车辆明细";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var FormID = GetQuery('FormID');
+    var KeyValue = GetQuery('KeyValue');
+    var BILLNO = GetQuery('BILLNO');
+     var MATERIAL = GetQuery('MATERIAL');
+          var SUPPLY = GetQuery('SUPPLY');
+             var PCRAWTYPE = GetQuery('PCRAWTYPE');  
+      var ISTYPE = "0";
+     
+    $(function () {
+        $("#BILLNO").val(BILLNO);
+        $("#MATERIAL").val(MATERIAL);
+        $("#SUPPLY").val(SUPPLY);
+        if (PCRAWTYPE == "0") {
+            ISTYPE = "0";//原煤
+        }
+        if (PCRAWTYPE == "1") {
+            ISTYPE = "1";//化工
+        }
+        if (PCRAWTYPE == "2") {
+            ISTYPE = "5";//包材
+        }
+        if (PCRAWTYPE == "3") {
+            ISTYPE = "3";//木浆
+        }
+        if (PCRAWTYPE == "5") {
+            ISTYPE = "2";//木片
+        }
+        if (PCRAWTYPE == "7") {
+            ISTYPE = "4";//废纸
+        }
+        setTimeout(function () {
+            GetGrid();
+        }, 100);
+    });
+
+    function btn_OK() {
+        var ID = GetJqGridRowValue("#gridTable", "DETAILSID");
+        var delparm = 'KeyValue=' + escape(KeyValue) +"&BILLNO=" + escape(ID);
+        var url = '/ZJManager/PCRawCY/PCRawCYAddCarItem';
+        if (IsNull(KeyValue)) {
+            confirmDialog("提示", "注：您确定要移入当前选中的明细记录吗？请谨慎操作", function (r) {
+                if (r) {
+                    Loading(true, "正在移动数据...");
+                    window.setTimeout(function () {
+                        AjaxJson(url, delparm, function (data) {
+                            tipDialog(data.Message, 3, data.Code);
+                            if (data.Code == 1) {
+                                btn_Search();
+                                if (IsNull(FormID)) {
+                                    $parentobj = top.frames[FormID];
+                                } else {
+                                    $parentobj = top.frames[tabiframeId()];
+                                }
+                                $parentobj.btn_Search();
+                            }
+                        });
+                    }, 200);
+                }
+            });
+        } else {
+            tipDialog('请至少选择一个车号明细', 4, 'warning');
+        }
+    }
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var CARSNAME = $("#CarsName").val();
+        var MATERIAL = $("#MATERIAL").val();
+        var SUPPLY = $("#SUPPLY").val();
+         var DATETYPE = $("#DATETYPE").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/PCBillSOF/GetZJOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + "&CarsName=" + escape(CARSNAME) +"&Material="+MATERIAL  +"&Supply="+SUPPLY + "&DATETYPE=" + DATETYPE+'&istype='+ISTYPE, page: 1
+        }).trigger('reloadGrid');
+    }
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+         var DATETYPE = $("#DATETYPE").val();
+          var MATERIAL = $("#MATERIAL").val();
+        $("#gridTable").jqGrid({
+         url: "@Url.Content("~/ExampleModule/PCBillSOF/GetZJOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime +"&Material="+MATERIAL + "&DATETYPE=" + DATETYPE+'&istype='+ISTYPE,
+            datatype: "json",
+            height: $(window).height() - 130,
+            autowidth: true,
+                      colModel: [
+                   { label: '明细主键', name: 'DETAILSID', hidden: true },
+                { label: '计量委托', name: 'ID', width: 100, align: 'left' },
+                { label: '车号主键', name: 'CARS', hidden: true },
+                { label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 60, align: 'center' },
+                  { label: '物料分类', name: 'PK_MARBASCLASSNAME' , width: 80, align: 'center'},
+                { label: '物料主键', name: 'PK_MATERIAL' , hidden: true },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'left' },
+                 { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'left' },
+                { label: '毛重时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 120, align: 'left' },
+                 { label: '毛重', name: 'GROSS', index: 'GROSS', width: 60, align: 'left' },
+                     { label: '毛重磅房', name: 'WEIGHTNAME', index: 'WEIGHTNAME', width: 60, align: 'left' },
+                 { label: '采购订单PK', name: 'PK_ORDER', index: 'PK_ORDER',   hidden: true },
+                 { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE',  width: 120, align: 'center' },
+                     { label: '供应商PK', name: 'PK_SUPPLIER',   hidden: true },
+                 { label: '供应商', name: 'SUPPLIERNAME', index: 'SUPPLIERNAME', width: 150, align: 'left' },
+                 { label: '承运商PK', name: 'TRAFFICCOMPANY', hidden: true },
+                { label: '承运商', name: 'TRAFFICCOMPANYNAME', index: 'TRAFFICCOMPANYNAME', width: 100, align: 'left' },
+                 { label: 'PK_ORG', name: 'PK_ORG', hidden: true },
+                { label: '接收公司', name: 'ORGNAME', index: 'ORGNAME', width: 120, align: 'left' } ,
+                  { label: 'PK_DEPT', name: 'PK_DEPT', hidden: true },
+                 { label: ' 接收组织', name: "DEPTNAME", width: 100, sortable: false, align: 'center' },
+                  { label: ' 货主', name: "DEF2", width: 100, sortable: false, align: 'center' },
+                 { label: '计量单位', name: "JLUNIT2", index: 'JLUNIT2', width: 100, sortable: false, align: 'center' },
+                 { label: '是否计量', name: 'ISJL', hidden: true },
+                   { label: 'DEF1', name: 'DEF1', hidden: true },
+                   { label: '入厂厂区', name: "DEFNAME1", width: 100, sortable: false, align: 'center' ,
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1000')
+                        return "阳光纸业";
+                    else if (cellvalue == '6000')
+                        return "盛世热电";
+                    else if (cellvalue == '7000')
+                        return "新迈纸业";
+                    else if (cellvalue == '8000')
+                        return "阳光王子";
+                    else if (cellvalue == '9000')
+                        return "华迈纸业";
+                    else if (cellvalue == '9010')
+                        return "科迈制浆";
+                            else
+                             return "";
+                }
+                },
+                 {
+                    label: '日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                } ,
+                { label: '备注', name: 'MEMO', index: 'MEMO', width:100, align: 'left' } 
+            ],
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+             pager: "#gridPager",
+            sortname: 'DEF5',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true
+        });
+        columnModelData("#gridTable");
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    日期类型：
+                </th>
+                <td>
+                    <select id="DATETYPE" name="DATETYPE" class="select" style="width: 125px;">
+                        <option value="0">单据日期</option>
+                        <option value="1">计量日期</option>
+                    </select>
+                </td>
+                <th>
+                    日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-3)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    移入到目标批号：
+                </th>
+                <td>
+                    <input id="SUPPLY" type="hidden" />
+                    <input id="MATERIAL" type="hidden" />
+                    <input id="BILLNO" type="text" class="txt readonly" readonly="readonly" disabled="disabled"
+                        style="width: 120px" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CarsName" type="text" class="txt " style="width: 120px" />
+                </td>
+                <td>
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                    <input id="btnOK" type="button" class="btnSearch" value="移 入" onclick="btn_OK()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,290 @@
+﻿@{
+    ViewBag.Title = "系统日志》明细页面";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    $(function () {
+        AjaxJson("/CommonModule/SysLog/SetForm", { KeyValue: GetQuery('SysLogId') }, function (data) {
+            var html = "";
+            html += "IP地址：" + data.IPAddress + "<br>";
+            html += "IP所在城市：" + data.IPAddressName + "<br>"
+            html += "描述：" + data.Remark + "<br>"
+            html += "描述2：" + data.LOGCONTENT;
+            $("#Other").show().html(html);
+            SetLogContent(data);
+        });
+    })
+    function SetLogContent(data) {
+        if (IsNull(data.PRECHANGE_M)) {
+            var names = [];
+            var model = [];
+            var JSON = jQuery.parseJSON(data.PRECHANGE_M);
+            $.each(JSON, function (i, o) {
+                names.push(i);
+                model.push({
+                    name: i,
+                    index: i,
+                    width: 100
+                });
+            })
+
+            //变动前主表
+            $("#gridTable").jqGrid({
+                datatype: "json",
+                //height: auto,
+                autowidth: true,
+                colNames: names,
+                colModel: model,
+                pager: "false",
+                rowNum: 1000,
+                rownumbers: true,
+                shrinkToFit: false
+            });
+            $("#gridTable").jqGrid('addRowData', 1, JSON);
+            //表格自适应（高度、宽度）
+            $(window).resize(function () {
+                //$("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 31);
+                $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', 100);
+            });
+        }
+        if (IsNull(data.AFTERCHANGE_M)) {
+            var names2 = [];
+            var model2 = [];
+            var JSON = jQuery.parseJSON(data.AFTERCHANGE_M);
+            $.each(JSON, function (i, o) {
+                names2.push(i);
+                model2.push({
+                    name: i,
+                    index: i,
+                    width: 100
+                });
+            })
+            //变动后主表
+            $("#gridTable2").jqGrid({
+                datatype: "json",
+                //height: $(window).height() - 31,
+                autowidth: true,
+                colNames: names2,
+                colModel: model2,
+                pager: "false",
+                rowNum: 1000,
+                rownumbers: true,
+                shrinkToFit: false
+            });
+            $("#gridTable2").jqGrid('addRowData', 1, JSON);
+            $(window).resize(function () {
+                //$("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 31);
+                $("#gridTable2").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', 100);
+            });
+        }
+
+        if (IsNull(data.PRECHANGE_D)) {
+            var names3 = [];
+            var model3 = [];
+            var JSON = jQuery.parseJSON(data.PRECHANGE_D);
+            $.each(JSON[0], function (i, o) {
+                names3.push(i);
+                model3.push({
+                    name: i,
+                    index: i,
+                    width: 100
+                });
+            })
+
+            //变动前子表
+            $("#gridTable3").jqGrid({
+                datatype: "json",
+                //height: $(window).height() - 31,
+                autowidth: true,
+                colNames: names3,
+                colModel: model3,
+                pager: "false",
+                rowNum: 1000,
+                rownumbers: true,
+                shrinkToFit: false
+            });
+            $("#gridTable3").jqGrid('addRowData', 1, JSON);
+            $(window).resize(function () {
+                //$("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 31);
+                $("#gridTable3").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', 100);
+            });
+        }
+
+        if (IsNull(data.AFTERCHANGE_D)) {
+            var names4 = [];
+            var model4 = [];
+            var JSON = jQuery.parseJSON(data.AFTERCHANGE_D);
+            $.each(JSON[0], function (i, o) {
+                names4.push(i);
+                model4.push({
+                    name: i,
+                    index: i,
+                    width: 100
+                });
+            })
+            //变动后子表
+            $("#gridTable4").jqGrid({
+                datatype: "json",
+                //height: $(window).height() - 31,
+                autowidth: true,
+                colNames: names4,
+                colModel: model4,
+                pager: "false",
+                rowNum: 1000,
+                rownumbers: true,
+                shrinkToFit: false
+            });
+            $("#gridTable4").jqGrid('addRowData', 1, JSON);
+            $(window).resize(function () {
+                //$("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 31);
+                $("#gridTable4").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', 100);
+            });
+        }
+
+        if (IsNull(data.PRECHANGE_O)) {
+            var names5 = [];
+            var model5 = [];
+            var JSON = jQuery.parseJSON(data.PRECHANGE_O);
+            $.each(JSON, function (i, o) {
+                names5.push(i);
+                model5.push({
+                    name: i,
+                    index: i,
+                    width: 100
+                });
+            })
+
+            //变动前子表
+            $("#gridTable5").jqGrid({
+                datatype: "json",
+                //height: $(window).height() - 31,
+                autowidth: true,
+                colNames: names5,
+                colModel: model5,
+                pager: "false",
+                rowNum: 1000,
+                rownumbers: true,
+                shrinkToFit: false
+            });
+            $("#gridTable5").jqGrid('addRowData', 1, JSON);
+            $(window).resize(function () {
+                //$("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 31);
+                $("#gridTable5").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', 100);
+            });
+        }
+
+        if (IsNull(data.AFTERCHANGE_O)) {
+            var names6 = [];
+            var model6 = [];
+            var JSON = jQuery.parseJSON(data.AFTERCHANGE_O);
+            $.each(JSON, function (i, o) {
+                names6.push(i);
+                model6.push({
+                    name: i,
+                    index: i,
+                    width: 100
+                });
+            })
+            //变动后子表
+            $("#gridTable6").jqGrid({
+                datatype: "json",
+                //height: $(window).height() - 31,
+                autowidth: true,
+                colNames: names6,
+                colModel: model6,
+                pager: "false",
+                rowNum: 1000,
+                rownumbers: true,
+                shrinkToFit: false
+            });
+            $("#gridTable6").jqGrid('addRowData', 1, JSON);
+            $(window).resize(function () {
+                //$("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 31);
+                $("#gridTable6").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', 100);
+            });
+        }
+    }
+     
+</script>
+<div style="margin: 1px; margin-bottom: 0px;">
+    <div id="Other" style="font-size: 16pt; display: none; border-bottom: none; border-top: none;">
+    </div>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    变动前主表
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="div_table" class="topline rightline">
+        <table id="gridTable">
+        </table>
+    </div>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    变动后主表
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="div_table2" class="topline rightline">
+        <table id="gridTable2">
+        </table>
+    </div>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    变动前子表
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="div_table3" class="topline rightline">
+        <table id="gridTable3">
+        </table>
+    </div>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    变动后子表
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="div_table4" class="topline rightline">
+        <table id="gridTable4">
+        </table>
+    </div>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    变动前其他表
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="div_table5" class="topline rightline">
+        <table id="gridTable5">
+        </table>
+    </div>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    变动后其他表
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="div_table6" class="topline rightline">
+        <table id="gridTable6">
+        </table>
+    </div>
+</div>

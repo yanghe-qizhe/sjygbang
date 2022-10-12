@@ -1,0 +1,72 @@
+﻿@{
+    ViewBag.Title = "物料分类";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+  
+       $(document).ready(function () {
+       
+             setTimeout(function () {
+                GetGrid();
+            }, 100);
+ 
+    });
+    //加载表格
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/Material/TreeGridListJson")",
+            datatype: "json",
+            treeGrid: true,
+            treeGridModel: "nested",
+            ExpandColumn: "SPELLCODE",
+            height: $(window).height()-30,
+            autowidth: true,
+            colModel: [
+            { label: '主键', name: 'Id', index: 'Id', width: 80, hidden: true },
+            { label: "名称", name: "Name", index: "Name", width: 150 },
+            { label: "拼音码", name: "SPELLCODE", index: "SPELLCODE", width: 100 }   ,
+                { label: "简称", name: "ShortName", index: "ShortName", width: 150 },
+                 { label: "编码", name: "Code", index: "Code", width: 100 }
+            ],
+            pager: "false",
+            rowNum: 2000,
+            rownumbers: true,
+            shrinkToFit: false,
+            //双击事件
+            onSelectRow: function (RowIndx) {
+             var rowData = $(this).jqGrid('getRowData', RowIndx);
+            var $parentobj = top.frames["EPUMATERIALForm"];
+            $parentobj.$("#PK_MATERIAL").val(rowData.Id);
+            $parentobj.$("#SPELLCODE").val(rowData.SPELLCODE);
+            $parentobj.$("#MATERIAL" ).val(rowData.ShortName);
+            },
+             ondblClickRow: function (RowIndx) {
+              var rowData = $(this).jqGrid('getRowData', RowIndx);
+            var $parentobj = top.frames["EPUMATERIALForm"];
+            $parentobj.$("#PK_MATERIAL").val(rowData.Id);
+            $parentobj.$("#SPELLCODE").val(rowData.SPELLCODE);
+            $parentobj.$("#MATERIAL" ).val(rowData.ShortName);
+            closeDialog();
+             }
+        });
+        //////////////////////////
+    }
+    function SelectText(){
+            closeDialog();
+    }
+    function ClearText(){
+                     var $parentobj = top.frames["EPUMATERIALForm"];
+                    $parentobj.$("#PK_MATERIAL").val("");
+                    $parentobj.$("#SPELLCODE" ).val("");
+                           $parentobj.$("#MATERIAL" ).val("");
+                     closeDialog();
+    }
+ //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="rightline" style="margin: 1px; margin-top: -1px;">
+    <table id="gridTable">
+    </table>
+</div>

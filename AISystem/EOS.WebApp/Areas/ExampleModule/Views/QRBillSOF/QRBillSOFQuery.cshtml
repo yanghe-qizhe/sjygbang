@@ -1,0 +1,115 @@
+﻿@{
+    ViewBag.Title = "GCBillSOFQuery";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+        BindAutocomplete("ORGNAME", "PK_ORG", "Company", "200", "150", "");
+        BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("CarsName", "Cars", "Cars", "200", "150", "");
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#BillNo").val();
+        var Supply = $("#Supply").val();
+        var Material = $("#Material").val();
+        var Cars = $("#Cars").val();
+        var ISUSE = $("#ISUSE").val();
+        var Material = $("#Material").val();
+        var PK_ORG = $("#PK_ORG").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&BillNo=" + BillNo;
+        url += "&Cars=" + Cars + "&Material=" + Material + "&Supply=" + Supply;
+        url += "&ISUSE=" + ISUSE;
+        url += "&PK_ORG=" + PK_ORG;
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                通知单号：
+            </th>
+            <td>
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                接收公司：
+            </th>
+            <td>
+                <input id="PK_ORG" type="hidden" />
+                <input id="ORGNAME" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                供应商：
+            </th>
+            <td>
+                <input id="Supply" type="hidden" />
+                <input id="SupplyName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="Material" type="hidden" />
+                <input id="MaterialName" type="text" class="txt" style="width: 200px" istype="7" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                车号：
+            </th>
+            <td>
+                <input id="Cars" type="hidden" />
+                <input id="CarsName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                状态：
+            </th>
+            <td>
+                <select id="ISUSE" class="select" style="width: 205px;">
+                    <option value="">---请选择---</option>
+                    <option value="1">未入厂</option>
+                    <option value="5">发卡</option>
+                    <option value="7">入厂</option>
+                    <option value="6">出厂</option>
+                    <option value="4">作废</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,437 @@
+﻿@{
+    ViewBag.Title = "煤气分析数据录入";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ID = GetQuery("ID");
+    var ModuleId = GetQuery("ModuleId");
+    $(function () {
+        $("#CYDetails").css("height", $(this).height() - $(".tools_bar").height() - $("#RuleHead").height() - $(".bd").height() - 10);
+
+        InitControl();
+
+        SetEnter();
+        SetUpDown();
+    })
+
+    //回车切换
+    function SetEnter() {
+        //获取当前鼠标所在的焦点元素 
+        var $inp = $("input:text");
+        $inp.bind('keydown', function (e) {
+            var key = e.which;
+            if (key == 13 || key == 108) {
+                var a = $(document.activeElement);
+                if ($(a).attr("enter") == "1") {
+                    e.preventDefault();
+                    var maxcode = $(a).attr("id").split('_')[2];
+                    var maxcodenext = FloatAdd(maxcode, 1);
+                    $("#MATERIAL➩" + $(a).attr("enter_name") + "_TableInfo_" + $(a).attr("enter_mainid")).find("tr[index='" + maxcodenext + "']").find("input[enter_type='" + $(a).attr("enter_type") + "']").focus().select();
+                }
+            }
+        });
+    }
+
+    //上下键切换
+    function SetUpDown() {
+        //获取当前鼠标所在的焦点元素 
+        var $inp = $("input:text");
+        $inp.bind('keydown', function (e) {
+            var key = e.which;
+            if (key == 38 || key == 40) {
+                var a = $(document.activeElement);
+                if ($(a).attr("enter") == "1") {
+                    e.preventDefault();
+                    var maxcode = $(a).attr("id").split('_')[2];
+                    var maxcodenext = key == 38 ? FloatSub(maxcode, 1) : FloatAdd(maxcode, 1);
+                    $("#MATERIAL➩" + $(a).attr("enter_name") + "_TableInfo_" + $(a).attr("enter_mainid")).find("tr[index='" + maxcodenext + "']").find("input[enter_type='" + $(a).attr("enter_type") + "']").focus().select();
+                }
+            }
+        });
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(ID)) {
+            AjaxJson("/ZJEnergyManager/ZJWater/SetForm", { ID: ID }, function (data) {
+                SetWebControls(data);
+                var titleHeight = $("#DivTitleList").height();
+                $("#DivTitle").css("height", titleHeight + "px").css("line-height", titleHeight + "px");
+            });
+        }
+    }
+
+    function AddItem() {
+        var GASID = $(".tab_list_top").find(".actived").attr("mainid");
+        var url = "/ZJEnergyManager/ZJWater/ZJWaterAddItem?Type=0&FormID=@ViewBag.FormID&GASID=" + escape(GASID);
+        Dialog(url, "ZJWaterAddItem", "插入质检项", 700, 300);
+    }
+
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data.M[0][0]) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data.M[0][0][key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+                $.each(data.M[0], function (i, json) {
+                    var name = "MATERIAL➩" + json.MATERIAL;
+                    var shtml = '<div id="Tab' + name + '_' + json.ID + '" material="' + json.MATERIAL + '" mainid="' + json.ID + '" class="tab_list bd ' + (i == 0 ? "actived" : "") + ' " onclick="' + "Tabchange('" + name + "','" + json.ID + "')" + '">' + json.MATERIALNAME + '</div>';
+                    $("#DivTitleList").append(shtml);
+
+                    var thtml = '<div id="' + name + '_' + json.ID + '" mainid="' + json.ID + '" class="tabPanel" style="display:' + (i == 0 ? "block" : "none") + '; overflow: auto">';
+                    thtml += '<table id="' + name + '_List_' + json.ID + '" class="grid leftline form" style="width: 100%;">';
+                    thtml += '<thead>';
+                    thtml += '<tr>';
+                    thtml += '<td style="width: 30px; text-align: center; border-left: none;">';
+                    thtml += '<div class="table-header">行号</div>';
+                    thtml += '</td>';
+                    thtml += '<td style="width: 100px; text-align: center;">';
+                    thtml += '<div class="table-header">指标内容</div>';
+                    thtml += '</td>';
+                    thtml += '<td style="width: 100px; text-align: center;">';
+                    thtml += '<div class="table-header">时间点</div>';
+                    thtml += '</td>';
+                    thtml += '<td style="width: 100px; text-align: center;">';
+                    thtml += '<div class="table-header">单位</div>';
+                    thtml += '</td>';
+                    thtml += '<td style="width: 100px; text-align: center;">';
+                    thtml += '<div class="table-header">指标值</div>';
+                    thtml += '</td>';
+                    thtml += '</tr>';
+                    thtml += '</thead>';
+                    thtml += '<tbody id="' + name + '_TableInfo_' + json.ID + '" mainid="' + json.ID + '" >';
+                    thtml += '</tbody>';
+                    thtml += '</table>';
+                    thtml += '</div>';
+
+                    $(".ScrollBar").append(thtml);
+                })
+
+                $.each(data.D, function (i, json) {
+                    var name = "MATERIAL➩" + json.MATERIAL;
+                    var maxcode = $("#" + name + "_TableInfo_" + json.MAINID + "").find("tr").length;
+                    maxcode += 1;
+                    var tr = '<tr index=' + maxcode + ' ondblclick="Del(this)" material="' + json.MATERIAL + '" mainid="' + json.MAINID + '" detailsid="' + json.ID + '" ><td class="td-div" style="width: 30px; text-align: center; border-left: none;" index=' + maxcode + ' >' + maxcode + '</td>';
+                    tr += '<td class="formValue" style="width: 100px; text-align: center;" DBField=true><input id="' + json.MATERIAL + '_ITEMNAME➩' + json.ID + "_" + maxcode + '" value=' + json.ITEMNAME + ' readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="指标内容" checkexpession="NotNull" /><input type="hidden" id="' + json.MATERIAL + '_ZJITEMNO➩' + json.ID + "_" + maxcode + '" value=' + json.ZJITEMNO + ' ><input type="hidden" id="' + json.MATERIAL + '_ID➩' + json.ID + "_" + maxcode + '" value=' + json.ID + ' ></td>';
+                    tr += '<td class="formValue" style="width: 100px; text-align: center;" DBField=true><input id="' + json.MATERIAL + '_DEF1➩' + json.ID + "_" + maxcode + '" value=' + (IsNull(json.DEF1) ? json.DEF1 : "''") + ' readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="时间点" enter="1"  enter_mainid="' + json.MAINID + '" enter_detailsid="' + json.ID + '" enter_name="' + json.MATERIAL + '" enter_type="DEF1" /></td>';
+                    tr += '<td class="formValue" style="width: 100px; text-align: center;"><input id="' + json.MATERIAL + '_UNIT➩' + json.ID + "_" + maxcode + '" value=' + json.UNIT + ' readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="单位" checkexpession="NotNull" /></td>';
+                    tr += '<td class="formValue" style="width: 100px; text-align: center;" DBField=true><input id="' + json.MATERIAL + '_ZJVALUE➩' + json.ID + "_" + maxcode + '" value=' + (IsNull(json.ZJVALUE) ? json.ZJVALUE : "''") + ' type="text" class="txt required" enter="1"  enter_mainid="' + json.MAINID + '" enter_detailsid="' + json.ID + '" enter_name="' + json.MATERIAL + '" enter_type="ZJVALUE" /></td>';
+                    tr += '</tr>';
+                    $("#" + name + "_TableInfo_" + json.MAINID + "").append(tr);
+                })
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    function Del(obj) {
+        var detailsid = $(obj).attr("detailsid");
+        var No = $(obj).attr("index");
+        var m = $(obj).attr("material");
+        confirmDialog('', '注：您确定要删除当前第【' + No + '】行数据吗？', function (r) {
+            if (r) {
+                if (IsNull(detailsid)) {
+                    AjaxJson("/ZJEnergyManager/ZJWater/DeleteWaterDetailsID?KeyValue=" + escape(detailsid), "", function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        CallBackEvent();
+                    });
+                } else {
+                    tipDialog('获取ID失败,请刷新后重试', 4, 'warning');
+                }
+            }
+        });
+    }
+
+
+    function CallBackEvent() {
+        $("#DivTitleList").empty();
+        $(".ScrollBar").empty();
+        InitControl();
+    }
+
+    //Tab标签切换
+    function Tabchange(id, mainid) {
+        $('.ScrollBar').find('.tabPanel').hide();
+        $('.ScrollBar').find("#" + id + "_" + mainid).show();
+        $(".tab_list_top div").removeClass("actived");
+        $(".tab_list_top").find("#Tab" + id + "_" + mainid).addClass("actived"); //添加选中样式  
+    }
+
+    //统一时间点
+    function AddTime() {
+        var url = "/ZJEnergyManager/ZJWater/ZJWaterAddTime?FormID=@ViewBag.FormID";
+        Dialog(url, "ZJWaterAddTime", "统一时间点", 400, 200);
+    }
+
+    //统一时间点回写
+    function CallBackEventTime(DEF1) {
+        $("#MATERIAL➩" + $("div").find(".actived").attr("id").split('➩')[1]).find("input[enter_type='DEF1']").val(DEF1);
+        //$("input[enter_type='DEF1']").val(DEF1);
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            //            var postData;
+            //            $.each($("#DivTitleList div "), function (i, o) {
+            //                if (i == 0) {
+            //                    postData = jQuery.parseJSON('{"' + $(o).attr("material") + '":""}');
+            //                }
+            //                postData[$(o).attr("material")] = GetTableDataJson("#MATERIAL➩" + $(o).attr("material") + "_List");
+            //            })
+            //            var postData = "{";
+            //            $.each($("#DivTitleList div "), function (i, o) {
+            //                postData += "\"" + $(o).attr("material") + "\":" + GetTableDataJson("#MATERIAL➩" + $(o).attr("material") + "_List") + ",";
+            //            })
+            //            postData = postData.toString().substr(0, postData.length - 1) + "}";
+
+            var postData = "";
+            $.each($("#DivTitleList div "), function (i, o) {
+                var t = GetTableDataJson("#MATERIAL➩" + $(o).attr("material") + "_List_" + $(o).attr("mainid") + "");
+                if (t == "[]") {
+                    tipDialog('明细项不能为空', 4, 'warning');
+                    return false;
+                }
+                postData += t + ",";
+            })
+
+            postData = postData.toString().substr(0, postData.length - 1);
+            var postDataNew = jQuery.parseJSON('{"postDataNew":""}');
+            postDataNew["postDataNew"] = postData;
+            AjaxJson("/ZJEnergyManager/ZJWater/ZJWaterDataSave?ID=" + escape($("#ID").val()), postDataNew, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames["tabs_iframe_" + ModuleId].windowload();
+                ThisCloseTab();
+            });
+        }, 200);
+    }
+
+    function GetTableDataJson(tableId) {
+        var item_Key_Value = "";
+        var index = 1;
+        var trjson = "";
+        if ($(tableId + " tbody tr").length > 0) {
+            $(tableId + " tbody tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[DBField=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    tdjson += '"' + array[0].split('_')[1] + '"' + ':' + '"' + $.trim(pk_value) + '",'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                trjson += '{' + tdjson + '},';
+            });
+        } else {
+            $(tableId + " tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[DBField=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    tdjson += '"' + array[0].split('_')[1] + '"' + ':' + '"' + $.trim(pk_value) + '",'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                trjson += '{' + tdjson + '},';
+            });
+        }
+        trjson = trjson.substr(0, trjson.length - 1);
+        if (trjson == '{}') {
+            trjson = "";
+        }
+        return '[' + trjson + ']';
+    }
+
+
+    function GetTableDataJson_old(tableId) {
+        var item_Key_Value = "";
+        var index = 1;
+        var trjson = "";
+        if ($(tableId + " tbody tr").length > 0) {
+            $(tableId + " tbody tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[DBField=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    index = $(this).attr('index');
+                    tdjson += '{"id":"' + array[0] + '", "name"' + ':' + '"' + $.trim(pk_value) + '", "ZJBZRESULT"' + ':' + '"' + $.trim($("#ZJBZRESULT➩" + index).val()) + '", "ZJBZRESULTNAME"' + ':' + '"' + $.trim($("#txtresult➩" + index).val()) + '"},'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                //trjson += '{' + tdjson + '},';
+                trjson += '[' + tdjson + '],';
+            });
+        } else {
+            $(tableId + " tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[DBField=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    index = $(this).attr('index');
+                    //tdjson += '"' + array[0] + '"' + ':' + '"' + $.trim(pk_value) + '",'
+                    tdjson += '{"id":"' + array[0] + '", "name"' + ':' + '"' + $.trim(pk_value) + '", "ZJBZRESULT"' + ':' + '"' + $.trim($("#ZJBZRESULT➩" + index).val()) + '", "ZJBZRESULTNAME"' + ':' + '"' + $.trim($("#txtresult➩" + index).val()) + '"},'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                trjson += '[' + tdjson + '],';
+            });
+        }
+        trjson = trjson.substr(0, trjson.length - 1);
+        if (trjson == '[]') {
+            trjson = "";
+        }
+        //return '[' + trjson + ']';
+        return trjson;
+    }
+
+    
+</script>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a><a id="button_Commit_Add" title="插入" onclick="AddItem()" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                        插入</b></span></a><a id="button_Commit_AddTime" title="统一时间点" onclick="AddTime()"
+                            class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                                统一时间点</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                                    <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                        离开</b></span></a>
+</div>
+<div id="PCRAWCYPHYSICAL">
+    <div id="RuleHead">
+        <table class="form">
+            <tr style="display: none">
+                <td>
+                    <input id="ID" type="hidden" datacol="yes" dbfield="true" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    任务编号：
+                </th>
+                <td class="formValue">
+                    <input id="BILLNO" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                        datacol="yes" dbfield="true" />
+                </td>
+                <th class="formTitle">
+                    厂：
+                </th>
+                <td class="formValue">
+                    <input id="DEF2" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                        datacol="yes" dbfield="true" />
+                </td>
+                <th class="formTitle">
+                    制单日期：
+                </th>
+                <td class="formValue">
+                    <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+                </td>
+                <th class="formTitle">
+                    制单人：
+                </th>
+                <td class="formValue">
+                    <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="bd" style="border: none; margin-bottom: 1px;">
+        <div id="DivTitle" class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div id="DivTitleList" class="tab_list_top" style="position: absolute">
+                @*<div id="TabToolbar" class="tab_list bd actived" onclick="Tabchange('ZJItem')">
+        检测项目检测项目检测项目检测项目检测项目检测项目</div>*@
+            </div>
+        </div>
+    </div>
+    <div class="ScrollBar" style="overflow: hidden;">
+        @*<div id="ZJItem" class="tabPanel" style="display: block;">
+            <table id="tbZJItem" class="form">
+            </table>
+        </div>
+        <div id="CYDetails" class="tabPanel" style="display: none; overflow: auto">
+            <table id="Temp_List" class="grid leftline form" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <td style="width: 30px; text-align: center; border-left: none;">
+                            <div class="table-header">
+                                行号</div>
+                        </td>
+                        <td style="width: 50px; text-align: center;">
+                            <div class="table-header">
+                                样号</div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody id="add_TableInfo">
+                </tbody>
+            </table>
+        </div>*@
+    </div>
+</div>
+</form>

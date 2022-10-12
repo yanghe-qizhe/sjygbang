@@ -1,0 +1,35 @@
+﻿@{
+    ViewBag.Title = "质检日报表";
+    Layout = "~/Views/Shared/_LayoutReportIndex.cshtml";
+}
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <script src="/Content/GRF/ZJReport/ZJDayReport/ZJDayResultJS.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var ReportName = GetQuery("ReportName");
+
+        $(function () {
+            UpdateToolbar("2");
+            Begin();
+        })
+    </script>
+    <style type="text/css">
+        html, body
+        {
+            margin: 0;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <script type="text/javascript">
+        var Parm_Key_Value = GetQuery("Parm_Key_Value");
+        var data = GetQuery("Data");
+        var height = $(window).height() - 5;
+        //NewMyCreateReport('@Url.Content("~/Content/GRF/" + Request["Report"])', data, escape(Parm_Key_Value), "100%", "440px", true);
+        NewMyCreateReport("", "", escape(Parm_Key_Value), "100%", height + "px", true);
+        //SetParameter(Parameter);
+    </script>
+</body>
+</html>

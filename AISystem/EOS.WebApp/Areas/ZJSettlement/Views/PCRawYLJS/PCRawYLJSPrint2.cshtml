@@ -1,0 +1,249 @@
+﻿@{
+    ViewBag.Title = "采购结算打印";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+  
+    $(function () {    
+        if (!!KeyValue) {
+            InitControl();
+        }
+    });
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJSettlement/PCRawYLJS/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+ 
+    //打印 
+   
+   function Print(){
+        if (IsChecked(KeyValue)) {
+        var Parm_Key_Value = escape("reporttype☻☻true≌KeyValue☻" + KeyValue + "☻true≌");
+         AddTabMenu("JSReportIndex", "@Url.Content("~/ZJSettlement/PCRawYLJS/JSReportIndex3")?Parm_Key_Value=" + Parm_Key_Value+"&ModuleId="+ModuleId, "打印检斤单", "page_white_edit.png", true, true, true);
+        closeDialog();
+        }
+    }
+     //打印 
+    function Print1() {
+        if (IsChecked(KeyValue)) {
+         var Parm_Key_Value = escape("reporttype☻☻true≌KeyValue☻" + KeyValue + "☻true≌");
+         AddTabMenu("JSReportIndex1", "@Url.Content("~/ZJSettlement/PCRawYLJS/JSReportIndex4")?Parm_Key_Value=" + Parm_Key_Value+"&ModuleId="+ModuleId, "打印检斤单明细", "page_white_edit.png", true, true, true);
+        closeDialog();
+        }
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a title="计算" onclick="Print()" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/printer.png")) 50% 4px no-repeat;">
+                打印检斤单</b></span></a> <a title="计算" onclick="Print1()" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/printer.png")) 50% 4px no-repeat;">
+                    打印检斤单明细</b></span></a><a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开 </b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            单据编号：
+        </th>
+        <td class="formValue">
+            <input id="BILLNO" maxlength="50" type="text" dbfield="true" class="txt readonly"
+                readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            结算日期：
+        </th>
+        <td class="formValue">
+            <input id="JSDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            磅房：
+        </th>
+        <td class="formValue">
+            <input id="WEIGHTNO" type="hidden" dbfield="true" />
+            <input id="WEIGHTNAME" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            订单编号：
+        </th>
+        <td class="formValue">
+            <input id="PK_BILL" type="hidden" dbfield="true" />
+            <input id="PK_BILL_B" type="hidden" dbfield="true" />
+            <input id="VBILLCODE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            开始日期：
+        </th>
+        <td class="formValue">
+            <input id="BEGINDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            结束日期：
+        </th>
+        <td class="formValue">
+            <input id="ENDDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" dbfield="true" />
+            <input id="MATERIALNAME" type="text" dbfield="true" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            物料规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPEC" maxlength="50" type="text" dbfield="true" class="txt readonly"
+                readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input id="SUPPLY" type="hidden" dbfield="true" datacol="yes" err="供应商" checkexpession="NotNull" />
+            <input id="SUPPLYNAME" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            是否加权平均：
+        </th>
+        <td class="formValue">
+            <select id="ISAVG" class="txtselect" dbfield="true" disabled="disabled">
+                <option value="0" selected="selected">否</option>
+                <option value="1">是</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            车数：
+        </th>
+        <td class="formValue">
+            <input id="CARSNUM" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            件数：
+        </th>
+        <td class="formValue">
+            <input id="YFPIECE" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            应收重量：
+        </th>
+        <td class="formValue">
+            <input id="YFSUTTLE" name="YFSUTTLE" type="text" dbfield="true" class="txt readonly"
+                readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            磅单净重：
+        </th>
+        <td class="formValue">
+            <input id="SUTTLE" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            采购部检斤重量：
+        </th>
+        <td class="formValue">
+            <input id="JJSUTTLE" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            采购部检斤后重量：
+        </th>
+        <td class="formValue">
+            <input id="JJSUTTLE1" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            质检扣重：
+        </th>
+        <td class="formValue">
+            <input id="ZJSUTTLE" name="ZJSUTTLE" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+        <th class="formTitle">
+            扣后重量：
+        </th>
+        <td class="formValue">
+            <input id="ZJSUTTLE1" name="ZJSUTTLE1" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+        <th class="formTitle">
+            调整重量：
+        </th>
+        <td class="formValue">
+            <input id="TZSUTTLE" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            水分补点：
+        </th>
+        <td class="formValue">
+            <input id="BDSUTTLE" name="BDSUTTLE" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            结算重量：
+        </th>
+        <td class="formValue">
+            <input id="JSSUTTLE" name="JSSUTTLE" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+        <th class="formTitle">
+            金额：
+        </th>
+        <td class="formValue">
+            <input id="CHARGE" name="CHARGE" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" />
+        </td>
+        <th class="formTitle">
+            金额大写：
+        </th>
+        <td class="formValue" colspan="3">
+            <input id="CHINESECHARGE" name="CHINESECHARGE" type="text" class="txt readonly" readonly="readonly"
+                err="金额大写" dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            扣减结果展示：
+        </th>
+        <td class="formValue">
+            <input id="KJRESULTMEMO" type="text" class="txt readonly" readonly="readonly" datacol="No"
+                err="扣减结果展示" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CREATEDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREATEUSER" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue">
+            <input id="MEMO" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+    </tr>
+</table>
+</form>

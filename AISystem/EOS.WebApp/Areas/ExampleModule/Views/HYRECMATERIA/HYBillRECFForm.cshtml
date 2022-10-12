@@ -1,0 +1,417 @@
+﻿@{
+    ViewBag.Title = "采购火运收货》新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var Railwaycode = GetQuery("RAILWAYCODE"); //车列号
+    $(function () {
+        /*JQuery 限制文本框只能输入数字和小数点*/
+        $(".NumDecText").keyup(function () {
+            $(this).val($(this).val().replace(/[^0-9.]/g, ''));
+            var kbzkzpd = $('#PDAKZ1').val(kbzkz);
+        }).bind("paste", function () {  //CTR+V事件处理    
+            $(this).val($(this).val().replace(/[^0-9.]/g, ''));
+        }).css("ime-mode", "disabled"); //CSS设置输入法不可用    
+        //仓库
+        BindAutocomplete("STORE", "PK_STORE", "Store", "", "", "");
+        InitControl();
+    })
+    //确认收货事件
+    function QuenRenOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要收货确认操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    AjaxJson("/ExampleModule/HYRECMATERIA/QuerenOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        //ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+   
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ExampleModule/HYRECMATERIA/SetForm", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //加载数据
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data.M[0]) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data.M[0][key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+                $.each(data.D, function (i, o) {
+                    var maxcode = parseInt($("#MaxID").val()) + 1;
+                    var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" ondblclick="Del(this)" index=' + maxcode + ' >' + maxcode + '</td>';
+                    tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="BILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="磅单号" checkexpession="NotNull" /></td>';
+                    tr += '<td class="formValue" style="width: 80px; text-align: center;"><input id="RAILWAYCODE➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" /></td>';
+                    tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="CARNUM➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /></td>';
+                    tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="VBILLCODE➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /></td>';
+                    tr += '<td class="formValue" style="width: 100px; text-align: center;"><input id="PK_EID➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /></td>';
+                    tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="STANDNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /><input id="MTCODE➩' + maxcode + '" type="hidden" class="txt"/></td>';
+                    tr += '<td class="formValue" style="width: 40px; text-align: center;"><input id="MAOAMOUNT➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" /></td>';
+                    tr += '<td class="formValue" style="width: 40px; text-align: center;"><input id="PIAMOUNT➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" /></td>';
+                    tr += '<td class="formValue" style="width: 40px; text-align: center;"><input id="FACTAMOUNT➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" /></td>';
+                    tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="CREATEDATE➩' + maxcode + '" class="txtselect required readonly" readonly="readonly" datacol="yes" err="时间"></input></td>';
+                    tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="PDAKZ1➩' + maxcode + '" type="text" class="txt required " onfocus="IsMoney(this.id)" value="0" checkexpession="Double" /></td>';
+                    tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="MEMO➩' + maxcode + '" type="text" class="txt required" /></td>';
+                    tr += '</tr>';
+                    $("#add_TableInfo").append(tr);
+                    $("#MaxID").val(maxcode);
+                    DetailsBind(maxcode);
+
+                    for (var key in o) {
+                        var id = $('#' + key + "➩" + (i + 1));
+                        if (id.attr('id')) {
+                            var value = $.trim(o[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                            var type = id.attr('type');
+                            switch (type) {
+                                case "checkbox":
+                                    if (value == 1) {
+                                        id.attr("checked", 'checked');
+                                    } else {
+                                        id.removeAttr("checked");
+                                    }
+                                    break;
+                                default:
+                                    id.attr("value", value);
+                                    break;
+                            }
+                        }
+                    }
+                })
+            }
+
+        } catch (e) {
+            alert(e)
+        }
+    }
+    function SetEntityData(data) {
+        $.each(data.rows, function (i, o) {
+            if ($("#add_TableInfo").find("input[value='" + o.id + "']").length <= 0 && $("#add_TableInfo").find("input[value='" + o.detailsid + "']").length <= 0) {
+                var maxcode = parseInt($("#MaxID").val()) + 1;
+                var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" ondblclick="Del(this)" index=' + maxcode + ' >' + maxcode + '</td>';
+                tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="BILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="磅单号" checkexpession="NotNull" value="' + o.billno + '" /></td>';
+                tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="RAILWAYCODE➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.railwaycode + '" /></td>';
+                tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="CARNUM➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.carnum + '" /></td>';
+                tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="VBILLCODE➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.vbillcode + '" /></td>';
+                tr += '<td class="formValue" style="width: 100px; text-align: center;"><input id="PK_EID➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.pk_eid + '" /></td>';
+                tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="SENDUNITNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.sendunitname + '" /></td>';
+                tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="STANDNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.standname + '" /></td>';
+                tr += '<td class="formValue" style="width: 40px; text-align: center;"><input id="MAOAMOUNT➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.maoamount + '" /></td>';
+                tr += '<td class="formValue" style="width: 40px; text-align: center;"><input id="PIAMOUNT➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.piamount + '" /></td>';
+                tr += '<td class="formValue" style="width: 40px; text-align: center;"><input id="FACTAMOUNT➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.factamount + '" /></td>'; 
+                tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="CREATEDATE➩' + maxcode + '" class="txtselect required readonly" readonly="readonly" datacol="yes" err="过磅时间"  value="' + o.createdate + '"></input></td>';
+                tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="PDAKZ1➩' + maxcode + '" type="text" class="txt required" onfocus="IsMoney(this.id)" value="0" checkexpession="Double" /></td>';
+                tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="MEMO➩' + maxcode + '" type="text" class="txt required" /></td>';
+                tr += '</tr>';
+                $("#add_TableInfo").append(tr);
+                $("#MaxID").val(maxcode);
+                DetailsBind(maxcode);
+            } else {
+                tipDialog("当前磅单【" + o.billno + "】已收货确认", 2, 0);
+            }
+        })
+        SetType();
+        //SubmitOrderForm();
+    }
+    function SetType() {
+        if ($("#add_TableInfo tr").length > 0) {
+            $("#RAILWAYCODE").val($("#RAILWAYCODE➩1").val());
+            $("#MTCODE").val($("#MTCODE➩1").val());
+            $("#STANDNAME").val($("#STANDNAME➩1").val());
+            $("#SENDUNITCODE").val($("#SENDUNITCODE➩1").val());
+            $("#SENDUNITNAME").val($("#SENDUNITNAME➩1").val());
+        } else {
+            $("#RAILWAYCODE").val("");
+            $("#MTCODE").val("");
+            $("#STANDNAME").val("");
+            $("#SENDUNITCODE").val("");
+            $("#SENDUNITNAME").val("");
+        }
+        $("#CARSNUM").val($("#MaxID").val());
+    }
+    function DetailsBind(maxcode) {
+        $("#KZ➩" + maxcode).bind("blur", function () {
+            $(this).val(parseFloat($(this).val()).toFixed(3));
+        })
+    }
+    ///删除已经选择单据信息
+    function Del(obj) {
+        var No = $(obj).attr("index");
+        confirmDialog('', '注：您确定要删除当前第【' + No + '】行数据吗？', function (r) {
+            if (r) {
+                $("#add_TableInfo").find("tr[index='" + No + "']").remove();
+                for (var i = No; i <= $("#MaxID").val(); i++) {
+                    if (IsNull($("#ID➩" + (parseInt(i) + 1)).val())) {
+                        $("#add_TableInfo").find("td[index='" + (parseInt(i) + 1) + "']").text(i);
+                        $("#add_TableInfo").find("td[index='" + (parseInt(i) + 1) + "']").attr("index", i);
+                        $("#add_TableInfo").find("tr[index='" + (parseInt(i) + 1) + "']").attr("index", i);
+                        $("#BILLNO➩" + (parseInt(i) + 1)).attr("id", "BILLNO➩" + i);
+                        $("#RAILWAYCODE➩" + (parseInt(i) + 1)).attr("id", "RAILWAYCODE➩" + i);
+                        $("#CARNUM➩" + (parseInt(i) + 1)).attr("id", "CARNUM➩" + i);
+                        $("#VBILLCODE➩" + (parseInt(i) + 1)).attr("id", "VBILLCODE➩" + i);
+                        $("#PK_EID➩" + (parseInt(i) + 1)).attr("id", "PK_EID➩" + i);
+                        $("#SENDUNITNAME➩" + (parseInt(i) + 1)).attr("id", "SENDUNITNAME➩" + i);
+                        $("#STANDNAME➩" + (parseInt(i) + 1)).attr("id", "STANDNAME➩" + i);
+                        $("#MAOAMOUNT➩" + (parseInt(i) + 1)).attr("id", "MAOAMOUNT➩" + i);
+                        $("#PIAMOUNT➩" + (parseInt(i) + 1)).attr("id", "PIAMOUNT➩" + i);
+                        $("#FACTAMOUNT➩" + (parseInt(i) + 1)).attr("id", "FACTAMOUNT➩" + i);
+                        $("#CREATEDATE➩" + (parseInt(i) + 1)).attr("id", "CREATEDATE➩" + i);
+                        $("#PDAKZ1➩" + (parseInt(i) + 1)).attr("id", "PDAKZ1➩" + i);
+                        $("#MEMO➩" + (parseInt(i) + 1)).attr("id", "MEMO➩" + i);
+                    }
+                }
+                $("#MaxID").val(parseInt($("#MaxID").val()) - 1);
+                SetType();
+            }
+        });
+    }
+    //*************************//
+    //多选火运过磅单
+    function SelectHY() {
+        var Material = $("#MTCODE").val();
+        var MaterialName = $("#STANDNAME").val();
+        var Supply = $("#SENDUNITCODE").val();
+        var SupplyName = $("#SENDUNITNAME").val();
+        var url = "/ExampleModule/HYRECMATERIA/HYSELECTBillRECF?&FormID=@ViewBag.FormID&Material=" + escape(Material) + "&Supply=" + escape(Supply) + "&MaterialName=" + escape(MaterialName) + "&SupplyName=" + escape(SupplyName);
+        Dialog(url, "HYSELECTBillRECF", "选取火运过磅单", 900, 400);
+    }
+    //多选火运过磅单回调
+    function CallBackEvent(KeyValue) {
+        //过滤当前已经选中的火运过磅单
+        var KeyValue2 = "";
+        $.each(KeyValue.split(','), function (i, o) {
+            if ($("#add_TableInfo").find("input[value='" + o + "']").length <= 0) {
+                KeyValue2 += o + ",";
+            }
+        })
+        if (IsNull(KeyValue2)) {
+            AjaxJson("/ExampleModule/HYRECMATERIA/PCSHGetHYData?KeyValue=" + escape(KeyValue2), "", function (data) {
+                if (IsNull(data) && IsNull(data.rows) && data.rows.length > 0) {
+                    SetEntityData(data);
+                } else {
+                    tipDialog("未查询到数据", 2, 0);
+                }
+            });
+        }
+    }
+    //*************************//
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var Pk_Store = $("#PK_STORE").val(); //仓库PK
+            var Store = $("#STORE").val(); //仓库
+            if (Pk_Store == "" || Pk_Store == null) {
+                tipDialog("请选择收货仓库！", 2, 0);
+            }
+            var postData = GetWebControlsForTrue("#RuleHead");
+            postData["HYOrderDetailJson"] = GetTableDataJson("#Temp_List");
+            AjaxJson("/ExampleModule/HYRECMATERIA/PCRawHYSave?KeyValue=" + GetQuery('KeyValue') + "&Pk_Store=" + Pk_Store + "&Store=" + escape(Store), postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code == "1") {
+                    top.frames["tabs_iframe_" + ModuleId].windowload();
+                    ThisCloseTab();
+                }
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<!--工具栏-->
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_SelectHY" title="选择火运过磅单" onclick="SelectHY()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/train.png")) 50% 4px no-repeat;">
+                    选择磅单</b></span></a><a id="button_Commit_Save" title="确认火运收货" onclick="SubmitOrderForm()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/database_save.png")) 50% 4px no-repeat;">
+                    确认收货</b></span></a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<div id="PCRAWHYSLADD" class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--主收料信息-->
+    <div  id="RuleHead" class="tabPanel">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    供货单位：
+                </th>
+                <td class="formValue">
+                    <input id="SENDUNITCODE" type="hidden" dbfield="true"/>
+                    <input id="SENDUNITNAME" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                        err="发货单位" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    物料:
+                </th>
+                <td class="formValue">
+                   <input id="MTCODE" type="hidden" dbfield="true"/>
+                   <input id="STANDNAME"  type="text" class="txt readonly" readonly="readonly"
+                    datacol="yes" err="物料" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    车列号:
+                </th>
+                <td class="formValue">
+                    <input id="PCRAWTYPE" type="hidden" datacol="yes" value="1" dbfield="true" />
+                    <input id="RAILWAYCODE" type="text" class="txt readonly" datacol="yes" err="车列号" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    已选磅单数：
+                </th>
+                <td class="formValue">
+                    <input id="CARSNUM" type="text" class="txt required readonly" readonly="readonly"
+                        dbfield="true" err="车数" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    收货单位：
+                </th>
+                <td class="formValue">
+                    <input id="ACCEPTUNITNAME" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                        datacol="no" err="收货单位" checkexpession="NotNull"  value="@ViewBag.ACCEPTUNITNAME"/>
+                </td>
+                <th class="formTitle">
+                    仓库：
+                </th>
+                <td class="formValue">
+                    <input id="PK_STORE" type="hidden" datacol="yes" err="仓库,勿手动输入" checkexpession="NotNull" />
+                    <input id="STORE" type="text" class="txt icontree" datacol="yes" err="请选择仓库" checkexpession="NotNull" />
+                </td>
+                 <th class="formTitle">
+                    备注：
+                </th>
+                <td class="formValue" colspan="3">
+                    <input id="MEMO" type="text" class="txt" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <!--明细收料信息-->
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    收料明细
+                </div>
+            </div>
+        </div>
+    </div>
+    <table id="Temp_List" class="grid leftline form" style="width: 100%">
+        <thead>
+            <tr>
+                <td style="width: 30px; text-align: center; border-left: none;">
+                    <div class="table-header">
+                        序号
+                    </div>
+                </td>
+                <td style="width: 120px; text-align: center; border-left: none;">
+                    <div class="table-header">
+                        过磅单号
+                    </div>
+                </td>
+                <td style="width: 80px; text-align: center;">
+                    <div class="table-header">
+                        车列号
+                    </div>
+                </td>
+                <td style="width: 50px; text-align: center;">
+                    <div class="table-header">
+                        车号
+                    </div>
+                </td>
+                <td style="width: 120px; text-align: center;">
+                    <div class="table-header">
+                        订单号
+                    </div>
+                </td>
+                <td style="width: 100px; text-align: center;">
+                    <div class="table-header">
+                        通知单号
+                    </div>
+                </td>
+                <td style="width: 120px; text-align: center;">
+                    <div class="table-header">
+                        供应商
+                    </div>
+                </td>
+                <td style="width: 120px; text-align: center;">
+                    <div class="table-header">
+                        物料
+                    </div>
+                </td>
+                <td style="width: 40px; text-align: center;">
+                    <div class="table-header">
+                        毛重
+                    </div>
+                </td>
+                <td style="width: 40px; text-align: center;">
+                    <div class="table-header">
+                        皮重
+                    </div>
+                </td>
+                <td style="width: 40px; text-align: center;">
+                    <div class="table-header">
+                        净重
+                    </div>
+                </td>
+                <td style="width: 120px; text-align: center;">
+                    <div class="table-header">
+                        日期
+                    </div>
+                </td>
+                <td style="width: 50px; text-align: center;">
+                    <div class="table-header">
+                        扣重(吨)
+                    </div>
+                </td>
+                <td style="width: 120px; text-align: center;">
+                    <div class="table-header">
+                        备注
+                    </div>
+                </td>
+            </tr>
+        </thead>
+        <tbody id="add_TableInfo">
+        </tbody>
+    </table>
+    <div class="line">
+    </div>
+</div>
+</form>

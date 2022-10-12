@@ -1,0 +1,217 @@
+﻿@{
+    ViewBag.Title = "选择火运过磅单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript"> 
+    var FormID = GetQuery('FormID'); 
+    var Material = GetQuery('MTCODE'); 
+    var MaterialName = GetQuery('STANDNAME'); 
+    var Supply = GetQuery('SENDUNITCODE'); 
+    var SupplyName = GetQuery('SENDUNITNAME');
+    $(function () { 
+         BindAutocomplete("STANDNAME", "MTCODE", "MaterialAll", "", "", ""); 
+         BindAutocomplete("SENDUNITNAME", "SENDUNITCODE", "Supply", "", "", ""); 
+        if(IsNull(Material)){
+            $("#STANDNAME").attr("disabled","disabled");
+            $("#MTCODE").val(Material);
+            $("#STANDNAME").val(MaterialName);
+        }else{
+            $("#STANDNAME").bind("change",function(){
+                if(!IsNull($(this).val())){
+                    $("#MTCODE").val("");
+                }
+            });
+        }
+        if(IsNull(Supply)){
+            $("#SENDUNITNAME").attr("disabled","disabled");
+            $("#SENDUNITCODE").val(Supply);
+            $("#SENDUNITNAME").val(SupplyName);
+        }
+        setTimeout(function(){
+            GetGrid(); 
+        },500);
+    }) 
+
+    function btn_OK(){ 
+        var KeyValue =  GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsNull(KeyValue)) {
+            //判断多选内容是否是同一供户 物料
+            var supply = GetJqGridRowValue("#gridTable", "SENDUNITNAME"); 
+            if($.unique(supply.split(',')).length > 1){
+                tipDialog('请选择同一供户、物料的数据', 4, 'warning');
+                return;
+            }
+            var material = GetJqGridRowValue("#gridTable", "STANDNAME");
+            if($.unique(material.split(',')).length > 1){
+                tipDialog('请选择同一供户、物料的数据', 4, 'warning');
+                return;
+            }
+            var railwaycode = GetJqGridRowValue("#gridTable", "RAILWAYCODE");
+            if($.unique(railwaycode.split(',')).length > 1){
+                tipDialog('请选择同一车列车数据', 4, 'warning');
+                return;
+            }
+           if(IsNull(FormID)){
+                     $parentobj = top.frames[FormID]; 
+                } else{
+                     $parentobj = top.frames[tabiframeId()];
+                } 
+                $parentobj.CallBackEvent(KeyValue); 
+                closeDialog();  
+        } else{
+            tipDialog('请至少选择一个过磅单', 4, 'warning');
+        }
+    }
+
+    //搜索
+    function btn_Search() { 
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();  
+        var BillNo = $("#BILLNO").val();
+        Material = $("#MTCODE").val();
+        MaterialName = $("#STANDNAME").val();
+        Supply = $("#SENDUNITCODE").val();
+        SupplyName = $("#SENDUNITNAME").val();
+        var Cars = $("#CARNUM").val();  
+        var CarsNo = $("#RAILWAYCODE").val(); 
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/HYRECMATERIA/GetHYWbOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime+  '&BillNo=' + escape(BillNo)+ '&Pk_Material=' + escape(Material)+ '&Material=' + escape(MaterialName)+ '&Pk_Supply=' + escape(Supply)+ '&Supply=' + escape(SupplyName) +'&Cars='+escape(Cars)+'&RailwayCode='+escape(CarsNo) , page:1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/HYRECMATERIA/GetHYWbOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime+ '&Pk_Material=' + Material+ '&Pk_Supply=' + Supply,
+            datatype: "json",
+            height: $(window).height() - 130,
+            autowidth: true,
+            colModel: [ 
+            { label: '订单编号', name: 'VBILLCODE', hidden: true},
+            { label: '过磅单号', name: 'BILLNO',index: 'BILLNO',  width: 130, align: 'left' },
+            { label: '到货单号', name: 'PK_EID',hidden: true },  
+            { label: '车号', name: 'CARNUM', index: 'CARNUM', width: 60, align: 'left' }, 
+            { label: '车列号', name: "RAILWAYCODE", index: 'RAILWAYCODE', width: 120, sortable: false }, 
+            { label: '供应商PK', name: 'SENDUNITCODE',hidden: true },
+            { label: '供应商', name: 'SENDUNITNAME', index: 'SENDUNITNAME', width: 200, align: 'left' },
+            { label: '物料PK', name: 'MTCODE',hidden: true},
+            { label: '物料', name: 'STANDNAME', index: 'STANDNAME', width:150, align: 'left' }, 
+            { label: '物料规格', name: 'MATERIALKIND', index: 'MATERIALKIND', width:150, align: 'left' },
+            { label: '毛重(吨)', name: 'MAOAMOUNT', index: 'MAOAMOUNT', width:45, align: 'left' },
+            { label: '皮重(吨)', name: 'PIAMOUNT', index: 'PIAMOUNT', width:45, align: 'left' },
+            { label: '净重(吨)', name: 'FACTAMOUNT', index: 'FACTAMOUNT', width:45, align: 'left' },
+            { label: '磅号', name: 'WEIGHTSTATION', index: 'WEIGHTSTATION', width:25, align: 'left' },
+            { label: '毛重时间', name: 'MAOTIME', index: 'MAOTIME', width:120, align: 'left' },
+            { label: '皮重时间', name: 'PITIME', index: 'PITIME', width:120, align: 'left' },
+            { label: '审核人员', name: 'ADUITUSER', index: 'ADUITUSER', width:60, align: 'left' },
+            { label: '审核时间', name: 'ADUITDATE', index: 'ADUITDATE', width:120, align: 'left' },
+            {  label: '创建日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 120, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                }
+            }
+            ],
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CreateDate',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true 
+        });
+        
+    }
+    function Dialog(url, _id, _title, _width, _height) {
+        Loading(true);
+        top.$.dialog({
+            id: _id,
+            width: _width,
+            height: _height,
+            max: false,
+            lock: false,
+            title: _title,
+            content: 'url:' + RootPath() + url
+        });
+    }
+    function CallBackEvent(rowData){ 
+         $("#MTCODE").val(rowData.ID);
+         $("#STANDNAME" ).val(rowData.NAME);
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    开始日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-2)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <th>
+                    磅单号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MTCODE" type="hidden" dbfield="true" />
+                    <input id="STANDNAME" type="text" class="txt" err="物料" />
+                </td>
+                <th>
+                    供户：
+                </th>
+                <td>
+                    <input id="SENDUNITCODE" type="hidden" dbfield="true" />
+                    <input id="SENDUNITNAME" type="text" class="txt" err="供户" />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    截止日期：
+                </th>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CARNUM" type="text" class="txt" err="车号" />
+                </td>
+                <th>
+                    车列号：
+                </th>
+                <td>
+                    <input id="RAILWAYCODE" type="text" class="txt" err="车列号" />
+                </td>
+                <td colspan="2">
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                    <input id="btnOK" type="button" class="btnSearch" value="确 定" onclick="btn_OK()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

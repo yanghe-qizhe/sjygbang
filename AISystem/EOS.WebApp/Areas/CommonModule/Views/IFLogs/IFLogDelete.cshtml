@@ -1,0 +1,155 @@
+﻿@{
+    ViewBag.Title = "接口日志》删除";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //模块Id
+    $(function () {
+        DictionaryAutocomplete();
+    })
+    function DictionaryAutocomplete() {
+        var txtname = "IF_NAME";
+        var $txtid = $("#IF_CODE");
+        var $txtname = $("#IF_NAME");
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 3) {
+                    var parm = "keywords=" + escape(keyvalue);
+                    var items = $(this).attr("items");
+                    if (items != null && items != "") {
+                        parm += "&items=" + escape(items);
+                    }
+                    DataSource(parm);
+                }
+            }
+        }).focus(function () {
+            var parm = "keywords=";
+            $(this).select();
+            var items = $(this).attr("items"); //添加items属性值为职称查找职称字典数据
+            if (items != null && items != "") {
+                parm += "&items=" + items;
+            }
+            DataSource(parm);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.code);
+            $txtname.val(data.name);
+        });
+        //获取数据源
+        function DataSource(parm) {
+            AjaxJson("/AutoData/Dictionary", parm, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].code + "-" + DataJson[i].name + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                    $txtid.val(data.code);
+                    $txtname.val(data.name);
+                });
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在删除数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            if (KeyValue == "") {
+                postData["ModuleId"] = ModuleId;
+            }
+            AjaxJson("/CommonModule/IFLogs/DeleteIFLog?KeyValue=" + KeyValue, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                //top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val(); //开始时间
+        var EndTime = $("#EndTime").val(); //结束时间
+        var IFType = $("#IF_TYPE").val(); //接口类型
+        var IFInsatu = $("#IF_INSATU").val(); //接口状态
+        var IFCode = $("#IF_CODE").val(); 
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime;
+        url += "&IFCode=" + IFCode + "&IFType=" + escape(IFType) + "&IFInsatu=" + escape(IFInsatu);
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-45)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+             <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-30)" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                接口名称：
+            </th>
+            <td>
+            <input id="IF_CODE" type="hidden" />
+            <input id="IF_NAME" type="text" class="txt" style="width: 200px"  items="接口名称" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                调用状态：
+            </th>
+            <td>
+                <select id="IF_INSATU" class="select" style="width: 205px;">
+                    <option value="">---请选择---</option>
+                    <option value="成功">成功</option>
+                    <option value="失败">失败</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                接口类型：
+            </th>
+            <td>
+                <select id="IF_TYPE" class="select" style="width: 205px;">
+                    <option value="">---请选择---</option>
+                    <option value="查询">查询接口</option>
+                    <option value="推送">推送接口</option>
+                    <option value="接收">接收接口</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>
+</form>

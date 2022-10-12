@@ -1,0 +1,466 @@
+﻿@{
+    ViewBag.Title = "采购订单管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("RECCOMPANYNAME", "RECCOMPANYID", "Company1", "200", "150", "");
+        BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var BillNo = $("#BillNo").val();
+        var BILLTYPE = $("#BILLTYPE").val();
+        var Supply = $("#Supply").val();
+        var DATATYPE = $("#DATATYPE").val();
+        var RECCOMPANYID = $("#RECCOMPANYID").val();
+        //var PK_DEPT = $("#PK_DEPT").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/POORDER/GetPOOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&BillNo=' + BillNo + "&Supply=" + Supply + "&DATATYPE=" + DATATYPE + "&RECCOMPANYID=" + RECCOMPANYID + "&BILLTYPE=" + BILLTYPE, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/POORDER/GetPOOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 280,
+            autowidth: true,
+            colModel: [
+               { label: 'PK_ORDER', name: 'PK_ORDER', index: 'PK_ORDER', width: 110, align: 'left', hidden: true },
+                { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 100, align: 'center' },
+                //{ label: '订单类型', name: 'BILLTYPE', index: 'BILLTYPE', width: 100, align: 'center' },
+                {
+                    label: '订单类型', name: 'BILLTYPE', index: 'BILLTYPE', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == 'YG01')
+                            return "标准采购订单";
+                        else if (cellvalue == 'YG02')
+                            return "固定资产采购订单";
+                        else if (cellvalue == 'YG03')
+                            return "寄售采购订单";
+                        else if (cellvalue == 'YG04')
+                            return "委外维修采购订单";
+                        else if (cellvalue == 'YG05')
+                            return "成本中心采购订单";
+                        else if (cellvalue == 'YG06')
+                            return "内部订单采购订单";
+                        else if (cellvalue == 'YG07')
+                            return "价格后置采购订单";
+                        else if (cellvalue == 'YG08')
+                            return "免费采购订单";
+                        else if (cellvalue == 'YG09')
+                            return "退货采购订单";
+                        else if (cellvalue == 'YG10')
+                            return "公司间采购订单";
+                        else if (cellvalue == 'YG11')
+                            return "基建采购订单";
+                        else if (cellvalue == 'YG12')
+                            return "试用采购订单";
+                        else if (cellvalue == 'YG13')
+                            return "项目采购订单";
+                        else if (cellvalue == 'YG15')
+                            return "生产订单";
+                        else if (cellvalue == 'YG16')
+                            return "散件订单";
+                        else
+                            return "其它";
+                    }
+                },
+                { label: 'FORDERSTATUS', name: 'FORDERSTATUS', index: 'FORDERSTATUS', width: 60, align: 'left', hidden: true },
+                {
+                    label: '状态', name: 'FORDERSTATUSNAME', index: 'FORDERSTATUSNAME', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0')
+                            return "<span style='color: black; font-weight: bold;'>正常</span>";
+                        else if (cellvalue == '1')
+                            return "<span style='color: black; font-weight: bold;'>停用</span>";
+                        else
+                            return "<span style='color: #ff0000;'>其它</span>";
+                    }
+                },
+                { label: '提货单号', name: 'SOURCEBILLNO', index: 'SOURCEBILLNO', width: 120, align: 'center' },
+                { label: '供应商编号', name: 'PK_SUPPLIER', index: 'PK_SUPPLIER', width: 120, align: 'left' },
+                { label: '供应商', name: 'PK_SUPPLIERNAME', index: 'PK_SUPPLIERNAME', width: 210, align: 'left' },
+                {
+                    label: '订单日期', name: 'DBILLDATE', index: 'DBILLDATE', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+             //{ label: '生效时间', name: 'ACTUALVALIDATE', index: 'ACTUALVALIDATE', width: 100, align: 'left'  },
+             // { label: '终止时间', name: 'ACTUALINVALIDATE', index: 'ACTUALINVALIDATE', width: 100, align: 'left' },
+                //{ label: '船名航次', name: 'DEF3', index: 'DEF3', width: 120, align: 'center' },
+            { label: '派车车数', name: 'CARSNUM', index: 'CARSNUM', width: 60, align: 'center' },
+          { label: '采购公司', name: 'PK_ORGNAME', index: 'PK_ORGNAME', width: 150, align: 'left' },
+         //{ label: '采购分组', name: 'PK_GROUPNAME', index: 'PK_GROUPNAME', width: 120, align: 'left' },
+         { label: '采购部门', name: 'DEPTNAME', index: 'DEPTNAME', width: 120, align: 'left' },
+
+     //{ label: '启用/停用人', name: 'DEF6', index: 'DEF6', width: 120, align: 'center' },
+     // { label: '启用/停用时间', name: 'DEF7', index: 'DEF7', width: 120, align: 'center' },
+    { label: 'DATATYPE', name: 'DATATYPE', index: 'DATATYPE', width: 60, align: 'left', hidden: true },
+    {
+        label: '数据来源', name: 'DATATYPENAME', index: 'DATATYPENAME', width: 60, align: 'center',
+        formatter: function (cellvalue, options, rowObject) {
+            if (cellvalue == '0') return "自建";
+            if (cellvalue == '1') return "SAP";
+            if (cellvalue == '2') return "BI";
+        }
+    }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'DBILLDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            multiselect: true,
+            multiboxonly: true,
+            gridview: true,
+            onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var PK_ORDER = rowData.PK_ORDER;
+                $("#gridETable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/POORDER/GetOrderEntryList")?KeyValue=" + PK_ORDER, page: 1
+                }).trigger('reloadGrid');
+            }
+        });
+        $("#gridETable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/POORDER/GetOrderEntryList")?KeyValue=",
+            datatype: "json",
+            height: 100,
+            width: $(window).width() - 5,
+            autowidth: true,
+            colModel: [
+                { label: '行号', name: 'CROWNO', index: 'CROWNO', width: 40, align: 'left' },
+                { label: 'PK_ORDER', name: 'PK_ORDER', index: 'PK_ORDER', width: 130, align: 'left', hidden: true },
+                { label: 'PK_ORDER_B', name: 'PK_ORDER_B', index: 'PK_ORDER_B', width: 130, align: 'left', hidden: true },
+                 { label: '物料分类', name: 'PK_MARBASCLASSNAME', index: 'PK_MARBASCLASSNAME', width: 100, align: 'left' },
+                    { label: '物料编号', name: 'PK_MATERIAL', index: 'PK_MATERIAL', width: 100, align: 'left' },
+                  { label: '物料', name: 'PK_MATERIALNAME', index: 'PK_MATERIALNAME', width: 130, align: 'left' },
+                   { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'left' },
+                   { label: '主计量', name: 'PURUNITNAME', index: 'PURUNITNAME', width: 50, align: 'left', hidden: true },
+                  { label: '主数量', name: 'NASTNUM', index: 'NASTNUM', width: 50, align: 'left', hidden: true },
+                  { label: '辅计量', name: 'SECPURUNITNAME', index: 'SECPURUNITNAME', width: 50, align: 'left' },
+                  { label: '辅数量', name: 'SECQUANTITY', index: 'SECQUANTITY', width: 50, align: 'left' },
+                  { label: '预发货量', name: 'DHNUM', index: 'DHNUM', width: 50, align: 'left' },
+                { label: '入库量', name: 'CKNUM', index: 'CKNUM', width: 50, align: 'left' },
+                { label: '余量', name: 'YLNUM', index: 'YLNUM', width: 50, align: 'left' },
+                 { label: '每', name: 'NQTUNITNUM', index: 'NQTUNITNUM', width: 50, align: 'left' },
+                  { label: '价格单位', name: 'CQTUNITID', index: 'CQTUNITID', width: 50, align: 'left' },
+                { label: '单价', name: 'NPRICE', index: 'NPRICE', width: 50, align: 'left' },
+                //{ label: '交货日期', name: 'DEF4', index: 'DEF4', width: 100, align: 'left' },
+                { label: '工厂', name: 'RECCOMPANYNAME', index: 'RECCOMPANYNAME', width: 100, align: 'left' },
+                //{ label: '接收组织', name: 'RECORGNAME', index: 'RECORGNAME', width: 100, align: 'left' },
+                {
+                    label: '明细关闭', name: 'BARRIVECLOSE', index: 'BARRIVECLOSE', width: 60, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1')
+                            return "是";
+                        else
+                            return "否";
+                    }
+                },
+                    { label: '备注', name: 'DEF5', index: 'DEF5', width: 60, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 100,
+            sortname: 'PK_ORDER',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            rownumbers: true,
+            gridview: true
+        });
+    }
+
+
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "PK_ORDER");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("POORDERForm", "@Url.Content("~/ExampleModule/POORDER/POORDERDetail")?KeyValue=" + KeyValue, "采购订单详细", "page_white_edit.png", true, true, true);
+        }
+    }
+    //查询
+    function btn_query() {
+        QueryDialog("/ExampleModule/POORDER/POORDERQuery", "POORDERQuery", "查询过滤", 350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/POORDER/GetPOOrderList")?Action=query" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+    //生成
+    function btn_add() {
+        AddTabMenu("POORDER_Form", "@Url.Content("~/ExampleModule/POORDER/POORDER_Form1")?ModuleId=" + ModuleId, "新增采购订单", "page_white_edit.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "PK_ORDER");
+        if (IsChecked(KeyValue)) {
+            var DATATYPE = GetJqGridRowValue("#gridTable", "DATATYPE");
+            //if (DATATYPE != "0") {
+            //    tipDialog("来源不是自建数据,不能编辑操作！", 3, "");
+            //    return false;
+            //}
+            AddTabMenu("POORDER_Form1", "@Url.Content("~/ExampleModule/POORDER/POORDER_Form1")?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, "编辑采购订单", "page_white_edit.png", true, true, true);
+        }
+    }
+
+
+    //生成
+    function btn_copy() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "PK_ORDER");
+        if (IsChecked(KeyValue)) {
+            var DATATYPE = GetJqGridRowValue("#gridTable", "DATATYPE");
+            if (DATATYPE != "2") {
+                tipDialog("来源为U9数据,才能生成到货单！", 3, "");
+                return false;
+            }
+            AddTabMenu("POORDER_Form", "@Url.Content("~/ExampleModule/POORDER/POORDER_Form")?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, "生成到货单", "page_white_edit.png", true, true, true);
+        }
+    }
+
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "PK_ORDER");
+        if (IsDelData(KeyValue)) {
+            var DATATYPE = GetJqGridRowValue("#gridTable", "DATATYPE");
+            //if (DATATYPE == "0") {
+            //    tipDialog("只能删除数据来源为自建单据！", 3, "");
+            //    return false;
+            //}
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ExampleModule/POORDER/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+
+    function btn_HandOrder() {
+        var strwerks = $("#RECCOMPANYID").val();
+        if (strwerks == "") {
+            tipDialog('请您选择同步工厂！', 4, 'warning');
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要同步操作吗？', function (r) {
+            if (r) {
+                var vbillcode = $("#BillNo").val();
+                var supply = $("#Supply").val();
+                var type = $("#BILLTYPE").val();
+                if (vbillcode=="" && supply == "") {
+                    tipDialog('请您选择供应商！', 4, 'warning');
+                    return false;
+                }
+                var begindate = $("#StartTime").val();
+                var parm = "vbillcode=" + vbillcode + "&strwerks=" + strwerks + "&supply=" + supply + "&begindate=" + begindate + "&type=" + type;
+                AjaxJson('/ExampleModule/POORDER/HandOrder', parm, function (data) {
+                    tipDialog(data.Message, 3, data.Code);
+                    if (data.Code > 0) {
+                        windowload();
+                    }
+                });
+            }
+        });
+    }
+    //启用
+    function btn_Check() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "PK_ORDER");
+        if (IsCheckeds(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "FORDERSTATUS");
+            var arrstatus = status.split(",");
+            var arr = $.grep(arrstatus,
+                 function (n, i) {
+                     return n == "0"
+                 });
+
+            if (arr.length > 0) {
+                tipDialog('当前订单中有启用数据,无法做启用的操作！', 4, 'warning');
+                return false;
+            }
+
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/POORDER/CheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+
+    //停用
+    function btn_UnCheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "PK_ORDER");
+        if (IsCheckeds(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "FORDERSTATUS");
+            var arrstatus = status.split(",");
+            var arr = $.grep(arrstatus,
+                 function (n, i) {
+                     return n == "1"
+                 });
+
+            if (arr.length > 0) {
+                tipDialog('当前订单中有停用数据,无法做停用的操作！', 4, 'warning');
+                return false;
+            }
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/POORDER/UnCheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+
+    //整单关闭
+    function btn_OrderAllClose() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "PK_ORDER");
+        if (IsCheckeds(KeyValue)) {
+            confirmDialog('提示', '注：您确认要整单关闭操作吗？', function (r) {
+                if (r) {
+                    var parm = 'KeyValue=' + KeyValue;
+                    AjaxJson('/ExampleModule/POORDER/OrderAllClose', parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    //关闭
+    function btn_OrderClose() {
+        var KeyValue = GetJqGridRowValue("#gridETable", "PK_ORDER_B");
+        if (IsCheckeds(KeyValue)) {
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/POORDER/OrderClose', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+    //开启
+    function btn_OrderOpen() {
+        var KeyValue = GetJqGridRowValue("#gridETable", "PK_ORDER_B");
+        if (IsCheckeds(KeyValue)) {
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/POORDER/OrderOpen', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    订单编号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 80px" />
+                </td>
+                <th>
+                    订单类型：
+                </th>
+                <td>
+                    <select id="BILLTYPE" name="BILLTYPE" class="select" style="width: 80px;">
+                        <option value="">---请选择---</option>
+                        <option value="YG01">标准采购订单</option>
+                        <option value="YG02">固定资产采购订单</option>
+                        <option value="YG03">寄售采购订单</option>
+                        <option value="YG04">委外维修采购订单</option>
+                        <option value="YG05">成本中心采购订单</option>
+                        <option value="YG06">内部订单采购订单</option>
+                        <option value="YG07">价格后置采购订单</option>
+                        <option value="YG08">免费采购订单</option>
+                        <option value="YG09">退货采购订单</option>
+                        <option value="YG10">公司间采购订单</option>
+                        <option value="YG11">基建采购订单</option>
+                        <option value="YG12">试用采购订单</option>
+                        <option value="YG13">项目采购订单</option>
+                        <option value="YG15">生产订单</option>
+                        <option value="YG16">散件订单</option>
+                    </select>
+                </td>
+                <th>
+                    工厂：
+                </th>
+                <td>
+                    <input id="RECCOMPANYID" type="hidden" />
+                    <input id="RECCOMPANYNAME" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="Supply" type="hidden" />
+                    <input id="SupplyName" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    数据来源：
+                </th>
+                <td>
+                    <select id="DATATYPE" name="DATATYPE" class="select" style="width: 85px;">
+                        <option value="">---请选择---</option>
+                        <option value="0">自建</option>
+                        <option value="1">ERP</option>
+                        <option value="2">BI</option>
+                    </select>
+                </td>
+
+                <th>
+                    日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="" style="width: 100px"
+                           onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="" style="width: 100px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div>
+        <table id="gridETable"></table>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

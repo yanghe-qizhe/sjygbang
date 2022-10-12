@@ -1,0 +1,424 @@
+﻿@{
+    ViewBag.Title = "编辑产品标准";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var ID = GetQuery('ID');
+    var NAME = GetQuery('NAME');
+    $(function () {
+        if (ID != "") {
+            $("#MATERIAL").val(ID);
+            $("#MATERIALNAME").val(NAME);
+        }
+        setTimeout(function () {
+            GetGrid();
+             
+            if (!!KeyValue) {
+                var rowindex = 1;
+                //明细信息
+                AjaxJson("/BaseSet/GBMATERIAL/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                    var JsonData = data;
+                    $.each(JsonData, function (i) {
+                        var rowData = JsonData[i];
+                        $("#MATERIAL").val(rowData.MATERIAL);
+                        $("#MATERIALNAME").val(rowData.MATERIALNAME);
+
+                        $("#GBTYPE➩" + rowindex).val(rowData.GBTYPE);
+                        $("#GBTYPENAME➩" + rowindex).val(rowData.GBTYPENAME);
+
+                        $("#GBCHECKTYPE➩" + rowindex).val(rowData.GBCHECKTYPE);
+                        $("#GBCHECKTYPENAME➩" + rowindex).val(rowData.GBCHECKTYPENAME);
+                        $("#GBEXEC➩" + rowindex).val(rowData.GBEXEC);
+                        $("#GBEXECNO➩" + rowindex).val(rowData.GBEXECNO);
+                        $("#ISUSE➩" + rowindex).val(rowData.ISUSE);
+                        $("#ISUSENAME➩" + rowindex).val(rowData.ISUSE == "1" ? "有效" : "无效");
+
+                        rowindex++;
+                        $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').removeAttr('disabled');
+                    });
+                });
+            }
+        }, 200);
+    })
+
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 115,
+            autowidth: true,
+            colModel: [
+              { label: '标准类型', name: "GBTYPENAME", width: 80, sortable: false, align: 'center' },
+              { label: '标准性质', name: "GBCHECKTYPENAME", width: 80, sortable: false, align: 'center' },
+              { label: '标准编号', name: 'GBEXEC', width: 200, sortable: false, align: 'center' },
+              { label: '有效性', name: 'ISUSENAME', width: 120, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+        var No = 1;
+        //默认添加6行 空行
+        for (var i = 1; i <= 20; i++) {
+            var rowdata = {
+                GBTYPENAME: '<input id="GBTYPENAME➩' + i + '" class="editable center" type="text" style="cursor:pointer" datacol="no" err="标准类型" checkexpession="NotNull"/><input id="GBTYPE➩' + i + '" type="hidden" />',
+                GBCHECKTYPENAME: '<input id="GBCHECKTYPENAME➩' + i + '" class="editable center" type="text" style="cursor:pointer" datacol="no" err="标准性质" checkexpession="NotNull"/><input id="GBCHECKTYPE➩' + i + '" type="hidden" />',
+                GBEXEC: '<input id="GBEXEC➩' + i + '" maxlength="100"  class="editable center" type="text" datacol="no" err="标准编号" checkexpession="NotNull"/><input id="GBEXECNO➩' + i + '" type="hidden" />',
+                ISUSENAME: '<input id="ISUSENAME➩' + i + '" class="editable center" type="text" style="cursor:pointer" datacol="no" err="有效性" checkexpession="NotNull"/><input id="ISUSE➩' + i + '" type="hidden" />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+            //绑定标准类型
+            GBTypeBindAutocomplete(i, "GBTYPENAME➩" + i, "GBTYPE➩" + i, "", "120");
+            //绑定标准性质
+            GBCheckTypeBindAutocomplete(i, "GBCHECKTYPENAME➩" + i, "GBCHECKTYPE➩" + i, "", "120");
+            //绑定标准编号
+            GBEXECBindAutocomplete(i, "GBEXEC➩" + i, "GBEXECNO➩" + i, "", "120");
+            //绑定有效性
+            GBISUSEBindAutocomplete(i, "ISUSENAME➩" + i, "ISUSE➩" + i, "", "120");
+            No++;
+        }
+        $("#gridTable").find('.center').css('text-align', 'center');
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var rowindex = $(this).text();
+            $("#GBTYPE➩" + rowindex).val("");
+            $("#GBTYPENAME➩" + rowindex).val("");
+
+            $("#GBCHECKTYPE➩" + rowindex).val("");
+            $("#GBCHECKTYPENAME➩" + rowindex).val("");
+            $("#GBEXEC➩" + rowindex).val("");
+            $("#GBEXECNO➩" + rowindex).val("");
+            $("#ISUSE➩" + rowindex).val("");
+            $("#ISUSENAME➩" + rowindex).val("");
+        });
+    }
+    //绑定标准类型
+    function GBTypeBindAutocomplete(rowindex, txtname, txtid, width, height) {
+        var $txtname = $("#" + txtname);
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource(DataJson);
+                }
+                $("#" + txtid).val("");
+            }
+        }).focus(function () {
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $("#" + txtid).val(data.id);
+            $("#" + txtname).val(data.name);
+        });
+        //获取数据源
+        function DataSource() {
+            var html = "";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">0</td>';
+            html += '<td id="name" style="width: 100%;">内控</td>';
+            html += "</tr>";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">1</td>';
+            html += '<td id="name" style="width: 100%;">国标</td>';
+            html += "</tr>";
+            //点击事件回调
+            autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                $("#" + txtid).val(data.id);
+                $("#" + txtname).val(data.name);
+            });
+
+        }
+    }
+    //绑定标准性质
+    function GBCheckTypeBindAutocomplete(rowindex, txtname, txtid, width, height) {
+        var $txtname = $("#" + txtname);
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource(DataJson);
+                }
+                $("#" + txtid).val("");
+            }
+        }).focus(function () {
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $("#" + txtid).val(data.id);
+            $("#" + txtname).val(data.name);
+        });
+        //获取数据源
+        function DataSource() {
+            var html = "";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">1</td>';
+            html += '<td id="name" style="width: 100%;">产品标准</td>';
+            html += "</tr>";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">2</td>';
+            html += '<td id="name" style="width: 100%;">判定标准</td>';
+            html += "</tr>";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">3</td>';
+            html += '<td id="name" style="width: 100%;">包装标准</td>';
+            html += "</tr>";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">4</td>';
+            html += '<td id="name" style="width: 100%;">检测标准</td>';
+            html += "</tr>";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">5</td>';
+            html += '<td id="name" style="width: 100%;">内控标准</td>';
+            html += "</tr>";
+            //点击事件回调
+            autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                $("#" + txtid).val(data.id);
+                $("#" + txtname).val(data.name);
+            });
+
+        }
+    }
+    //绑定标准编号
+    function GBEXECBindAutocomplete(rowindex, txtname, txtid, width, height) {
+        var $txtname = $("#" + txtname);
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    if (!IsNull($("#GBTYPE➩" + rowindex).val())) {
+                        tipDialog("请先选择标准类型", 2, 0);
+                        return false;
+                    }
+                    if (!IsNull($("#GBCHECKTYPE➩" + rowindex).val())) {
+                        tipDialog("请先选择标准性质", 2, 0);
+                        return false;
+                    }
+                    var parm = "keywords=" + $(this).val() + "&GBTYPE=" + escape($("#GBTYPE➩" + rowindex).val());
+                    parm += "&GBCHECKTYPE=" + escape($("#GBCHECKTYPE➩" + rowindex).val());
+                    DataSource(parm);
+                }
+                $("#" + txtid).val("");
+            }
+        }).focus(function () {
+            if (!IsNull($("#GBTYPE➩" + rowindex).val())) {
+                tipDialog("请先选择标准类型", 2, 0);
+                return false;
+            }
+            if (!IsNull($("#GBCHECKTYPE➩" + rowindex).val())) {
+                tipDialog("请先选择标准性质", 2, 0);
+                return false;
+            }
+            var parm = "keywords=" + $(this).val() + "&GBTYPE=" + escape($("#GBTYPE➩" + rowindex).val());
+            parm += "&GBCHECKTYPE=" + escape($("#GBCHECKTYPE➩" + rowindex).val());
+            DataSource(parm);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $("#" + txtid).val(data.id);
+            $("#" + txtname).val(data.name);
+        });
+        //获取数据源
+        function DataSource(parm) {
+            AjaxJson("/AutoData/GBMANAGERSELECT", parm, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                    $("#" + txtid).val(data.id)
+                    $("#" + txtname).val(data.name)
+                });
+            });
+        }
+    }
+    //绑定有效性
+    function GBISUSEBindAutocomplete(rowindex, txtname, txtid, width, height) {
+        var $txtname = $("#" + txtname);
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource(DataJson);
+                }
+                $("#" + txtid).val("");
+            }
+        }).focus(function () {
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $("#" + txtid).val(data.id);
+            $("#" + txtname).val(data.name);
+        });
+        //获取数据源
+        function DataSource() {
+            var html = "";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">1</td>';
+            html += '<td id="name" style="width: 100%;">有效</td>';
+            html += "</tr>";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">0</td>';
+            html += '<td id="name" style="width: 100%;">无效</td>';
+            html += "</tr>";
+            //点击事件回调
+            autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                $("#" + txtid).val(data.id);
+                $("#" + txtname).val(data.name);
+            });
+
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/GBMATERIAL/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls(".form");
+            postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+
+            //var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/GBMATERIAL/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue'), postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue" colspan="3">
+            <input type="hidden" id="MATERIAL" datacol="yes" />
+            <input id="MATERIALNAME" type="text" class="txt required" datacol="yes" err="物料"
+                checkexpession="NotNull" readonly="readonly" />
+        </td>
+    </tr>
+    @*<tr>
+        <th class="formTitle">
+            执行国家标准：
+        </th>
+        <td class="formValue">
+            <input type="hidden" id="GBEXECNO" />
+            <input id="GBEXEC" type="text" class="txt required" datacol="yes" err="执行国家标准" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input type="checkbox" name="ISUSE" checked="checked" id="ISUSE" />
+                <label for="ISUSE">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            执行内控标准1：
+        </th>
+        <td class="formValue">
+            <input type="hidden" id="NKEXECNO1" />
+            <input id="NKEXEC1" type="text" class="txt required" datacol="yes" err="执行内控标准1"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input type="checkbox" name="ISUSE1" checked="checked" id="ISUSE1" />
+                <label for="ISUSE1">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            执行内控标准2：
+        </th>
+        <td class="formValue">
+            <input type="hidden" id="NKEXECNO2" />
+            <input id="NKEXEC2" type="text" class="txt required" datacol="no" err="执行内控标准2" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input type="checkbox" name="ISUSE2" id="ISUSE2" />
+                <label for="ISUSE2">
+                    有效</label>
+            </span>
+        </td>
+    </tr>*@
+</table>
+<table id="gridTable">
+</table>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+    
+    .ui-jqgrid tr.ui-row-ltr td
+    {
+        padding: 0px;
+        border-bottom: 1px solid #ccc;
+    }
+    
+    .ui-jqgrid .ui-jqgrid-htable th
+    {
+        line-height: 15px;
+    }
+    
+    .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+    {
+        background: none;
+    }
+    
+    .editable
+    {
+        height: 22px;
+        background-color: #fff;
+    }
+</style>
+</form>

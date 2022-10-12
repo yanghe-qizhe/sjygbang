@@ -1,0 +1,175 @@
+﻿@{
+    ViewBag.Title = "选择火运采购磅单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    $(function () {
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+        var MATERIAL = GetQuery('MATERIAL');
+         var MATERIALNAME = GetQuery('MATERIALNAME');
+        if (MATERIAL != "") {
+            $("#Material").val(MATERIAL);
+                     $("#MaterialName").val(MATERIALNAME);
+        }
+        $("#keywords").focus();
+        setTimeout(function () {
+            GetGrid();
+        }, 300);
+        //绑定键盘按下事件  
+        $(document).keypress(function (e) {
+            // 回车键事件  
+            if (e.which == 13) {
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    function btn_Search() {
+        var Supply = $("#Supply").val();
+        var Material = $("#Material").val();
+            var BATHNO = $("#BATHNO").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/WeightManager/HYWeightIn/GetZJOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&Supply=' + Supply + '&Material=' + Material+'&BATHNO='+BATHNO
+        }).trigger('reloadGrid');
+    }
+
+   function SelectText() {
+        var datas = [];
+        var ids = $("#gridTable").getGridParam('selarrrow');
+        $.each(ids, function (i, o) {
+            var rowData = $("#gridTable").jqGrid("getRowData", ids[i]);
+            datas.push(rowData);
+        })
+        var frameid = tabiframeId();
+        var $parentobj = top.frames[frameid];
+        $parentobj.InitGrid(datas);
+        closeDialog();
+    }
+    function ClearText(txtname, txtid) {
+        closeDialog();
+    }
+    //显示 
+    function GetGrid() {
+        var index = GetQuery('index');
+        var Supply = GetQuery('Supply');
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/WeightManager/HYWeightIn/GetZJOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&Supply=' + Supply,
+            datatype: "json",
+            height: 270,
+            width: 890,
+              colModel: [
+                { label: '过磅单号', name: 'BILLNO', width: 120, align: 'left' },
+                { label: '编组号', name: 'DEF10',index: 'DEF10', width: 80, align: 'center' },
+                   { label: '车号PK', name: 'PK_CARSID',   hidden: true },
+                { label: '车号', name: 'CARS', index: 'CARS', width: 80, align: 'center' },
+                   { label: '收货单位PK', name: 'PK_RECEIVEORG',   hidden: true },
+                { label: '收货单位', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 120, align: 'left' },
+                   { label: '供应商PK', name: 'PK_SENDORG',   hidden: true },
+                { label: '供应商', name: 'SENDORG', index: 'SENDORG', width: 150, align: 'left' },
+                   { label: '物料PK', name: 'PK_MATERIAL',   hidden: true },
+                  { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 150, align: 'left' },
+                { label: '毛重', name: 'GROSS', index: 'GROSS', width: 60, align: 'center' },
+                 { label: '皮重', name: 'TARE', index: 'TARE', width: 60, align: 'center' },
+                { label: '净重', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+                { label: '委托单号', name: 'PK_ORDER', width: 120, align: 'center' },
+                { label: '采购订单', name: 'PK_CONTRACT', width: 80, align: 'center' },
+                { label: '检验批', name: 'BATHNO',index: 'BATHNO', width: 80, align: 'center' },
+               { label: '发站地', name: 'DEF1',index: 'DEF1', width: 80, align: 'center' },
+                {
+                    label: '毛重时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                {
+                    label: '皮重时间', name: 'LIGHTDATE', index: 'LIGHTDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                }  
+            ],
+            pager: "#gridPager",
+            sortname: 'LASTDATE',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true, 
+             multiselect: true //复选框 
+     
+        });
+
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="Supply" type="hidden" />
+                    <input id="SupplyName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    检验批：
+                </th>
+                <td>
+                    <input id="BATHNO" type="text" class="txt" style="width: 120px" />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    计量日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                </th>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

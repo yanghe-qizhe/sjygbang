@@ -1,0 +1,384 @@
+﻿@{
+    ViewBag.Title = "原料采样详细信息";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("KeyValue");
+    var BILLNO = GetQuery("BILLNO");
+    $(function () {
+        if (IsNull(KeyValue)) {
+            $("#PCRAWID").val(KeyValue);
+        }
+        GetGrid();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ZJManager/PCRawCY/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var rowdata = {
+                        ID: '<input id="ID➩' + rowindex + '" type="hidden" value="' + rowData.ID + '" />',
+                        YBILLNO: '<input id="YBILLNO➩' + rowindex + '" type="hidden" value="' + rowData.CARSNAME + '" />',
+                        CARSNAME: '<input readonly id="CARSNAME➩' + rowindex + '" maxlength="10"  class="editable center" type="text" value="' + rowData.CARSNAME + '"/><input id="CARS➩' + rowindex + '" type="hidden" value="' + rowData.CARS + '" />',
+                        PCID: '<input readonly id="PCID➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.PCID + '"/><input id="PCITEMID➩' + rowindex + '" type="hidden" value="' + rowData.PCITEMID + '" />',
+                        SUPPLYNAME: '<input readonly id="SUPPLYNAME➩' + rowindex + '" class="editable center" type="text" value="' + (rowData.SUPPLYNAME == null ? "" : rowData.SUPPLYNAME) + '"/><input id="SUPPLY➩' + rowindex + '" type="hidden" value="' + rowData.SUPPLY + '" />',
+                        MATERIALNAME: '<input readonly id="MATERIALNAME➩' + rowindex + '"  class="editable center" type="text" value="' + rowData.MATERIALNAME + '"/><input id="MATERIAL➩' + rowindex + '" type="hidden" value="' + rowData.MATERIAL + '" />',
+                        MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.MATERIALSPEC == null ? "" : rowData.MATERIALSPEC) + '"/>',
+                        KZ: '<input readonly id="KZ➩' + rowindex + '" class="editable decimal center" type="text"  style="cursor:pointer"  value="' + rowData.KZ + '"/>',
+                        WEIGHTDATE: '<input readonly id="WEIGHTDATE➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.WEIGHTDATE == null ? "" : rowData.WEIGHTDATE) + '"/><input id="BILLNO➩' + rowindex + '" type="hidden" class="txt" value="' + rowData.BILLNO + '"/>',
+                        GROSS: '<input readonly id="GROSS➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.GROSS == null ? "" : rowData.GROSS) + '"/>',
+                        WEIGHTNAME: '<input readonly id="WEIGHTNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.WEIGHTNAME == null ? "" : rowData.WEIGHTNAME) + '"/>',
+                        DEF3: '<input readonly id="DEF3➩' + rowindex + '"  class="editable center" type="text" value="' + (rowData.DEF3 == null ? "" : rowData.DEF3) + '"/><input id="DEF4➩' + rowindex + '" type="hidden" value="' + rowData.DEF4 + '" />',
+                        CRETIME: '<input readonly id="CRETIME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"/>',
+                        ORGNAME: '<input readonly id="ORGNAME➩' + rowindex + '" class="editable center" type="text" value="' + (rowData.ORGNAME == null ? "" : rowData.ORGNAME) + '"/><input id="ORG➩' + rowindex + '" type="hidden" value="' + rowData.ORG + '" />',
+                        DEPTNAME: '<input readonly id="DEPTNAME➩' + rowindex + '" class="editable center" type="text" value="' + (rowData.DEPTNAME != null ? rowData.DEPTNAME : "") + '"/><input id="PK_DEPT➩' + rowindex + '" type="hidden" value="' + (rowData.DEPTNAME != null ? rowData.PK_DEPT : "") + '" />',
+                        DEF8: '<input readonly id="DEF8➩' + rowindex + '"  class="editable center" type="text" value="' + (rowData.DEF8 == null ? "" : rowData.DEF8) + '"/><input id="DEF9➩' + rowindex + '" type="hidden" value="' + rowData.DEF9 + '" /><input id="DEF7➩' + rowindex + '" type="hidden" value="' + rowData.DEF7 + '" />',
+                        DEF2: '<input readonly id="DEF2➩' + rowindex + '"  class="editable center" type="text" value="' + (rowData.DEF2 == null ? "" : rowData.DEF2) + '"/>',
+                        MEMO: '<input readonly id="MEMO➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value=""/>'
+                    }
+                    $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                });
+            });
+
+            //明细信息
+            AjaxJson("/ZJManager/PCRawCY/GetOrderPicEntryList", { KeyValue: BILLNO }, function (data) {
+                var JsonData = data.rows;
+                var index = 1;
+                var cyhtml = "", cyhtml1 = "";
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    if (rowData.PICURL != "") {
+                        if (index <= 3) {
+                            cyhtml += " <td>";
+                            cyhtml += "<a class='fancybox' data-fancybox-group='gallery' href='" + rowData.PICURL + "' style='border: none;'>";
+                            cyhtml += "<img alt='' src='" + rowData.PICURL + "' width='400px' height='300px' /></a>";
+                            cyhtml += "</td>";
+                        } else {
+                            cyhtml1 += " <td>";
+                            cyhtml1 += "<a class='fancybox' data-fancybox-group='gallery' href='" + rowData.PICURL + "' style='border: none;'>";
+                            cyhtml1 += "<img alt='' src='" + rowData.PICURL + "' width='400px' height='300px' /></a>";
+                            cyhtml1 += "</td>";
+                        }
+                        index++;
+                    }
+                });
+                $(cyhtml).appendTo("#CYPic");
+                $(cyhtml1).appendTo("#CYPic1");
+            });
+        }
+    });
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 230,
+            autowidth: true,
+            colModel: [
+              { label: 'ID', name: 'ID', hidden: true },
+              { label: 'YBILLNO', name: 'YBILLNO', hidden: true },
+              { label: '车号', name: 'CARSNAME', width: 120, sortable: false, align: 'center' },
+              { label: '通知单号[<font face="宋体">*</font>]', name: "PCID", width: 120, sortable: false, align: 'center' },
+              { label: '供应商', name: "SUPPLYNAME", width: 120, sortable: false, align: 'center' },
+              { label: '物料', name: "MATERIALNAME", width: 120, sortable: false, align: 'center' },
+              { label: '规格', name: "MATERIALSPEC", width: 120, sortable: false, align: 'center' },
+              { label: '扣杂', name: "KZ", width: 80, sortable: false, align: 'center' },
+              { label: '毛重时间', name: "WEIGHTDATE", width: 120, sortable: false, align: 'center' },
+              { label: '毛重', name: "GROSS", width: 80, sortable: false, align: 'center' },
+              { label: '毛重磅房', name: "WEIGHTNAME", width: 80, sortable: false, align: 'center' },
+              { label: '订单编号', name: "DEF3", width: 120, sortable: false, align: 'center' },
+              { label: '日期', name: "CRETIME", width: 120, sortable: false, align: 'center' },
+              { label: '工厂', name: "ORGNAME", width: 120, sortable: false, align: 'center' },
+              { label: '采购部门', name: "DEPTNAME", width: 120, sortable: false, align: 'center' },
+              { label: '承运商', name: "DEF8", width: 120, sortable: false, align: 'center' },
+              { label: '单位', name: "DEF2", width: 80, sortable: false, align: 'center' },
+              { label: '备注', name: "MEMO", width: 120, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+    }
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJManager/PCRawCY/SetForm", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    //==============================Begin:IC卡显示JS==========================
+
+    //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            $('#msg').val('打开读卡器失败！');
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            $('#msg').val(version);
+            var CardNumber = MWRFATL.OpenCard(1);
+            if (IsNullOrEmpty(CardNumber)) {
+                SetCardNo(CardNumber);
+            }
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                $('#msg').val('IC卡没有放在读卡器上！');
+            }
+            else {
+                res = 0;
+                $('#msg').val("读卡成功");
+            }
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        return res;
+    }
+    //关头IC卡
+    //res:1-关闭卡片失败,2-断开设备失败,0-成功。
+    function CardClose() {
+        var res = 100;
+        MWRFATL.CloseCard();
+        var iRet = MWRFATL.LastRet;
+        if (iRet != 0) {
+            res = 1
+            $('#msg').val('关闭卡片失败');
+        }
+        MWRFATL.CloseReader();
+        iRet = MWRFATL.LastRet;
+        if (iRet != 0) {
+            res = 2;
+            $('#msg').val('断开设备失败');
+        }
+        return iRet;
+    }
+    //字符串计算长度
+    function len(s) { var l = 0; var a = s.split(""); for (var i = 0; i < a.length; i++) { if (a[i].charCodeAt(0) < 299) { l++; } else { l += 2; } } return l; }
+
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var len = arr.length - 1;
+        for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        ICNO = parseInt(num, 16);
+        if (IsNull(ICNO)) {
+            WriteData(0);
+        }
+    }
+    function getVal(pie) { }
+    //===================================End=======================================
+
+    function WriteData(TYPE) {
+        //TYPE 0 制卡
+        //TYPE 1 换卡
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            AjaxJson("/ZJManager/PCRawCY/PCRawCYMakeCardSave?ICNO=" + escape(ICNO) + "&KeyID=" + escape(KeyValue) + "&TYPE=" + escape(TYPE), "", function (data) {
+                if (data.Code == "1") {
+                    tipDialog("制卡成功", 3, data.Code);
+                    top.frames["tabs_iframe_" + ModuleId].windowload();
+                    InitControl();
+                } else if (data.Code == "-2") {
+                    confirmDialog("提示", "注：" + data.Message + "</br>是否强制换卡?", function (r) {
+                        if (r) {
+                            WriteData(1);
+                        }
+                    });
+                } else {
+                    tipDialog(data.Message, 3, data.Code);
+                }
+                Loading(false, "正在提交数据...");
+            });
+        }, 200);
+    }
+
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<input id="PCRAWID" type="hidden" />
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_Commit_Save" title="制卡" onclick="CardOpen()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    制卡</b></span></a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开 </b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            采样单号：
+        </th>
+        <td class="formValue">
+            <input id="ID" type="hidden" value="" dbfield="true" />
+            <input id="BILLNO" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                datacol="yes" dbfield="true" err="批号" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            日期：
+        </th>
+        <td class="formValue">
+            <input id="CYDATE" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                datacol="yes" dbfield="true" err="日期" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            组批车数：
+        </th>
+        <td class="formValue">
+            <input id="CARSNUM" type="text" class="txt required readonly" readonly="readonly"
+                dbfield="true" err="组批车数" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            读卡信息：
+        </th>
+        <td class="formValue">
+            <input id="msg" type="text" class="txt readonly" style="font-weigth: bold; font-size: 18px;
+                color: Red" readonly="readonly" err="读卡信息" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" dbfield="true" />
+            <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" err="物料" />
+        </td>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input id="SUPPLY" type="hidden" dbfield="true" />
+            <input id="SUPPLYNAME" type="text" class="txt readonly" readonly="readonly" err="供户" />
+        </td>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                               err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+        </td>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                               err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            异型卡序号：
+        </th>
+        <td class="formValue">
+            <input id="DEF6" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            异型卡编号：
+        </th>
+        <td class="formValue">
+            <input id="DEF7" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            班组：
+        </th>
+        <td class="formValue">
+            <input id="DEF1" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            承运商：
+        </th>
+        <td class="formValue">
+            <input name="DEF9" id="DEF9" type="hidden" dbfield="true" />
+            <input id="DEF8" name="DEF8" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="7">
+            <input id="MEMO" type="text" class="txt required readonly" readonly="readonly" err="描述"
+                dbfield="true" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                明细信息</div>
+            <div id="Taborder" class="tab_list bd " onclick="Tabchange('orderpic')">
+                图片信息</div>
+        </div>
+    </div>
+</div>
+<div class="line">
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+    <div id="orderpic" class="tabPanel">
+        <table>
+            <tbody>
+                <tr id="CYPic">
+                </tr>
+                <tr id="CYPic1">
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</form>

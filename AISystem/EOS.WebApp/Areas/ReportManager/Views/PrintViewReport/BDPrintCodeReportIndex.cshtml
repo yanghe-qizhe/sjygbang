@@ -1,0 +1,131 @@
+﻿@{
+    ViewBag.Title = "补打条码";
+    Layout = "~/Views/Shared/_LayoutReportIndex.cshtml";
+}
+<script type="text/javascript">
+    var Parm_Key_Value = GetQuery("Parm_Key_Value");
+    var KeyValue = GetQuery('KeyValue');
+    $(function () {
+        InitControl();
+        $("#layoutA").splitter({
+            type: "v",
+            outline: true,
+            minLeft: 235,
+            sizeLeft: 235,
+            maxLeft: 235,
+            anchorToWindow: true,
+            accessKey: "L"
+        });
+        LoadReport();
+        $("#reporttype").change(function () {
+            LoadReport();
+        });
+    })
+
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/ZJManager/PCRawZY/GetEntity", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    function LoadReport() {
+        var Report = "ReportView/PrintCode1.grf";
+        var Data = "/ZJManager/PCRawZY/BDZYPrintCode1";
+        var Parameter = ""; //  "title,Query,start_Date,end_Date|String,String,String,String|0,0,0,0";
+        //查询条件
+        var Parm_Key_Value = GetParm_Key_Value();
+        var path = "/ReportManager/PrintViewReport/PrintViewReportIndex?Parameter=&Report=" + Report + "&Data=" + Data;
+        path += "&Parm_Key_Value=" + escape(Parm_Key_Value);
+        path += "&Parameter=" + escape(Parameter);
+        $("#iframeReport").attr("src", path);
+    }
+
+    //查询条件PK值
+    function GetParm_Key_Value() {
+        var Parm_Key_Value = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var pk_id = $(this).attr('id');
+            var pk_value = $(this).val();
+            var type = $(this).attr('type');
+            var like = $(this).attr('like');
+            switch (type) {
+                case "checkbox":
+                    if ($(this).attr("checked")) {
+                        Parm_Key_Value += pk_id + "☻" + (pk_value == null ? "" : "1") + "☻" + like + "≌";
+                    } else {
+                        Parm_Key_Value += pk_id + "☻" + (pk_value == null ? "" : "0") + "☻" + like + "≌";
+                    }
+                    break;
+                default:
+                    if (pk_value != "") {
+                        Parm_Key_Value += pk_id + "☻" + (pk_value == null ? "" : pk_value) + "☻" + like + "≌";
+                    }
+                    break;
+            }
+        });
+        return Parm_Key_Value
+    }
+</script>
+<div id="layoutA" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="QueryArea">
+            <table border="0" class="form-find" style="height: 45px;">
+                <tr>
+                    <th>
+                        采样单号：
+                    </th>
+                    <td>
+                        <input id="BILLNO" type="text" class="txt" style="width: 110px" dbfield="true" like="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        备份码：
+                    </th>
+                    <td>
+                        <input id="BFNUM" type="text" class="txt" style="width: 80px" dbfield="true" like="false"
+                            onkeyup="clearNoNum(this)" />
+                        <input type="checkbox" name="checkbox" checked="checked" id="ISBFM" dbfield="true"
+                            like="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        制样码：
+                    </th>
+                    <td>
+                        <input id="ZYNUM" type="text" class="txt" style="width: 80px" dbfield="true" like="false"
+                            onkeyup="clearNoNum(this)" />
+                        <input type="checkbox" name="checkbox" checked="checked" id="ISZYM" dbfield="true"
+                            like="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                    </th>
+                    <td>
+                        <input id="btnSearch" type="button" class="btnSearch" value="生成条码" onclick="LoadReport()" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <iframe id="iframeReport" src="" scrolling="auto" frameborder="0" scrolling="no"
+            width="100%" height="100%"></iframe>
+    </div>
+</div>
+<style type="text/css">
+    html, body
+    {
+        margin: 0;
+        height: 100%;
+    }
+</style>

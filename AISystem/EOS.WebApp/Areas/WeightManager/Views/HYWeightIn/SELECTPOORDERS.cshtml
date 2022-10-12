@@ -1,0 +1,188 @@
+﻿@{
+    ViewBag.Title = "选择采购订单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+       BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+       BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+       var Supply=  GetQuery('Supply');
+       if(Supply!=""){
+       $("#Supply").val(Supply);
+       }
+        $("#keywords").focus();
+             setTimeout(function () {
+                GetGrid();
+            }, 100);
+        //绑定键盘按下事件  
+        $(document).keypress(function (e) {
+            // 回车键事件  
+            if (e.which == 13) {
+                $("#keywords").focus();
+                $("#keywords").select();
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    function btn_Search() {
+        var BillNo = $("#BillNo").val();
+                var Supply = $("#Supply").val();
+        var Material = $("#Material").val();
+           var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/POOrder/GetHBZPOOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime   + '&Supply=' +   Supply+ '&Material=' +   Material+ '&BillNo=' +   BillNo  
+        }).trigger('reloadGrid');
+    }
+    //显示 
+    function GetGrid() {
+      var index = GetQuery('index');
+        var Supply=  GetQuery('Supply');
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/POOrder/GetHBZPOOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime  + '&Supply=' +   Supply,
+            datatype: "json",
+            height:270,
+            width:890,
+            colModel: [
+                  { label: '主键', name: 'PK_ORDER', width: 80, align: 'left', hidden: true },
+                          { label: '子主键', name: 'PK_ORDER_B', width: 80, align: 'left', hidden: true },
+                { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 130, align: 'center' },
+                 { label: '运输方式', name: 'PK_TRANSPORTTYPENAME', index: 'PK_TRANSPORTTYPENAME', width: 60, align: 'center' },
+                { label: '订单日期', name: 'DBILLDATE', index: 'DBILLDATE', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                 { label: '主键', name: 'PK_SUPPLIER', width: 80, align: 'left', hidden: true },
+                   { label: '供应商', name: 'PK_SUPPLIERNAME', index: 'PK_SUPPLIERNAME', width: 200, align: 'left' },
+                    { label: '主键', name: 'PK_MATERIAL', width: 80, align: 'left', hidden: true },
+                  { label: '物料', name: 'PK_MATERIALNAME', index: 'PK_MATERIALNAME', width: 100, align: 'left' },
+                          { label: '主键', name: 'MATERIALCODE', hidden: true },
+                    { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 150, align: 'left' },
+                    { label: '订单数量', name: 'NASTNUM', index: 'NASTNUM', width: 80, align: 'left' },
+                      { label: '余量', name: 'YLNUM', index: 'YLNUM', width: 80, align: 'left' },
+                      { label: '合同编号', name: 'VCONTRACTCODE', index: 'VCONTRACTCODE', width:120, align: 'left' },
+                     { label: '合同名称', name: 'CTNAME', index: 'CTNAME', width:120, align: 'left' },
+                   { label: '合同生效时间', name: 'ACTUALVALIDATE', index: 'ACTUALVALIDATE', width:130, align: 'left' },
+                   { label: '合同终止时间', name: 'ACTUALINVALIDATE', index: 'ACTUALINVALIDATE', width:130, align: 'left' },
+                    { label: '主键', name: 'SETTLEMENTMETHOD', hidden: true },
+                  { label: '结算方式', name: 'SETTLEMENTMETHODNAME', index: 'SETTLEMENTMETHODNAME', width:100, align: 'left' },
+                     { label: '主键', name: 'PK_ORG', width: 80, align: 'left', hidden: true },
+                            { label: '采购组织', name: 'PK_ORGNAME', index: 'PK_ORGNAME', width:150, align: 'left' },
+                             { label: '主键', name: 'PK_DEPT', width: 80, align: 'left', hidden: true },
+                             { label: '采购部门', name: 'DEPTNAME', index: 'DEPTNAME', width: 150, align: 'left' },
+                              { label: '主键', name: 'PK_GROUP', width: 80, align: 'left', hidden: true },
+                             { label: '所属集团', name: 'PK_GROUPNAME', index: 'PK_GROUPNAME', width: 150, align: 'left' }   
+            ],
+            pager: "#gridPager",
+            sortname: 'DBILLDATE',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            //双击事件
+            ondblClickRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                 var $parentobj = top.frames[tabiframeId()];
+                 var amount =  $parentobj.$("#SUTTLE" + index).val();
+                 if(parseFloat(amount)>0 && parseFloat(amount)>parseFloat(rowData.YLNUM)&&parseFloat(rowData.YLNUM)>0){
+                    top.TipMsg("净重"+amount+"不能大与订单余量"+rowData.YLNUM+"！", 4000, "error");
+                        $parentobj.$("#FACTAMOUNT➩" + index).val("0");
+                        $parentobj.$("#MAOAMOUNT➩" + index).val("0");
+                        $parentobj.$("#YZPIAMOUNT➩" + index).val("0");
+                        $parentobj.$("#KOUAMOUNT➩" + index).val("0");
+                    }
+                $parentobj.$("#PK_TAKS").val(rowData.PK_ORDER);
+                $parentobj.$("#PK_TASK_DTL").val(rowData.PK_ORDER_B);
+                $parentobj.$("#VBILLCODE").val(rowData.VBILLCODE);
+                $parentobj.$("#ACCEPTUNITCODE").val(rowData.PK_ORG);
+                $parentobj.$("#ACCEPTUNITNAME").val(rowData.PK_ORGNAME);
+                $parentobj.$("#SENDUNITCODE").val(rowData.PK_SUPPLIER);
+                $parentobj.$("#SENDUNITNAME").val(rowData.PK_SUPPLIERNAME);
+                $parentobj.$("#MTCODE").val(rowData.PK_MATERIAL);
+                $parentobj.$("#STANDNAME").val(rowData.PK_MATERIALNAME);
+                $parentobj.$("#MATERIALKIND").val(rowData.MATERIALSPEC);
+
+                $parentobj.$("#NASTNUM").val(rowData.NASTNUM);
+                 $parentobj.$("#YLNUM").val(rowData.YLNUM);
+                
+                $parentobj.$("#CONTRACTBILLNO").val(rowData.VCONTRACTCODE);
+                $parentobj.$("#BALANCEMETHOD").val(rowData.SETTLEMENTMETHOD);
+                $parentobj.$("#BALANCEMETHODNAME").val(rowData.SETTLEMENTMETHODNAME);
+                 closeDialog();
+            }
+        });
+
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="Supply" type="hidden" />
+                    <input id="SupplyName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 120px" />
+                </td>  <th>
+                    订单号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                
+            </tr>
+            <tr>
+                <th>
+                    开始日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-40)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <th>
+                   截止日期：
+                </th>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                 <th></th>
+                <td  >
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

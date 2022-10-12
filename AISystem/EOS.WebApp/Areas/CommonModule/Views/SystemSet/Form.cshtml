@@ -1,0 +1,147 @@
+﻿
+ 
+@{
+    ViewBag.Title = "系统配置";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var type = GetQuery("type");
+    $(function () {
+        GetGrid();
+        var rowindex = 1;
+        //明细信息
+        AjaxJson("/CommonModule/SystemSet/GetOrderEntryList", { KeyValue: "", type: type }, function (data) {
+            var JsonData = data.rows;
+            $.each(JsonData, function (i) {
+                var rowData = JsonData[i];
+                $("#FIELDNAME➩" + rowindex).val(rowData.FIELDNAME);
+                $("#NAME➩" + rowindex).val(rowData.NAME);
+                $("#FVALUE➩" + rowindex).val(rowData.FVALUE);
+                $("#TYPE➩" + rowindex).val(rowData.TYPE);
+                $("#MEMO➩" + rowindex).val(rowData.MEMO);
+                $("#gridTable tbody tr:eq(" + rowindex + ")").find('input');//.attr("datacol", "yes");
+                rowindex++;
+                $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').removeAttr('disabled');
+                $("#gridTable").find('.disabled').attr("disabled", "disabled");
+                $("#FVALUE➩" + rowindex).focus();
+            });
+        });
+    })
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 130,
+            autowidth: true,
+            colModel: [
+                { label: '主键[<font face="宋体">*</font>]', name: 'FIELDNAME', width: 150, sortable: false, align: 'center' },
+                { label: '配置项目[<font face="宋体">*</font>]', name: 'NAME', width: 180, sortable: false, align: 'center' },
+                { label: '配置项值[<font face="宋体">*</font>]', name: 'FVALUE', width: 120, sortable: false, align: 'center' },
+                { label: '说明[<font face="宋体">*</font>]', name: "MEMO", width: 300, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true 
+        });
+        var maxnum = 43;
+        if (type == "1") {
+            maxnum = 12;
+        }
+        //默认添加6行 空行
+        for (var i = 1; i <= maxnum; i++) {
+            var rowdata = {
+                FIELDNAME: '<input readonly id="FIELDNAME➩' + i + '" maxlength="10"  class="editable disabled" type="text"/>',
+                NAME: '<input id="NAME➩' + i + '" maxlength="10"  class="editable disabled" type="text"/>',
+                FVALUE: '<input id="FVALUE➩' + i + '" maxlength="10"  class="editable center" type="text" datacol="No" err="配置项值" checkexpession="Double" value="0"/>',
+                MEMO: '<input id="MEMO➩' + i + '"  class="editable disabled center" type="text" /><input id="TYPE➩' + i + '" type="hidden" />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        }
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $("#gridTable").find('input').attr("disabled", "disabled");
+        $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "yes");
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        //价格信息文本框点击事件
+        $("#gridTable").find('.decimal').click(function () {
+            $(this).select();
+        });
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = {};
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/CommonModule/SystemSet/SubmitOrderForm" , postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        Replace();
+                    });
+                }, 200);
+            }
+        });
+    }
+</script>
+<form id="form1" style="margin: 1px">
+ <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                配置信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+  
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

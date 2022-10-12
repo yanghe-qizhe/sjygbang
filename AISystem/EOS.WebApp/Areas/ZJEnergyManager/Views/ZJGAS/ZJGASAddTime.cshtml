@@ -1,0 +1,55 @@
+﻿@{
+    ViewBag.Title = "统一时间点";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var FormID = GetQuery('FormID');
+    $(function () {
+
+    })
+
+    function btn_OK() {
+        if (IsNull(FormID)) {
+            $parentobj = top.frames[FormID];
+        } else {
+            $parentobj = top.frames[tabiframeId()];
+        }
+        $parentobj.CallBackEventTime($("#DEF1").val());
+        closeDialog();
+
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    时间点：
+                </th>
+                <td>
+                    <select id="DEF1" class="txtselect" style="width: 125px">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </td>
+                <td>
+                    <input id="btnOK" type="button" class="btnSearch" value="确 定" onclick="btn_OK()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

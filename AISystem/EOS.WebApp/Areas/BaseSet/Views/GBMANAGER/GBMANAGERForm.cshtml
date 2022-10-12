@@ -1,0 +1,529 @@
+﻿@{
+    ViewBag.Title = "StoreSortForm";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+
+    var json4 = [
+        { val: '>', txt: '大于', selected: true },
+        { val: '<', txt: '小于' },
+        { val: '>=', txt: '大于等于' },
+		{ val: '<=', txt: '小于等于' },
+        { val: '=', txt: '等于' }
+    ];
+
+    $(function () {
+        BindAutocomplete("SUPPLYNAME", "SUPPLY", "Supply", "200", "150", "");
+        MaterialAutocomplete();
+        GetGrid();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/BaseSet/GBMANAGER/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    BindSelect(rowindex);
+                    $("#CHECKTYPE➩" + rowindex).val(rowData.CHECKTYPE);
+                    $("#CHECKTYPENAME➩" + rowindex).val(rowData.CHECKTYPENAME);
+                    $("#CHECKITEM➩" + rowindex).val(rowData.CHECKITEM);
+                    $("#CHECKITEMNO➩" + rowindex).val(rowData.CHECKITEMNO);
+                    $("#SIGNNAME1➩" + rowindex).val(rowData.SIGNNAME1);
+                    $("#SIGN1➩" + rowindex).val(rowData.SIGN1);
+                    $("#MAXJS➩" + rowindex).val(rowData.MAXJS);
+                    $("#SIGNNAME2➩" + rowindex).val(rowData.SIGNNAME2);
+                    $("#SIGN2➩" + rowindex).val(rowData.SIGN2);
+                    $("#MINJS➩" + rowindex).val(rowData.MINJS);
+                    $("#JZZ➩" + rowindex).val(rowData.JZZ);
+                    $("#JZZNAME➩" + rowindex).val(rowData.JZZNAME);
+                    $("#ISPD➩" + rowindex).val(rowData.ISPD);
+                    $("#ISPDNAME➩" + rowindex).val(rowData.ISPDNAME);
+                    $("#SIGNNAME2➩" + rowindex).attr("datacol", "yes");
+                    $("#SIGNNAME1➩" + rowindex).attr("datacol", "yes");
+                    $("#MINJS➩" + rowindex).attr("datacol", "yes");
+                    $("#MAXJS➩" + rowindex).attr("datacol", "yes");
+                    $("#EXPRESSIONS➩" + rowindex).val(rowData.EXPRESSIONS);
+                    $("#EXPRESSIONS1➩" + rowindex).val(rowData.EXPRESSIONS1);
+                    $("#ISBD➩" + rowindex).val(rowData.ISBD);
+                    rowindex++;
+                    $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').removeAttr('disabled');
+                });
+            });
+        }
+    })
+    function MaterialAutocomplete() {
+        var txtname = txtname;
+        var $txtid = $("#MATERIAL" );
+        var $txtname = $("#MATERIALNAME");
+        var $txtspec = $("#MATERIALSPEC");
+
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 3) {
+                    DataSource();
+                }
+                $txtid.val("");
+                $txtspec.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown("MATERIALNAME", function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtspec.val(data.materialspec);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 80%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="materialspec" style="width: 20%;">' + (DataJson[i].materialspec!=null?DataJson[i].materialspec:"") + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete("MATERIALNAME", $txtname.width() + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtspec.val(data.materialspec);
+                });
+            });
+        }
+    }
+    function CallBackEvent(rowData) {
+        $("#MATERIAL").val(rowData.ID);
+        $("#MATERIALNAME").val(rowData.NAME);
+        $("#MATERIALSPEC").val(rowData.MATERIALSPEC);
+    }
+    function SelectMaterial() {
+        var url = "/SelectValue/Select/SelectMaterial?Type=0&FormID=@ViewBag.FormID";
+        Dialog(url, "SelectMaterial", "选取物料信息（双击表格添加）", 900, 410);
+    }
+
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 215,
+            autowidth: true,
+            colModel: [
+              { label: '判定项类型', name: "CHECKTYPENAME", width: 80, sortable: false, align: 'center' },
+              { label: '是否判定', name: "ISPDNAME", width: 80, sortable: false, align: 'center' },
+              { label: '判断项[<font face="宋体">*</font>]', name: 'CHECKITEM', width:80, sortable: false, align: 'center' },
+             { label: '左比较符[<font face="宋体">*</font>]', name: 'SIGNNAME1', width: 80, sortable: false, align: 'center' },
+              { label: '下限值[<font face="宋体">*</font>]', name: 'MAXJS', width: 80, sortable: false, align: 'center' },
+              { label: '右比较符[<font face="宋体">*</font>]', name: 'SIGNNAME2', width: 80, sortable: false, align: 'center' },
+              { label: '上限值[<font face="宋体">*</font>]', name: 'MINJS', width: 80, sortable: false, align: 'center' },
+              { label: '计算公式[<font face="宋体">*</font>]', name: 'EXPRESSIONS', width: 200, sortable: false, align: 'center' },
+              { label: '计算公式1[<font face="宋体">*</font>]', name: 'EXPRESSIONS1', width:150, sortable: false, align: 'center' },
+              { label: '是否有效', name: 'ISBD', width: 80, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+        var No = 1;
+        //默认添加6行 空行
+        for (var i = 1; i <= 20; i++) {
+            var rowdata = {
+                CHECKTYPENAME: '<input id="CHECKTYPENAME➩' + i + '" class="editable center" type="text"  datacol="no" err="判定项类型" checkexpession="NotNull"  /><input id="CHECKTYPE➩' + i + '" type="hidden" />',
+                ISPDNAME: '<input id="ISPDNAME➩' + i + '" class="editable center" type="text"   datacol="no" err="是否判定" checkexpession="NotNull"/><input id="ISPD➩' + i + '" type="hidden" />',
+                CHECKITEM: '<input id="CHECKITEM➩' + i + '" maxlength="100"  class="editable center" type="text" datacol="no" err="判断项" checkexpession="NotNull"/><input id="CHECKITEMNO➩' + i + '" type="hidden" />',
+                SIGNNAME1: '<input id="SIGNNAME1➩' + i + '" maxlength="10"  class="editable center" type="text" datacol="no" err="比较符" checkexpession="NotNull"/><input id="SIGN1➩' + i + '" type="hidden" />',
+                MAXJS: '<input id="MAXJS➩' + i + '" maxlength="10"  class="editable center items" type="text" datacol="no" err="上限" checkexpession="NotNull"/>',
+                SIGNNAME2: '<input id="SIGNNAME2➩' + i + '" maxlength="10"  class="editable center" type="text" datacol="no" err="比较符" checkexpession="NotNull"/><input id="SIGN2➩' + i + '" type="hidden" />',
+                MINJS: '<input id="MINJS➩' + i + '" maxlength="10"  class="editable center items" type="text" datacol="no" err="下限" checkexpession="NotNull"/>',
+                EXPRESSIONS: '<input id="EXPRESSIONS➩' + i + '"   class="editable left items" type="text" datacol="no" err="计算公式" checkexpession="NotNull"/>',
+                EXPRESSIONS1: '<input id="EXPRESSIONS1➩' + i + '"   class="editable left items" type="text" datacol="no" err="计算公式" checkexpession="NotNull"/>',
+                ISBD: '<select id="ISBD➩' + i + '" class="txtselect" style="width:80px;" datacol="yes" err="是否有效" checkexpession="NotNull"><option value="0" style="color:red;" selected="true">否</option><option  style="color:Blue;" value="1"  >是</option></select>'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+
+            //绑定 判定项类型
+            CheckTypeAutocomplete(i, "CHECKTYPENAME➩" + i, "CHECKTYPE➩" + i, "120", "100");
+            No++;
+        }
+        $("#gridTable").find('.center').css('text-align', 'center');
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var rowindex = $(this).text();
+            $("#CHECKTYPE➩" + rowindex).val("");
+            $("#CHECKTYPENAME➩" + rowindex).val("").attr("datacol", "no");
+            $("#ISPD➩" + rowindex).val("");
+            $("#ISPDNAME➩" + rowindex).val("");
+            $("#CHECKITEM➩" + rowindex).val("").attr("datacol", "no");
+            $("#CHECKITEMNO➩" + rowindex).val("");
+            $("#SIGNNAME1➩" + rowindex).val("").attr("datacol", "no");
+            $("#SIGN1➩" + rowindex).val("");
+            $("#MAXJS➩" + rowindex).val("").attr("datacol", "no");
+            $("#SIGNNAME2➩" + rowindex).val("").attr("datacol", "no");
+            $("#SIGN2➩" + rowindex).val("");
+            $("#MINJS➩" + rowindex).val("").attr("datacol", "no");
+            $("#EXPRESSIONS➩" + rowindex).val("");
+            $("#EXPRESSIONS1➩" + rowindex).val("");
+            $("#ISBD➩" + rowindex).val("0");
+        });
+    }
+
+    //判定项类型
+    function CheckTypeAutocomplete(rowindex, txtname, txtid, width, height) {
+        var $txtname = $("#" + txtname);
+        var $txtid = $("#" + txtid);
+        var height = "";
+        if (height == "") {
+            height = "100";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    var parm = "keywords=" + escape(keyvalue);
+                    parm += "&items=" + escape("质检成份类型");
+                    DataSource(parm);
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            var parm = "keywords=";
+            parm += "&items=" + escape("质检成份类型");
+            DataSource(parm);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            BindSelect(rowindex);
+        });
+        //获取数据源
+        function DataSource(parm) {
+            var html = "";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">1</td>';
+            html += '<td id="name" style="width: 80%;">化学</td>';
+            html += "</tr>";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">2</td>';
+            html += '<td id="name" style="width: 80%;">物理</td>';
+            html += "</tr>";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">3</td>';
+            html += '<td id="name" style="width: 80%;">表检</td>';
+            html += "</tr>";
+            //点击事件回调
+            autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                $txtid.val(data.id);
+                $txtname.val(data.name);
+                BindSelect(rowindex);
+            });
+        }
+    }
+
+    //判定项
+    function CheckItemAutocomplete(rowindex, txtname, txtid, txttype, width, height) {
+        var $txtname = $("#" + txtname);
+        var $txtid = $("#" + txtid);
+        var $txttype = $("#" + txttype);
+
+
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    var parm = "keywords=" + escape(keyvalue);
+                    parm += "&zjtype=" + $txttype.val();
+                    DataSource(parm);
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            var parm = "keywords=";
+            parm += "&zjtype=" + $txttype.val();
+            DataSource(parm);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            if ($txttype.val() == "") {
+                top.TipMsg("请您先选择判定项类型！", 4000, "error");
+                return false;
+            }
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+        });
+        //获取数据源
+        function DataSource(parm) {
+            AjaxJson("/AutoData/ZJITEMS", parm, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 70%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="zjtypename" style="width: 30%;">' + DataJson[i].zjtypename + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                    if ($txttype.val() == "") {
+                        top.TipMsg("请您先选择判定项类型！", 4000, "error");
+                        return false;
+                    }
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                });
+            });
+        }
+    }
+
+
+    //绑定 是否判定项
+    function ISPDBindAutocomplete(rowindex, txtname, txtid, width, height) {
+        var $txtname = $("#" + txtname);
+        if (height == "") {
+            height = "100";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource(DataJson);
+                }
+                $("#" + txtid).val("");
+            }
+        }).focus(function () {
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $("#" + txtid).val(data.id);
+            $("#" + txtname).val(data.name);
+            //BindSelect(rowindex);
+        });
+        //获取数据源
+        function DataSource() {
+            var html = "";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">1</td>';
+            html += '<td id="name" style="width: 100%;">是</td>';
+            html += "</tr>";
+            html += "<tr>";
+            html += '<td id="id" style="display: none;">0</td>';
+            html += '<td id="name" style="width: 100%;">否</td>';
+            html += "</tr>";
+            //点击事件回调
+            autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                $("#" + txtid).val(data.id);
+                $("#" + txtname).val(data.name);
+            });
+        }
+    }
+
+    function BindSelect(rowindex) {
+        //绑定比较符
+        BindJSONAutocomplete(json4, "SIGNNAME1➩" + rowindex, "SIGN1➩" + rowindex, "", "");
+        BindJSONAutocomplete(json4, "SIGNNAME2➩" + rowindex, "SIGN2➩" + rowindex, "", "");
+        //判断项
+        CheckItemAutocomplete(rowindex, "CHECKITEM➩" + rowindex, "CHECKITEMNO➩" + rowindex, "CHECKTYPE➩" + rowindex, "120", "120");
+        //绑定 是否判定项
+        ISPDBindAutocomplete(rowindex, "ISPDNAME➩" + rowindex, "ISPD➩" + rowindex, "", "100");
+        ClearRowText(rowindex);
+    }
+
+    //清空行数据
+    function ClearRowText(rowindex) {
+        $("#ISPD➩" + rowindex).val("");
+        $("#ISPDNAME➩" + rowindex).val("");
+        $("#CHECKITEM➩" + rowindex).val("").attr("datacol", "no");
+        $("#CHECKITEMNO➩" + rowindex).val("");
+        $("#SIGNNAME1➩" + rowindex).val("").attr("datacol", "no");
+        $("#SIGN1➩" + rowindex).val("");
+        $("#MAXJS➩" + rowindex).val("").attr("datacol", "no");
+        $("#SIGNNAME2➩" + rowindex).val("").attr("datacol", "no");
+        $("#SIGN2➩" + rowindex).val("");
+        $("#MINJS➩" + rowindex).val("").attr("datacol", "no");
+        $("#EXPRESSIONS➩" + rowindex).val("");
+        $("#ISBD➩" + rowindex).val("0");
+    }
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/GBMANAGER/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/BaseSet/GBMANAGER/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+</script>
+<form id="form1">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    <table id="tb_OrderFrom" class="form">
+        <tr>
+            <th class="formTitle">
+                标准单号：
+            </th>
+            <td class="formValue">
+                <input id="ID" type="text" class="txt required" datacol="yes" err="标准单号" checkexpession="NotNull" value="@ViewBag.Code" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                公式编号：
+            </th>
+            <td class="formValue">
+                <input id="CODE" type="text" class="txt required" datacol="yes" err="标准编号" checkexpession="NotNull"
+                       maxlength="50" />
+            </td>
+            <th class="formTitle">
+                公式名称：
+            </th>
+            <td class="formValue">
+                <input id="NAME" type="text" class="txt required" datacol="yes" err="标准名称" checkexpession="NotNull"
+                       maxlength="50" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                供应商：
+            </th>
+            <td class="formValue">
+                <input id="SUPPLY" type="hidden" />
+                <input id="SUPPLYNAME" type="text" class="txt" title="下拉选择供应商" />
+            </td>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="MATERIAL" type="hidden" datacol="yes" err="物料" checkexpession="NotNull" />
+                <input id="MATERIALNAME" type="text" class="txt required" datacol="yes" err="物料"
+                       checkexpession="NotNull" title="选择物料" />
+            </td>
+            <th class="formTitle">
+                规格：
+            </th>
+            <td class="formValue">
+                <input id="MATERIALSPEC" type="text" class=" txt readonly" readonly="readonly" />
+            </td>
+
+        </tr>
+        <tr>
+            <th class="formTitle">
+                开始时间：
+            </th>
+            <td class="formValue">
+                <input id="BEGINDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                       onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+            </td>
+            <th class="formTitle">
+                结束时间：
+            </th>
+            <td class="formValue">
+                <input id="ENDDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                       onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+            </td>
+            <th class="formTitle">
+                选项：
+            </th>
+            <td class="formValue">
+                <span class="item">
+                    <input id="ISUSE" name="ISUSE" type="checkbox" checked="checked" style="vertical-align: middle;" />
+                    <label for="ISUSE" style="vertical-align: middle;">
+                        有效
+                    </label>
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                说明：
+            </th>
+            <td class="formValue" colspan="5">
+                <input id="MEMO" type="text" class="txt" />
+            </td>
+        </tr>
+    </table>
+    <table id="gridTable"></table>
+    <style>
+        .ui-widget-content {
+            border-left: none;
+        }
+
+        .ui-jqgrid tr.ui-row-ltr td {
+            padding: 0px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .ui-jqgrid .ui-jqgrid-htable th {
+            line-height: 15px;
+        }
+
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+                background: none;
+            }
+
+        .editable {
+            height: 22px;
+            background-color: #fff;
+        }
+    </style>
+</form>

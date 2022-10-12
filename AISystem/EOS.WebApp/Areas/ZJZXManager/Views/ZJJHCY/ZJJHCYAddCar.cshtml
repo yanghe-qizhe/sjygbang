@@ -1,0 +1,156 @@
+﻿@{
+    ViewBag.Title = "移入组批车辆明细";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript"> 
+    var FormID = GetQuery('FormID'); 
+    var KeyValue = GetQuery('KeyValue');  
+    var BILLNO = GetQuery('BILLNO');  
+    var DEF6= GetQuery('DEF6');  
+    $(function () {  
+        $("#BILLNO").val(BILLNO);
+        setTimeout(function(){
+            GetGrid(); 
+        },100);
+    }) 
+
+    function btn_OK(){ 
+        var BILLNOLIST =  GetJqGridRowValue("#gridTable", "ID"); 
+        var delparm = 'KeyValue=' + escape(KeyValue)+"&DEF6="+DEF6+"&BILLNOLIST="+escape(BILLNOLIST);
+        var url = '/ZJJHManager/ZJJHCY/PCJHCYAddCarItemFHD';
+        if (IsNull(KeyValue)) {
+            confirmDialog("提示", "注：您确定要移动选中的组批明细记录到批号【"+BILLNO+"】？请谨慎操作", function (r) {
+                if (r) {
+                    Loading(true, "正在移动数据...");
+                    window.setTimeout(function () {
+                        AjaxJson(url, delparm, function (data) {
+                            tipDialog(data.Message, 3, data.Code);
+                            if (data.Code ==1) {
+                                btn_Search();
+                                if(IsNull(FormID)){
+                                    $parentobj = top.frames[FormID]; 
+                                } else{
+                                    $parentobj = top.frames[tabiframeId()];
+                                } 
+                                $parentobj.btn_Search(); 
+                            }
+                        });
+                    }, 200);
+                }
+            }); 
+        } else{
+            tipDialog('请至少选择一个车号明细', 4, 'warning');
+        }
+    }
+     
+    //搜索
+    function btn_Search() {  
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var CARNAME = $("#CARNAME").val(); 
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJJHManager/ZJJHCY/GetPCJHCYAddCarListFHD")?KeyValue=" + escape(KeyValue)+"&StartTime=" + StartTime + '&EndTime=' + EndTime  + "&CARNAME="+escape(CARNAME)+ "&DEF6="+escape(DEF6) , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        var colModelStr;
+        if(DEF6=="CG"){
+            colModelStr=" { label: '通知单号', name: 'ID', index: 'ID', width: 120, align: 'left' }, ";
+            colModelStr+="{ label: '通知单明细', name: 'DETAILSID', index: 'DETAILSID', width: 120, align: 'left' }, ";
+            colModelStr+="{ label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 80, align: 'left' },  "; 
+            colModelStr+="{ label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width:120, align: 'left' },  ";
+            colModelStr+="{ label: '供户', name: 'SUPPLIERNAME', index: 'SUPPLIERNAME', width:120, align: 'left' },   ";
+            colModelStr+="{  label: '发货日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 130, align: 'center',";
+            colModelStr+="   formatter: function (cellvalue, options, rowObject) {";
+            colModelStr+="       return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');";
+            colModelStr+="   }";
+            colModelStr+=" }";
+         } else if(DEF6=="XS"){
+            colModelStr=" { label: '通知单号', name: 'ID', index: 'ID', width: 120, align: 'left' }, ";
+            colModelStr+="{ label: '通知单明细', name: 'DETAILSID', index: 'DETAILSID', width: 120, align: 'left' }, ";
+            colModelStr+="{ label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 80, align: 'left' },  "; 
+            colModelStr+="{ label: '物料', name: 'MATERIAL', index: 'MATERIAL', width:120, align: 'left' },  ";
+            colModelStr+="{ label: '发货单位', name: 'SENDNAME', index: 'SENDNAME', width:120, align: 'left' }, ";
+            colModelStr+="{ label: '客户', name: 'RECEIVENAME', index: 'RECEIVENAME', width:120, align: 'left' },   ";
+            colModelStr+="{  label: '发货日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 130, align: 'center',";
+            colModelStr+="   formatter: function (cellvalue, options, rowObject) {";
+            colModelStr+="       return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');";
+            colModelStr+="   }";
+            colModelStr+=" }";
+        }
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJJHManager/ZJJHCY/GetPCJHCYAddCarListFHD")?KeyValue=" + escape(KeyValue)+"&StartTime=" + StartTime + '&EndTime=' + EndTime + '&DEF6=' + DEF6    ,
+            datatype: "json",
+            height: $(window).height() - 110,
+            autowidth: true, 
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CREATEDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            colModel: eval("["+colModelStr+"]") 
+        });
+        columnModelData("#gridTable");
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    移入到目标批号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt readonly" readonly="readonly" disabled="disabled"
+                        style="width: 120px" />
+                </td>
+                <th>
+                    入场日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CARNAME" type="text" class="txt " style="width: 120px" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                    <input id="btnOK" type="button" class="btnSearch" value="移 入" onclick="btn_OK()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

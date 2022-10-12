@@ -1,0 +1,265 @@
+﻿@{
+    ViewBag.Title = "选择采购派车单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    $(function () {
+       BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+       BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+         BindAutocomplete("CarsName", "Cars", "Cars", "200", "150", "");
+         setTimeout(function () {
+                GetGrid();
+            }, 300);
+        //绑定键盘按下事件  
+        $(document).keypress(function (e) {
+            // 回车键事件  
+            if (e.which == 13) {
+                $("#btnSearch").click();
+            }
+        });
+    });
+
+    //搜索
+    function btn_Search() {
+                var Supply = $("#Supply").val();
+        var Material = $("#Material").val();
+           var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+                var BillNo = $("#BillNo").val();
+        var VBillCode = $("#VBillCode").val();
+                var Cars = $("#Cars").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/PCBillSOF/GetSQYOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime   + '&Supply=' +   Supply+ '&Material=' +   Material+ '&BillNo=' +   BillNo  + '&VBillCode=' +   VBillCode  + '&Cars=' +   Cars    
+        }).trigger('reloadGrid');
+    }
+
+    //显示 
+    function GetGrid() {
+      var index = GetQuery('index');
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+ 
+        $("#gridTable").jqGrid({
+           url: "@Url.Content("~/ExampleModule/PCBillSOF/GetSQYOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height:270,
+            width:890,
+            colModel: [
+                { label: '到货明细单号', name: 'ID', index: 'ID', width: 120, align: 'center' },
+                { label: '到货单号', name: 'PK_DP_POCARSORDER', index: 'PK_DP_POCARSORDER', width: 120, align: 'center' },
+            { label: '状态', name: 'ISUSE', index: 'ISUSE', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "1")
+                             return "<span style='color:blue;'>未计量</span>";
+                         else if (cellvalue == "2")
+                             return "<span style='color:blue ;'>二次计量</span>";
+                         else if (cellvalue == "3")
+                             return "<span style='color:green ; font-weight: bold;'>一次计量</span>";
+                         else if (cellvalue == "4")
+                             return "<span style='color: red; font-weight: bold;'>作废</span>";
+                         else if (cellvalue == "6")
+                             return "<span style='color: blue; font-weight: bold;'>计量完成</span>";
+                         else
+                             return "<span style='color: blue; font-weight: bold;'>其它</span>";
+                    }
+            },
+             { label: 'CARS', name: 'CARS',    hidden: true },
+             { label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 80, align: 'center' },
+             { label: 'PK_ORDER', name: 'PK_ORDER',    hidden: true },
+            { label: 'PK_ORDER_B', name: 'PK_ORDER_B',    hidden: true },
+           { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 120, align: 'left' },
+           { label: 'PK_SUPPLIER', name: 'PK_SUPPLIER',    hidden: true },
+            { label: '供应商', name: 'SUPPLIERNAME', index: 'SUPPLIERNAME', width: 200, align: 'left' },
+             { label: 'PK_MATERIAL', name: 'PK_MATERIAL',    hidden: true },
+            { label: 'MATERIALCODE', name: 'MATERIALCODE',    hidden: true },
+           { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width:120, align: 'left' },           
+          { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width:120, align: 'left' },
+           { label: '发货量', name: "AMOUNT", index: 'AMOUNT', width: 60, align: 'left'},
+           
+           { label: 'TRAFFICCOMPANY', name: 'TRAFFICCOMPANY',    hidden: true },
+             { label: '承运商', name: 'TRAFFICCOMPANYNAME', index: 'TRAFFICCOMPANYNAME', width: 80, align: 'left' },
+            { label: '主键', name: 'DRIVERS',    hidden: true },
+            { label: '司机', name: 'DRIVERSNAME', index: 'DRIVERSNAME', width: 60, align: 'center' },
+          { label: '身份证号', name: 'PSDNO', index: 'PSDNO', width: 130, align: 'left' },
+              { label: 'DEF1', name: 'DEF1', hidden: true  },
+             { label: '计量单位', name: 'DEF2', width: 70, sortable: false, align: 'center' },
+               { label: 'PK_ORG', name: 'PK_ORG', hidden: true  },
+             { label: '接收公司', name: 'ORGNAME', index: 'ORGNAME', width: 120, align: 'left' },
+           { label: 'PK_DEPT', name: 'PK_DEPT', hidden: true  },
+            { label: '接收组织', name: 'DEPTNAME', index: 'DEPTNAME', width: 120, align: 'left' },
+             { label: 'CQDEF1', name: 'CQDEF1', hidden: true  },
+             { label: '入厂厂区', name: "CQDEFNAME1", width: 100, sortable: false, align: 'center' ,
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1000')
+                        return "阳光纸业";
+                    else if (cellvalue == '6000')
+                        return "盛世热电";
+                    else if (cellvalue == '7000')
+                        return "新迈纸业";
+                    else if (cellvalue == '8000')
+                        return "阳光王子";
+                    else if (cellvalue == '9000')
+                        return "华迈纸业";
+                    else if (cellvalue == '9010')
+                        return "科迈制浆";
+                            else
+                             return "";
+                }
+                },
+             { label: '是否拼单', name: 'ISMULTI', index: 'ISMULTI', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0')
+                            return "<span style='color: green;'>否</span>";
+                        else if (cellvalue == '1')
+                            return "<span style='color: blue;'>是</span>";
+                }
+            }, 
+            { label: 'BILLFROM', name: 'BILLFROM',    hidden: true },
+            { label: '来源', name: 'BILLFROMNAME', index: 'BILLFROMNAME', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                                 if (cellvalue == '0')
+                            return "<span style='color: green;'>客商平台</span>";
+                        else if (cellvalue == '1')
+                            return "<span style='color: blue;'>业务平台</span>";
+                        else if (cellvalue == '2')
+                            return "<span style='color: green;'>客商APP</span>";
+                }
+            },
+                {
+                    label: '操作状态', name: 'BILLSOFTYPE', index: 'BILLSOFTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                   
+                        if (cellvalue == 'BZ')
+                            return "<span style='color: blue;'>补增</span>";
+                        else  
+                            return "<span style='color: green;'>正常</span>";
+                    }
+                },
+                {  label: '制单日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 100, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                } 
+            ],
+            pager: "#gridPager",
+            sortname: 'CreateDate',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+             multiselect: true , 
+              ondblClickRow: function (RowIndx) {
+                  var rowData = $(this).jqGrid('getRowData', RowIndx);
+                  var $parentobj = top.frames[tabiframeId()];
+                  $parentobj.$("#PK_ORDER_B").val(rowData.ID);//选择委托
+                  $parentobj.$("#PK_ORDER").val(rowData.PK_DP_POCARSORDER);//选择委托
+                  $parentobj.$("#PK_RECEIVEORG").val(rowData.PK_ORG);
+                  $parentobj.$("#RECEIVEORG").val(rowData.ORGNAME);
+                  $parentobj.$("#PK_MATERIAL").val(rowData.PK_MATERIAL);
+                  $parentobj.$("#MATERIAL").val(rowData.MATERIALNAME);
+                  closeDialog();
+            },
+        });
+
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+
+    function SelectText() {
+        var datas = [];
+        var ids = $("#gridTable").getGridParam('selarrrow');
+         var arr = new Array;
+        $.each(ids, function (i, o) {
+            var rowData = $("#gridTable").jqGrid("getRowData", ids[i]);
+               datas.push(rowData);
+        })
+        if(datas.length>0){
+                    var frameid = tabiframeId();
+                    var $parentobj = top.frames[frameid];
+                    $parentobj.InitGrid(datas);
+                    closeDialog();
+        }else{
+         tipDialog("请至少选择一个到货单号！", 3, 0);
+        return;
+        }
+    }
+
+    function ClearText(txtname, txtid) {
+        closeDialog();
+    }
+
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="VBillCode" type="hidden" />
+                    <input id="Supply" type="hidden" />
+                    <input id="SupplyName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="Cars" type="hidden" />
+                    <input id="CarsName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    到货单号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    开始日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-40)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <th>
+                    截止日期：
+                </th>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

@@ -1,0 +1,247 @@
+﻿@{
+    ViewBag.Title = "销售报表";
+    Layout = "~/Views/Shared/_LayoutReportIndex.cshtml";
+}
+<script type="text/javascript">
+    var Company = "@ViewBag.Company";
+    $(function () {
+        $("#layoutA").splitter({
+            type: "v",
+            outline: true,
+            minLeft: 235, sizeLeft: 235, maxLeft: 235,
+            anchorToWindow: true,
+            accessKey: "L"
+        });
+        LoadReport();
+        $("#reporttype").change(function () {
+            LoadReport();
+        });
+        //BindAutocomplete("PK_CarsIDName", "PK_CarsID", "Cars", "150", "150", "");
+        //        BindAutocomplete("PK_MaterialName", "PK_Material", "Material", "150", "150", "");
+        BindAutocomplete("PK_RECEIVEORGName", "PK_RECEIVEORG", "Customer", "150", "150", "");
+    })
+
+    function LoadReport() {
+        var Report = "";
+        var Data = "/ReportManager/SalesReport/SalesLoad";
+        //报表显示查询条件
+        var Parm_Key_Name = GetParm_Key_Name();
+        var start_Date = $("#bdate").val();
+        var end_Date = $("#edate").val();
+        var ReportName = $("#reporttype").find("option:selected").text();
+        //报表参数对应值
+        var Parameter = "title,Query,start_Date,end_Date|String,String,String,String|" + Company + ReportName + "," + Parm_Key_Name + "," + start_Date + "," + end_Date;
+        //查询条件
+        var Parm_Key_Value = GetParm_Key_Value();
+
+        var ReportType = $("#reporttype").val();
+
+        if (ReportType == "1000010") {
+            Report = "SalesReport/SalesByCarDetails.grf";
+            Data = "/ReportManager/PrintViewReport/SalesDataSetReport";
+        } else if (ReportType == "100001001") {
+            Report = "SalesReport/SalesByCarDetails.grf";
+            Data = "/ReportManager/PrintViewReport/SalesDataSetReport";
+        }
+
+        else if (ReportType == "1000011") {
+            Report = "SalesReport/SalesMaterialSum.grf";
+            Data = "/ReportManager/PrintViewReport/SalesDataSetReport";
+        } else if (ReportType == "1000012") {
+            Report = "SalesReport/SalesCompanySum.grf";
+            Data = "/ReportManager/PrintViewReport/SalesDataSetReport";
+        } else if (ReportType == "000041") {
+            Report = "SalesReport/JLReport1.grf";
+            Data = "/ReportManager/PrintViewReport/SalesDataSetReport";
+        } else if (ReportType == "000042") {
+            Report = "SalesReport/JLReport2.grf";
+            Data = "/ReportManager/PrintViewReport/SalesDataSetReport";
+        }
+
+        var path = "/ReportManager/PrintViewReport/DisplayViewReportIndex?Report=" + Report + "&Data=" + Data + "&ReportName=" + escape(ReportName);
+        path += "&Parm_Key_Value=" + escape(Parm_Key_Value) + escape("reporttype☻" + ReportType + "☻true");
+        path += "&Parameter=" + escape(Parameter);
+        $("#iframeReport").attr("src", path);
+    }
+    //查询条件PK值
+    function GetParm_Key_Value() {
+        var Parm_Key_Value = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var pk_id = $(this).attr('id');
+            var pk_value = $("#" + pk_id).val();
+            if (pk_value != "") {
+                var like = $(this).attr('like');
+                Parm_Key_Value += pk_id + "☻" + (pk_value == null ? "" : pk_value) + "☻" + like + "≌";
+            }
+        });
+        return Parm_Key_Value
+    }
+    //查询条件名称值
+    function GetParm_Key_Name() {
+        var Parm_Key_Name = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var type = this.type;
+            var pk_id = $(this).attr('id');
+            var pk_value = "";
+            if (type == "hidden") {
+                pk_value = $("#" + pk_id + "Name").val();
+            } else {
+                pk_value = $("#" + pk_id).val();
+            }
+            if (pk_value != "" && pk_value != undefined && pk_value != 'undefined' && pk_id != "bdate" && pk_id != "edate" && pk_id != "reporttype") {
+                if (Parm_Key_Name == "") {
+                    Parm_Key_Name += pk_value;
+                } else {
+                    Parm_Key_Name += "-" + pk_value;
+                }
+            }
+        });
+        return Parm_Key_Name;
+    }
+
+    function SelectMaterialType() {
+        $("#iframeReport").hide();
+        var url = "/Utility/SelectMaterialType";
+        openMyDialog(url, "Form11111", "选取物料分类信息", 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText("PK_MARBASCLASSNAME", "PK_MARBASCLASS");
+                 $("#iframeReport").show();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText("PK_MARBASCLASSNAME", "PK_MARBASCLASS");
+                 $("#iframeReport").show();
+             });
+    }
+
+    function SelectMaterial() {
+        $("#iframeReport").hide();
+        var PK_MARBASCLASS = $("#PK_MARBASCLASS").val();
+        var url = "/Utility/SelectMaterialMore";
+        if (PK_MARBASCLASS != "") {
+            url += "?matclass=" + PK_MARBASCLASS;
+        }
+        openMyDialog(url, "Form11111", "选取物料信息", 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText("PK_MaterialName", "PK_Material");
+                 $("#iframeReport").show();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText("PK_MaterialName", "PK_Material");
+                 $("#iframeReport").show();
+             });
+    }
+
+
+   
+</script>
+<div id="layoutA" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="QueryArea">
+            <table border="0" class="form-find" style="height: 45px;">
+                <tr>
+                    <th>
+                        报表类型：
+                    </th>
+                    <td>
+                        <select id="reporttype" name="reporttype" class="select" style="width: 140px;">
+                            <option value="1000010">销售逐车明细</option>
+                            <option value="1000011">销售物料统计</option>
+                            <option value="1000012">销售客户统计</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        过磅单号：
+                    </th>
+                    <td>
+                        <input id="BillNo" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        销售订单：
+                    </th>
+                    <td>
+                        <input id="PK_CONTRACT_B" type="text" class="txt" style="width: 135px" dbfield="true"
+                            like="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        客户：
+                    </th>
+                    <td>
+                        <input id="PK_RECEIVEORG" type="hidden" dbfield="true" like="false" />
+                        <input id="PK_RECEIVEORGName" type="text" class="txt" style="width: 135px" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        车号：
+                    </th>
+                    <td>
+                        <input id="CARS" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+          
+                <tr>
+                    <th>
+                        物料：
+                    </th>
+                    <td>
+                        <input id="PK_Material" type="hidden" dbfield="true" like="false" />
+                        <input id="PK_MaterialName" type="text" class="txt" style="width: 135px" onclick="SelectMaterial();" />
+                    </td>
+                </tr>
+         
+                <tr>
+                    <th>
+                        开始时间：
+                    </th>
+                    <td>
+                        <input id="bdate" type="text" class="txt Wdate"  style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d',dateFmt: &#39;yyyy-MM-dd&#39;})" dbfield="true" like="false"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        结束时间：
+                    </th>
+                    <td>
+                        <input id="edate" type="text" class="txt Wdate" style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d',dateFmt: &#39;yyyy-MM-dd&#39;})"dbfield="true" like="false"/>
+                    </td>
+                </tr>
+        
+                <tr>
+                    <th>
+                        操作状态：
+                    </th>
+                    <td>
+                        <select id="COMPUTERTYPE" name="COMPUTERTYPE" class="select" style="width: 140px;"
+                            dbfield="true" like="false">
+                            <option value="0">---请选择---</option>
+                            <option value="99">作废</option>
+                            <option value="17">补增</option>
+                            <option value="12">正常</option>
+                            <option value="13">参照</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                    </th>
+                    <td>
+                        <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="LoadReport()" />
+                        <input id="btnClear" type="button" class="btnSearch" value="清 空" onclick="ClearValue()" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <iframe id="iframeReport" src="" scrolling="auto" frameborder="0" scrolling="no"
+            width="100%" height="100%"></iframe>
+    </div>
+</div>

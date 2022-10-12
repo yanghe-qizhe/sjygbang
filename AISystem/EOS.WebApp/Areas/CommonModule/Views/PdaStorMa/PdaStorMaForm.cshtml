@@ -1,0 +1,163 @@
+﻿@{
+    ViewBag.Title = "仓库物料对应》新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        InitControl();
+        BindAutocomplete("STORDOCNAME", "PK_STORDOC", "Store", "", "", "");
+        MaterialAutocomplete();
+    })
+    ///获取物料信息
+    function MaterialAutocomplete() {
+        var txtname = "MATERIALNAME";
+        var $txtid = $("#PK_MATERIAL");
+        var $txtname = $("#MATERIALNAME");
+        var $txtwlgg = $("#MATERIALSPEC");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtwlgg.val(data.txtggname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="materialspecgg" style="display: none;">' + DataJson[i].materialspec + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtwlgg.val(data.materialspecgg);
+                });
+            });
+        }
+    }
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/CommonModule/PdaStorMa/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    AjaxJson("/CommonModule/PdaStorMa/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Tabbasic" class="tab_list bd actived" onclick="Tabchange('basic')">
+                录入信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--录入信息-->
+    <div id="basic" class="tabPanel">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    单据编号：
+                </th>
+                <td class="formValue">
+                    <input id="ID" type="text"  class="txt readonly required" datacol="no" err="单据编号" checkexpession="NotNull" value="@ViewBag.BillNo"/>
+                </td>
+                <th class="formTitle">
+                    仓库：
+                </th>
+                <td class="formValue">
+                    <input id="PK_STORDOC" type="hidden" datacol="yes" err="仓库,勿手动输入" checkexpession="NotNull" />
+                    <input id="STORDOCNAME" type="text" class="txt icontree" datacol="yes" err="请选择仓库" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    物料：
+                </th>
+                <td class="formValue">
+                    <input id="PK_MATERIAL" type="hidden" datacol="yes" err="物料,勿手动输入" checkexpession="NotNull"/>
+                    <input id="MATERIALNAME" type="text" class="txt iconsearch" datacol="yes" err="请选择物料"
+                        checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    物料规格：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALSPEC" type="text" class="txt readonly required" datacol="yes"
+                        err="物料规格" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle" >
+                    备注：
+                </th>
+                <td class="formValue" colspan="7">
+                    <input id="MEMO" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    <span class="ck_span">提醒：</span>
+                </th>
+                <td class="formValue" colspan="7">
+                    <span class="ck_span">
+                        <label id="lbl_msg">
+                            无
+                        </label>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+</form>

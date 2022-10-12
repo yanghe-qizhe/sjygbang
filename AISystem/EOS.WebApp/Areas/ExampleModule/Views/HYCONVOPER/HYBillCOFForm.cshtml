@@ -1,0 +1,428 @@
+﻿@{
+    ViewBag.Title = "铁水转序单》新增";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        $("#PK_SENDUNIT").change(function () {
+            var PK_SENDUNIT = this.value;
+            var SENDUNITNAME = $("#PK_SENDUNIT option:selected").text();
+            $("#SENDUNITNAME").val(SENDUNITNAME);
+            if (PK_SENDUNIT == "1001E510000000000AF9") {
+                $("#DEF2").val("8");
+            } else if (PK_SENDUNIT == "1001E510000000000AFG") {
+                $("#DEF2").val("9");
+            } else {
+                $("#DEF2").val("10");
+            }
+            $("#DEF2").change();
+        });
+
+        $("#DEF3").change(function () {
+            var gs = this.value;
+            if (gs == "") {
+                top.TipMsg("请您先选择罐数！", 4000, "error");
+                return false;
+            }
+            var glno = $("#DEF2").val();
+            if (glno != "") {
+                for (var index = 1; index <= 10; index++) {
+                    $("#STOVENUM➩" + index).val("");
+                }
+                AjaxJson("/ExampleModule/HYCONVOPER/GETGLNO", { glno: glno }, function (data) {
+                    for (var i = 1; i <= parseInt(gs); i++) {
+                        $("#STOVENUM➩" + i).val(data);
+                    }
+                });
+            }
+        });
+        $("#DEF2").change(function () {
+            var gs = $("#DEF3").val();
+            if (gs == "") {
+                top.TipMsg("请您先选择罐数！", 4000, "error");
+                return false;
+            }
+            var glno = this.value;
+            if (glno != "") {
+                for (var index = 1; index <= 10; index++) {
+                    $("#STOVENUM➩" + index).val("");
+                }
+                AjaxJson("/ExampleModule/HYCONVOPER/GETGLNO", { glno: glno }, function (data) {
+                    for (var i = 1; i <= parseInt(gs); i++) {
+                        $("#STOVENUM➩" + i).val(data);
+                    }
+                });
+            }
+        });
+        GetGrid();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ExampleModule/HYCONVOPER/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    $("#ID➩" + rowindex).val(rowData.ID);
+                    $("#STOVENUM➩" + rowindex).val(rowData.STOVENUM);
+                    $("#CARSNAME➩" + rowindex).val(rowData.CARSNAME);
+                    $("#YFNUM➩" + rowindex).val(rowData.YFNUM);
+                    $("#SORTID➩" + rowindex).val(rowData.SORTID);
+                    $("#TASKNODTL➩" + rowindex).val(rowData.TASKNODTL);
+                    Conversion(rowindex);
+                    rowindex++;
+                });
+            });
+        }
+        //秤点
+        DictionaryAutocomplete();
+        //班组
+        BindAutocomplete("WTEAMNAME", "PK_WTEAM", "Dictionary", "", "", "");
+
+    })
+
+    function SelectMaterial() {
+        var url = "/Utility/SelectMaterial?type=2";
+        openMyDialog(url, "Form11111", "选取物料信息", 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText5("MATERIALNAME", "PK_MATERIAL", "MATERIALSPEC");
+             }, function (iframe) {
+                 top.frames[iframe].CloseDialog();
+             });
+    }
+
+
+
+    function DictionaryAutocomplete() {
+        var txtname = "SCALENAME";
+        var $txtid = $("#PK_SCALE");
+        var $txtname = $("#SCALENAME");
+
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 3) {
+                    var parm = "keywords=" + escape(keyvalue);
+                    var items = $(this).attr("items");
+                    if (items != null && items != "") {
+                        parm += "&items=" + escape(items);
+                    }
+                    DataSource(parm);
+                }
+            }
+        }).focus(function () {
+            var parm = "keywords=";
+            $(this).select();
+            var items = $(this).attr("items"); //添加items属性值为职称查找职称字典数据
+            if (items != null && items != "") {
+                parm += "&items=" + items;
+            }
+            DataSource(parm);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.code);
+            $txtname.val(data.name);
+        });
+        //获取数据源
+        function DataSource(parm) {
+            AjaxJson("/AutoData/Dictionary", parm, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].code + "-" + DataJson[i].name + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                    $txtid.val(data.code);
+                    $txtname.val(data.name);
+                });
+            });
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/HYCONVOPER/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_HYBillSOF");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/ExampleModule/HYCONVOPER/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    /*车皮明细begin=======================================*/
+    //销售订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 290,
+            autowidth: true,
+            colModel: [
+                { label: '炉号', name: "STOVENUM", width: 180, sortable: false, align: 'center' },
+                { label: '罐号[<font face="宋体">*</font>]', name: "CARSNAME", width: 180, sortable: false, align: 'center' },
+                { label: '原发量[<font face="宋体">*</font>]', name: 'YFNUM', width: 120, sortable: false, align: 'center' },
+                { label: '排序', name: "SORTID", width: 100, sortable: false, align: 'center' },
+                { label: '任务明细行', name: "TASKNODTL", width: 180, sortable: false, align: 'center', type: 'hidden' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计显示
+                $(this).footerData("set", {
+                    "STOVENUM": "原发量合计",
+                    "YFNUM": "<span id='TotalYFNUM'>0.00</span>"
+                });
+            }
+        });
+
+        var ii = 10000;
+        //默认添加20行 空行
+        for (var i = 1; i < 11; i++) {
+            ++ii;
+            var rowdata = {
+                STOVENUM: '<input id="STOVENUM➩' + i + '" class="editable" type="text" style="cursor:pointer" datacol="no" err="炉号" checkexpession="NotNull" />',
+                CARSNAME: '<input id="CARSNAME➩' + i + '"  maxlength="20" class="editable" type="text" style="cursor:pointer"  datacol="yes" err="罐号" checkexpession="NotNull" /><input id="PK_CARS➩' + i + '" type="hidden" /><input id="ID➩' + i + '" type="hidden" />',
+                YFNUM: '<input id="YFNUM➩' + i + '" class="editable decimal center" type="text" datacol="No" err="原发量" checkexpession="Double" value="0.00"/>',
+                SORTID: '<input id="SORTID➩' + i + '" class="editable center" type="text" datacol="No" err="排序" checkexpession="NotNull" value="' + i + '"/>',
+                TASKNODTL: '<input id="TASKNODTL➩' + i + '" class="editable" type="text" value="' + ii + '"/>'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        }
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+
+        $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "yes");
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').click(function () {
+            var index = $(this).text();
+            $("#PK_CARS➩" + index).val("");
+            $("#CARSNAME➩" + index).val("");
+            $("#YFNUM➩" + index).val("0.00");
+            $("#STOVENUM➩" + index).val("");
+            $("#SORTID➩" + index).val("");
+            $("#TASKNODTL➩" + index).val("");
+            $("#MEMO➩" + index).val("");
+        });
+
+        //价格信息文本框点击事件
+        $("#gridTable").find('.decimal').click(function () {
+            $(this).select();
+        });
+    }
+
+
+
+    //任务单明细换算+合计
+    function Conversion(index) {
+        var YFNUM = $("#YFNUM➩" + index).val();                            //原发量
+        //统计合计
+        var TotalYFNUM = 0.00;
+        $("#gridTable tbody tr").each(function (i) {
+            var YFNUM = $(this).find('td:eq(2)').find('input').val();
+            if (YFNUM != "" && YFNUM != undefined) {
+                TotalYFNUM += Number(YFNUM);
+            }
+        });
+        $("#TotalYFNUM").text(FormatCurrency(TotalYFNUM));
+        $("#YFNUM").val(FormatCurrency(TotalYFNUM));
+    }
+    /*明细end=======================================*/
+</script>
+<form id="form1">
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+            <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                    class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                        保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                            <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                离开</b></span></a>
+    </div>
+    <table id="tb_HYBillSOF" class="form">
+        <tr>
+            <th class="formTitle">
+                单据编号：
+            </th>
+            <td class="formValue">
+                <input id="TASKNO" type="text"  class="txt readonly" datacol="yes" err="单据编号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+            </td>
+            <th class="formTitle">
+                发货单位：
+            </th>
+            <td class="formValue">
+                <input id="SENDUNITNAME" type="hidden" />
+                <select id="PK_SENDUNIT" class="txtselect" datacol="yes" err="发货单位" checkexpession="NotNull">
+                    <option value="">---请选择---</option>
+                    <option value="1001E510000000000A9L">炼铁厂</option>
+                    <option value="1001E510000000000AF9">炼铁厂-八高炉作业区</option>
+                    <option value="1001E510000000000AFG">炼铁厂-九高炉作业区</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                收货单位：
+            </th>
+            <td class="formValue">
+                <input id="PK_ACCEPTUNIT" type="hidden" value="1001E510000000000AG6" />
+                <input id="ACCEPTUNITNAME" type="text" class="txt required" datacol="yes" err="收货单位"
+                    checkexpession="NotNull" onclick='SelectDept("ACCEPTUNITNAME", "PK_ACCEPTUNIT", "选取收货单位信息");'
+                    value="炼钢厂-转炉业务区" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                过磅秤点：
+            </th>
+            <td class="formValue">
+                <input id="PK_SCALE" type="hidden" value="H13" />
+                <input id="SCALENAME" type="text" class="txt required" datacol="yes" err="过磅秤点" checkexpession="NotNull"
+                    items="计量称点" value="H13-新区铁水秤" />
+            </td>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="PK_MATERIAL" type="hidden" value="1001A1100000000LV53Q" />
+                <input id="MATERIALSPEC" type="hidden" value="0605001001001" />
+                <input id="MATERIALNAME" type="text" class="txt required" datacol="yes" err="物料名称"
+                    checkexpession="NotNull" onclick='SelectMaterial();' value="铁水" />
+            </td>
+            <th class="formTitle">
+                班组：
+            </th>
+            <td class="formValue">
+                <input id="PK_WTEAM" type="hidden" />
+                <input id="WTEAMNAME" type="text" class="txt required" datacol="yes" err="班组" checkexpession="NotNull"
+                    items="班组字典" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                罐数：
+            </th>
+            <td class="formValue">
+                <select id="DEF3" class="txtselect" datacol="yes" err="罐数" checkexpession="NotNull">
+                    <option value="">---请选择---</option>
+                    <option value="1">1个罐</option>
+                    <option value="2">2个罐</option>
+                    <option value="3">3个罐</option>
+                    <option value="4">4个罐</option>
+                    <option value="5">5个罐</option>
+                    <option value="6">6个罐</option>
+                    <option value="7">7个罐</option>
+                    <option value="8">8个罐</option>
+                    <option value="9">9个罐</option>
+                    <option value="10">10个罐</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                高炉：
+            </th>
+            <td class="formValue">
+                <select id="DEF2" class="txtselect" datacol="yes" err="出铁口" checkexpession="NotNull">
+                    <option value="">---请选择---</option>
+                    <option value="8">8号高炉</option>
+                    <option value="9">9号高炉</option>
+                    <option value="10">10号高炉</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                出铁口：
+            </th>
+            <td class="formValue">
+                <select id="DEF1" class="txtselect" datacol="yes" err="出铁口" checkexpession="NotNull">
+                    <option value="">---请选择---</option>
+                    <option value="南口">南口</option>
+                    <option value="北口">北口</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                开始时间：
+            </th>
+            <td class="formValue">
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)"  onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+            <th class="formTitle">
+                结束时间：
+            </th>
+            <td class="formValue">
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()"  onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})"  />
+            </td>
+            <th class="formTitle">
+                备注：
+            </th>
+            <td class="formValue">
+                <input id="MEMO" type="text" class="txt" />
+            </td>
+        </tr>
+    </table>
+    <div id="grid_List">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

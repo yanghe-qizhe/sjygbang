@@ -1,0 +1,377 @@
+﻿@{ ViewBag.Title = "选择采购磅单"; Layout = "~/Views/Shared/_LayoutIndex.cshtml"; }
+<script>
+    var TYPE = GetQuery('TYPE');
+     var MATERIAL = GetQuery('MATERIAL');
+     var MATERIALNAME = GetQuery('MATERIALNAME');
+     var WEIGHTNO = GetQuery('WEIGHTNO');
+     var WEIGHTNAME = GetQuery('WEIGHTNAME');
+     var VBILLCODE=  GetQuery('VBILLCODE');
+     var CUSTOMER =GetQuery('CUSTOMER');
+     var CUSTOMERNAME =GetQuery('CUSTOMERNAME');
+    var BEGINDATE = GetQuery('BEGINDATE');
+    var ENDDATE = GetQuery('ENDDATE');
+   
+    $(function () {
+        BindAutocomplete("TRAFFICCOMPANYNAME", "TRAFFICCOMPANY", "TrafficCompany", "", "", "");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("WEIGHTNAME", "WEIGHTNO", "WeightConfig", "200", "150", "");
+        BindAutocomplete("CustomerName", "Customer", "Customer", "200", "150", "");
+       BindAutocomplete("CARSNAME", "CARS", "Cars", "200", "150", "");
+       BindAutocomplete("STORE", "PK_STORE", "Store", "", "", "");
+         if (MATERIAL != "") {
+          $("#Material").val(MATERIAL);
+           $("#MaterialName").val(MATERIALNAME);
+       }
+//       if (WEIGHTNAME != "") {
+//         $("#WEIGHTNO").val(WEIGHTNO);
+//           $("#WEIGHTNAME").val(WEIGHTNAME);
+//       }
+        if (CUSTOMER != "") {
+           $("#Customer").val(CUSTOMER);
+           $("#CustomerName").val(CUSTOMERNAME);
+       }
+          if (BEGINDATE != "")
+           {
+                    $("#StartTime").val(BEGINDATE);
+                }
+            if (ENDDATE != "") {
+            $("#EndTime").val(ENDDATE);
+        }
+           if (VBILLCODE != "") {
+            $("#VBILLCODE").val(VBILLCODE);
+        }
+
+        setTimeout(function () {
+            GetGrid();
+        }, 300);
+        //绑定键盘按下事件  
+        $(document).keypress(function (e) {
+            // 回车键事件  
+            if (e.which == 13) {
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    function btn_Search() {
+        var Customer = $("#Customer").val();
+        var Material = $("#Material").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var WEIGHTNO =  $("#WEIGHTNO").val(); 
+        var TRAFFICCOMPANY =  $("#TRAFFICCOMPANY").val();   
+         var BRANDMODEL =$("#BRANDMODEL").val();  
+          var VBILLCODE =  $("#VBILLCODE").val();
+                  var CARS =  $("#CARS").val();
+         var STORE =  $("#STORE").val();
+          
+                    var ZJSTATUS=  $("#ZJSTATUS").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJSettlement/SSORDER/GetOrderWeightList")?ISJS=0&StartTime=" + StartTime + '&EndTime=' + EndTime + '&Customer=' + Customer + '&Material=' + Material +"&WEIGHTNO="+WEIGHTNO+"&BRANDMODEL="+escape(BRANDMODEL)  +"&VBILLCODE="+VBILLCODE +"&ZJSTATUS="+ZJSTATUS+"&STORE="+escape(STORE)+"&TRAFFICCOMPANY="+TRAFFICCOMPANY+"&Cars="+CARS
+        }).trigger('reloadGrid');
+    }
+
+   function SelectText() {
+        var datas = [];
+        var ids = $("#gridTable").getGridParam('selarrrow');
+         var arr = new Array;
+        $.each(ids, function (i, o) {
+            var rowData = $("#gridTable").jqGrid("getRowData", ids[i]);
+            datas.push(rowData);
+            var json = {"vbillcode": rowData.PK_CONTRACT_B.toLowerCase(),"pk_sendorg": rowData.PK_RECEIVEORG.toLowerCase(), "pk_material": rowData.PK_MATERIAL.toLowerCase() }
+            arr[i] = json;
+        })
+         if(datas.length>0){
+         var res = arr.Contains(arr[0]);
+        if (res == 0) {
+        var frameid = tabiframeId();
+        var $parentobj = top.frames[frameid];
+        $parentobj.InitGrid(datas);
+        closeDialog();
+        }else if (res == 1){
+          top.TipMsg("请您选择相同订单与物料的计量数据！", 4000, "error");
+        }
+         }else{
+         tipDialog("请至少选择一个过磅单号！", 3, 0);
+        return;
+        }
+    }
+    Array.prototype.Contains = function (m) {
+            var res = 0, j = 0,s=0; 
+            $.each(this, function (i, n) {
+                if (n.vbillcode==m.vbillcode && n.pk_material == m.pk_material)
+                 {
+                    j++;
+                }
+            });
+             if (j == this.length) {
+                res = 0;
+            }
+            else{
+             res = 1;
+            }
+            return res;
+        };
+
+    function ClearText() {
+        closeDialog();
+    }
+    //显示 
+    function GetGrid() {
+        var Customer =$("#Customer").val();
+        var Material = $("#Material").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var WEIGHTNO = $("#WEIGHTNO").val(); 
+        var VBILLCODE =  $("#VBILLCODE").val();
+         
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJSettlement/SSORDER/GetOrderWeightList")?ISJS=0&StartTime=" + StartTime + '&EndTime=' + EndTime + '&Customer=' + Customer+'&Material=' + Material+"&WEIGHTNO="+WEIGHTNO+"&VBILLCODE="+VBILLCODE ,
+            datatype: "json",
+           height: 245,
+            width: 890,
+            colModel: [
+             { label: 'PK_TASK', name: 'PK_TASK', hidden: true },
+              { label: '过磅单号', name: 'BILLNO', width: 110, align: 'left' },
+                { label: '车号主键', name: 'PK_CARSID', hidden: true },
+                { label: '车号', name: 'CARS', index: 'CARS', width: 60, align: 'center' },
+                { label: 'PK_BILL', name: 'PK_BILL',  width: 120, align: 'center' ,hidden: true},
+                  { label: 'PK_BILL_B', name: 'PK_BILL_B',  width: 120, align: 'center' ,hidden: true},
+                 { label: '订单编号', name: 'PK_CONTRACT_B', index: 'PK_CONTRACT_B',  width: 120, align: 'center' },
+                { label: '客户PK', name: 'PK_RECEIVEORG', hidden: true },
+                { label: '客户', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 170, align: 'left' },
+                { label: '物料编号', name: 'PK_MATERIAL', width: 100, align: 'left',hidden: true},
+                { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 120, align: 'left' },
+                { label: '规格', name: 'MATERIALKIND', index: 'MATERIALKIND', width: 60, align: 'left' },
+               { label: '应收重量', name: 'YFSUTTLE', index: 'YFSUTTLE', width: 60, align: 'center' },
+                { label: '毛重', name: 'GROSS', index: 'GROSS', width: 60, align: 'center' },
+                 { label: '皮重', name: 'TARE', index: 'TARE', width: 60, align: 'center' },
+                 { label: '净重', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+               { label: '件数', name: 'DEF3', index: 'DEF3', width: 60, align: 'center' },
+                 { label: 'PK_SENDORG', name: 'PK_SENDORG', hidden: true },
+                { label: 'RECEIVEORG', name: 'RECEIVEORG', hidden: true },
+                { label: 'PK_STORE', name: 'PK_STORE', hidden: true },
+                { label: '仓库', name: 'STORE', index: 'STORE', width: 100, align: 'center' },
+                 { label: 'PK_ORDER_B', name: 'PK_ORDER_B', hidden: true },
+                 { label: '提货单号', name: 'PK_ORDER',  index: 'PK_ORDER', width: 130, align: 'center' },
+                { label: '承运商PK', name: 'PK_TRAFFICCOMPANY', hidden: true },
+                { label: '承运商', name: 'TRAFFICCOMPANY', index: 'TRAFFICCOMPANY', width: 100, align: 'left' },
+               {
+                    label: '轻车时间', name: 'LIGHTDATE', index: 'LIGHTDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                } ,
+                { label: '车型', name: 'BRANDMODEL', index: 'BRANDMODEL', width: 80, align: 'left' }  ,
+                 { label: '入厂厂区', name: 'DEF11', hidden: true },
+                { label: '入厂厂区', name: "CQDEF11", width: 100, sortable: false, align: 'center' ,
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1000')
+                        return "阳光纸业";
+                    else if (cellvalue == '6000')
+                        return "盛世热电";
+                    else if (cellvalue == '7000')
+                        return "新迈纸业";
+                    else if (cellvalue == '8000')
+                        return "阳光王子";
+                    else if (cellvalue == '9000')
+                        return "华迈纸业";
+                    else if (cellvalue == '9010')
+                        return "科迈制浆";
+                            else
+                             return "";
+                }
+                }
+            ],
+            pager: "#gridPager",
+            sortname: 'PK_MATERIAL,WEIGHTDATE',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true, 
+             multiselect: true,
+           rowNum: 150,
+            rowList: [ 150,300, 500, 1000],
+                  footerrow: true,
+            gridComplete: function () {
+                //合计
+                $(this).footerData("set", {
+                    "PK_TASK": "合计",
+                    "CARS": "<span id='TotalCARSNUM'>0</span>",
+                    "YFSUTTLE": "<span id='TotalYFSUTTLE'>0.00</span>",
+                    "GROSS": "<span id='TotalGROSS'>0.00</span>",
+                    "TARE": "<span id='TotalTARE'>0.00</span>",
+                    "SUTTLE": "<span id='TotalSUTTLE'>0.00</span>",
+                    "DEF3": "<span id='TotalYFPIECE'>0.00</span>",
+                });
+            } ,//单击事件
+             onSelectRow: function (RowIndx) {
+             Conversion() ;
+            }
+            
+     
+        });
+
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+
+    
+     function Conversion() {
+        //统计合计
+        var TotalCARSNUM = 0, TotalYFSUTTLE = 0.0, TotalGROSS = 0.0, TotalTARE = 0.0, TotalSUTTLE = 0.0,TotalYFPIECE = 0.0;
+            var datas = [];
+        var ids = $("#gridTable").getGridParam('selarrrow');
+         $.each(ids, function (i, o) {
+            var rowData = $("#gridTable").jqGrid("getRowData", ids[i]);
+            datas.push(rowData);
+      var BILLNO =rowData.BILLNO;
+            if (BILLNO != "" && BILLNO != undefined) {
+                TotalCARSNUM = TotalCARSNUM + 1;
+            }
+            var YFSUTTLE = rowData.YFSUTTLE;
+            if (YFSUTTLE != "" && YFSUTTLE != undefined) {
+                TotalYFSUTTLE = FloatAdd(TotalYFSUTTLE, YFSUTTLE);
+            }
+            var GROSS = rowData.GROSS;
+            if (GROSS != "" && GROSS != undefined) {
+                TotalGROSS = FloatAdd(TotalGROSS, GROSS);
+            }
+            var TARE = rowData.TARE;
+            if (TARE != "" && TARE != undefined) {
+                TotalTARE = FloatAdd(TotalTARE, TARE);
+            }
+            var SUTTLE = rowData.SUTTLE;
+            if (SUTTLE != "" && SUTTLE != undefined) {
+                TotalSUTTLE = FloatAdd(TotalSUTTLE, SUTTLE);
+            }
+            var YFPIECE = rowData.DEF3;
+            if (YFPIECE != "" && YFPIECE != undefined) {
+                TotalYFPIECE = FloatAdd(TotalYFPIECE, YFPIECE);
+            }
+        })
+ 
+        //车数
+        $("#TotalCARSNUM").text(TotalCARSNUM);
+        //应收重量
+        $("#TotalYFSUTTLE").text(getFloat(TotalYFSUTTLE, 3));
+        //毛重
+        $("#TotalGROSS").text(getFloat(TotalGROSS, 3));
+        //皮重
+        $("#TotalTARE").text(getFloat(TotalTARE, 3));
+        //净重
+        $("#TotalSUTTLE").text(getFloat(TotalSUTTLE, 3));
+      
+        //件数
+        $("#TotalYFPIECE").text(getFloat(TotalYFPIECE,0));
+
+    }
+
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    计量日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)"
+                        style="width: 90px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()"
+                        style="width: 90px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    客户：
+                </th>
+                <td>
+                    <input id="Customer" type="hidden" />
+                    <input id="CustomerName" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    仓库：
+                </th>
+                <td>
+                    <input id="PK_STORE" type="hidden" />
+                    <input id="STORE" type="text" class="txt" style="width: 90px" />
+                </td>
+                <th>
+                    订单编号：
+                </th>
+                <td>
+                    <input id="VBILLCODE" type="text" class="txt" style="width: 90px" />
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CARS" type="hidden" />
+                    <input id="CARSNAME" type="text" class="txt" dbfield="true" style="width: 90px" />
+                </td>
+                <th class="formTitle">
+                    车型：
+                </th>
+                <td class="formValue">
+                    <select id="BRANDMODEL" class="txt select" style="width: 95px">
+                        <option value="">===请选择===</option>
+                        <option value="散货车">散货车</option>
+                        <option value="汽运集装箱">汽运集装箱</option>
+                        <option value="火运集装箱">火运集装箱</option>
+                    </select>
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    承运商：
+                </th>
+                <td>
+                    <input id="TRAFFICCOMPANY" type="hidden" />
+                    <input id="TRAFFICCOMPANYNAME" type="text" class="txt" style="width: 90px" />
+                </td>
+                <th>
+                    磅号：
+                </th>
+                <td>
+                    <input id="WEIGHTNO" type="hidden" />
+                    <input id="WEIGHTNAME" type="text" class="txt" dbfield="true" style="width: 90px" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

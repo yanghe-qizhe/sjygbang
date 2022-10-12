@@ -1,0 +1,898 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>欢迎使用</title>
+    <!--框架必需start-->
+    <link href="~/Content/Styles/EOSui-framework.css" rel="stylesheet" />
+    <link href="~/Content/Styles/EOSui-accordion.css" rel="stylesheet" />
+    <script src="~/Content/Scripts/jquery/jquery-1.8.2.min.js"></script>
+    <script src="~/Content/Scripts/EOSui-framework.js"></script>
+    <!--框架必需end-->
+    <!--第三方统计图start-->
+    <script src="~/Content/Scripts/highcharts/highcharts.js"></script>
+    <script src="~/Content/Scripts/highcharts/highcharts-more.js"></script>
+    <script src="~/Content/Scripts/highcharts/modules/exporting.js"></script>
+    <!--第三方统计图end-->
+    <script>
+        $(function () {
+//            LodaChartData();
+//            LodaChartDataB();
+//            LodaChartDataC();
+           GetNews();
+//            GetWeightJDay();
+//            GetWeightZDay();
+//            GetWeightInDay();
+        })
+
+
+
+        //公告查看明细
+        function PreviewNews(KeyValue) {
+            if (IsChecked(KeyValue)) {
+                var url = "/BaseSet/News/NewsDetail?KeyValue=" + KeyValue;
+                openCancelDialog(url, "NewsDetail", "公告信息", 650, 380);
+            }
+        }
+        //获取公告
+        function GetNews() {
+            //明细信息
+            AjaxJson("/BaseSet/News/GetEntryList", "", function (data) {
+                var JsonData = data.rows;
+                var index = 1;
+                $("#add_News div").remove();
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var div = "";
+                    if (rowData.TYPE == "4") {
+                        div = "<div style=\"padding-left: 5px; cursor: pointer; line-height: 25px; background-color: #eee;color: #e66d15\" title=\"" + rowData.CONTENT + "\" onclick=\"PreviewNews('" + rowData.ID + "');\">";
+                        div += index + "、" + rowData.TITLE;
+                        div += "<img src=\"/Content/Images/hot.gif\" style=\"padding-bottom: 3px; vertical-align: middle;margin-left: 10px;\" />";
+                        div += "<div style=\"float: right\">" + rowData.CREATEDATE + "</div>";
+                        div += "</div>";
+                    } else {
+                        div = "<div style=\"padding-left: 5px; cursor: pointer; line-height: 25px;\"  title=\"" + rowData.CONTENT + "\">";
+                        div += index + "、" + rowData.TITLE;
+                        div += "<div style=\"float: right\">" + rowData.CREATEDATE + "</div>";
+                        div += "</div>";
+                    }
+                    $(div).appendTo("#add_News");
+                    index++;
+                });
+            });
+        }
+
+        function GetWeightDay() {
+            //明细信息
+            AjaxJson("/WeightManager/WeightOut/GetWeightDay", "", function (data) {
+                var JsonData = data.rows;
+                var index = 1;
+                $("#add_WeightDay tr").remove();
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var tr = "";
+                    tr = "<tr>";
+                    if (rowData.DATATYPE == "1") {
+                        tr += "<td style='text-align:center;'>销售主产品</td>";
+                    } else if (rowData.DATATYPE == "2") {
+                        tr += "<td style='text-align:center;'>销售非钢产品</td>";
+                    } else if (rowData.DATATYPE == "3") {
+                        tr += "<td style='text-align:center;'>采购原材料</td>";
+                    }
+                    tr += "<td>" + rowData.NOUTCARSNUM + "</td>";
+                    tr += "<td>" + rowData.OUTCARSNUM + "</td>";
+                    tr += "<td>" + rowData.DAYSUTTLE + "</td>";
+                    tr += "</tr>";
+                    $(tr).appendTo("#add_WeightDay");
+                    index++;
+                });
+            });
+        }
+
+        //今日数据
+        function GetWeightJDay() {
+            //明细信息
+            AjaxJson("/WeightManager/WeightOut/GetWeightJDay", "", function (data) {
+                var JsonData = data.rows;
+                $("#add_WeightInJDay").empty();
+                $("#add_WeightOutJDay").empty();
+                var lbl_InJYTCarsNum = 0, lbl_InJZCCarsNum = 0, lbl_InJCCCarsNum = 0, lbl_OutJYTCarsNum = 0, lbl_OutJZCCarsNum = 0, lbl_OutJCCCarsNum = 0;
+                var lbl_InJYTNum = 0.00, lbl_InJZLNum = 0.00, lbl_OutJYTNum = 0.00, lbl_OutJZLNum = 0.00;
+                var index = 1;
+                $("#add_WeightOutJDay tr").remove();
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var tr = "";
+                    if (rowData.DATATYPE == "0") {
+                        tr = "<tr>";
+                        //                        tr += "<td>" + rowData.MATERIALTYPE + "</td>";
+                        tr += "<td>" + rowData.MATERIAL + "</td>";
+                        tr += "<td>" + rowData.YTCARSNUM + "</td>";
+                        tr += "<td>" + rowData.NOUTCARSNUM + "</td>";
+                        tr += "<td>" + rowData.OUTCARSNUM + "</td>";
+                        tr += "<td>" + rowData.YTSUTTLE + "</td>";
+                        tr += "<td>" + rowData.DAYSUTTLE + "</td>";
+                        tr += "</tr>";
+                        $(tr).appendTo("#add_WeightInJDay");
+                        lbl_InJYTCarsNum = lbl_InJYTCarsNum + parseInt(rowData.YTCARSNUM);
+                        lbl_InJZCCarsNum = lbl_InJZCCarsNum + parseInt(rowData.NOUTCARSNUM);
+                        lbl_InJCCCarsNum = lbl_InJCCCarsNum + parseInt(rowData.OUTCARSNUM);
+                        lbl_InJYTNum = FloatAdd(lbl_InJYTNum, rowData.YTSUTTLE);
+                        lbl_InJZLNum = FloatAdd(lbl_InJZLNum, rowData.DAYSUTTLE);
+                    } else {
+                        tr = "<tr>";
+                        //                        tr += "<td>" + rowData.MATERIALTYPE + "</td>";
+                        tr += "<td style='width:15%;'>" + rowData.MATERIAL + "</td>";
+                        tr += "<td style='width:8%;'>" + rowData.YTCARSNUM + "</td>";
+                        tr += "<td style='width:8%;'>" + rowData.NOUTCARSNUM + "</td>";
+                        tr += "<td style='width:8%;'>" + rowData.OUTCARSNUM + "</td>";
+                        tr += "<td style='width:8%;'>" + rowData.YTSUTTLE + "</td>";
+                        tr += "<td style='width:8%;'>" + rowData.DAYSUTTLE + "</td>";
+                        tr += "</tr>";
+                        $(tr).appendTo("#add_WeightOutJDay");
+                        lbl_OutJYTCarsNum = lbl_OutJYTCarsNum + parseInt(rowData.YTCARSNUM);
+                        lbl_OutJZCCarsNum = lbl_OutJZCCarsNum + parseInt(rowData.NOUTCARSNUM);
+                        lbl_OutJCCCarsNum = lbl_OutJCCCarsNum + parseInt(rowData.OUTCARSNUM);
+                        lbl_OutJYTNum = FloatAdd(lbl_OutJYTNum, rowData.YTSUTTLE);
+                        lbl_OutJZLNum = FloatAdd(lbl_OutJZLNum, rowData.DAYSUTTLE);
+                    }
+                    index++;
+                });
+                $("#lbl_InJYTCarsNum").text(lbl_InJYTCarsNum);
+                $("#lbl_InJZCCarsNum").text(lbl_InJZCCarsNum);
+                $("#lbl_InJCCCarsNum").text(lbl_InJCCCarsNum);
+                $("#lbl_InJYTNum").text(FormatCurrency(lbl_InJYTNum));
+                $("#lbl_InJZLNum").text(FormatCurrency(lbl_InJZLNum));
+                $("#lbl_OutJYTCarsNum").text(lbl_OutJYTCarsNum);
+                $("#lbl_OutJZCCarsNum").text(lbl_OutJZCCarsNum);
+                $("#lbl_OutJCCCarsNum").text(lbl_OutJCCCarsNum);
+                $("#lbl_OutJYTNum").text(FormatCurrency(lbl_OutJYTNum));
+                $("#lbl_OutJZLNum").text(FormatCurrency(lbl_OutJZLNum));
+            });
+        }
+
+        //昨日数据
+        function GetWeightZDay() {
+            //明细信息
+            AjaxJson("/WeightManager/WeightOut/GetWeightZDay", "", function (data) {
+                var JsonData = data.rows;
+                $("#add_WeightInZDay").empty();
+                $("#add_WeightOutZDay").empty();
+                var lbl_OutCarsNum = 0.00, lbl_InCarsNum = 0.00;
+                var lbl_OutZLNum = 0, lbl_InZLNum = 0;
+                var index = 1;
+                $("#add_WeightInZDay tr").remove();
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var tr = "";
+                    if (rowData.DATATYPE == "0") {
+                        tr = "<tr>";
+                        tr += "<td>" + rowData.MATERIALTYPE + "</td>";
+                        tr += "<td>" + rowData.MATERIAL + "</td>";
+                        tr += "<td>" + rowData.OUTCARSNUM + "</td>";
+                        tr += "<td>" + rowData.DAYSUTTLE + "</td>";
+                        tr += "</tr>";
+                        $(tr).appendTo("#add_WeightInZDay");
+                        lbl_InCarsNum = lbl_InCarsNum + parseInt(rowData.OUTCARSNUM);
+                        lbl_InZLNum = FloatAdd(lbl_InZLNum, rowData.DAYSUTTLE);
+                    } else {
+                        tr = "<tr>";
+                        tr += "<td style='width:8%;'>" + rowData.MATERIALTYPE + "</td>";
+                        tr += "<td style='width:15%;'>" + rowData.MATERIAL + "</td>";
+                        tr += "<td style='width:8%;'>" + rowData.OUTCARSNUM + "</td>";
+                        tr += "<td style='width:8%;'>" + rowData.DAYSUTTLE + "</td>";
+                        tr += "</tr>";
+                        $(tr).appendTo("#add_WeightOutZDay");
+                        lbl_OutCarsNum = lbl_OutCarsNum + parseInt(rowData.OUTCARSNUM);
+                        lbl_OutZLNum = FloatAdd(lbl_OutZLNum, rowData.DAYSUTTLE);
+                    }
+                    index++;
+                });
+                $("#lbl_InCarsNum").text(lbl_InCarsNum);
+                $("#lbl_InZLNum").text(FormatCurrency(lbl_InZLNum));
+                $("#lbl_OutCarsNum").text(lbl_OutCarsNum);
+                $("#lbl_OutZLNum").text(FormatCurrency(lbl_OutZLNum));
+            });
+        }
+
+        //采购统计 
+        function GetWeightInDay() {
+            //明细信息
+            AjaxJson("/WeightManager/WeightOut/GetWeightInDay", "", function (data) {
+                var JsonData = data.rows;
+                var index = 1;
+                var lbl_CarsNum = 0.00, lbl_InNum = 0.00;
+                $("#add_WeightInDay tr").remove();
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    lbl_CarsNum = lbl_CarsNum + Number(rowData.OUTCARSNUM);
+                    lbl_InNum = FloatAdd(lbl_InNum, rowData.DAYSUTTLE);
+                    var tr = "";
+                    tr = "<tr>";
+                    tr += "<td >" + rowData.DATATYPE + "</td>";
+                    tr += "<td>" + rowData.OUTCARSNUM + "</td>";
+                    tr += "<td>" + rowData.DAYSUTTLE + "</td>";
+                    tr += "</tr>";
+                    $(tr).appendTo("#add_WeightInDay");
+                    index++;
+                });
+                $("#lbl_CarsNum").text(lbl_CarsNum);
+                $("#lbl_InNum").text(FormatCurrency(lbl_InNum));
+            });
+        }
+
+
+
+        //销售占比
+        function LodaChartDataB() {
+            AjaxJson("/WeightManager/WeightOut/GetDaySales", "", function (data) {
+                var datas = [];
+                if (data != '') {
+                    datas = eval('(' + data.rows + ')');
+                }
+                var chart = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'piecontainer',
+                        plotBackgroundColor: null,
+                        plotBorderWidth: null,
+                        defaultSeriesType: 'pie'
+                    },
+                    title: {
+                        text: ''
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        formatter: function () {
+                            return '<b>' + this.point.name + '</b>: ' + this.percentage + ' %</br>吨数：<b>' + this.point.y + '</b>';
+                        }
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true, //点击切换
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                formatter: function () {
+                                    return '<b>' + this.point.name + '</b></br>吨数：<b>' + this.point.y + '</b>';
+                                }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        type: 'pie',
+                        name: '比例',
+                        data: datas
+                    }]
+                });
+            });
+        }
+        //在厂车占比
+        function LodaChartDataC() {
+            AjaxJson("/WeightManager/WeightOut/GetInCars", "", function (data) {
+                var datas = [];
+                if (data != '') {
+                    datas = eval('(' + data.rows + ')');
+                }
+                var chart = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'InCarsZB',
+                        plotBackgroundColor: null,
+                        plotBorderWidth: null,
+                        defaultSeriesType: 'pie'
+                    },
+                    title: {
+                        text: ''
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        formatter: function () {
+                            return '<b>' + this.point.name + '</b>: ' + this.percentage + ' %</br>车数：<b>' + this.point.y + '</b>';
+                        }
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true, //点击切换
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                formatter: function () {
+                                    return '<b>' + this.point.name + '</b></br>车数：<b>' + this.point.y + '</b>';
+                                }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        type: 'pie',
+                        name: '比例',
+                        data: datas
+                    }]
+                });
+            });
+        }
+
+
+        //销售走势
+        function LodaChartData() {
+            AjaxJson("/WeightManager/WeightOut/GetMonthSales", "", function (data) {
+                var XX = [];
+                var datas = [];
+                if (data != '') {
+                    XX = eval('(' + data.xx + ')');
+                    datas = eval('(' + data.rows + ')');
+                }
+                Highcharts.setOptions({
+                    colors: ['#FF34B3', '#FF0000', '#FF83FA', '#EEB422', '#B23AEE', '#9370DB', '#79CDCD', '#6E6E6E', '#4876FF']
+                });
+                $('#container').highcharts({
+                    chart: {
+                        type: 'spline'
+                    },
+                    title: {
+                        text: ''
+                    },
+                    xAxis: {
+                        categories: XX,
+                        tickInterval: 3
+                    },
+                    yAxis: {
+                        min: 0,
+                        plotLines: [{
+                            value: 0,
+                            width: 1,
+                            color: '#808080'
+                        }],
+                        title: {
+                            text: '单位：吨'
+                        },
+                        labels: {
+                            formatter: function () {
+                                return this.value + '吨'
+                            }
+                        }
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        valueSuffix: '吨',
+                        crosshairs: true,
+                        shared: true
+                    },
+                    plotOptions: {
+                        spline: {
+                            marker: {
+                                radius: 4,
+                                lineColor: '#666666',
+                                lineWidth: 1
+                            }
+                        }
+                    },
+                    series: datas
+                });
+            });
+        };
+        function NewTabchange(e) {
+            $(e).parent().find('div').removeClass("actived");
+            $(e).addClass("actived");
+        }
+
+
+        //车辆预警
+        function Speedometer() {
+            $('#containerB').highcharts({
+                chart: {
+                    type: 'gauge',
+                    plotBackgroundColor: null,
+                    plotBackgroundImage: null,
+                    plotBorderWidth: 0,
+                    plotShadow: false
+                },
+                title: {
+                    text: '车辆预警'
+                },
+                pane: {
+                    startAngle: -150,
+                    endAngle: 150,
+                    background: [{
+                        backgroundColor: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#FFF'],
+                                [1, '#333']
+                            ]
+                        },
+                        borderWidth: 0,
+                        outerRadius: '109%'
+                    }, {
+                        backgroundColor: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#333'],
+                                [1, '#FFF']
+                            ]
+                        },
+                        borderWidth: 1,
+                        outerRadius: '107%'
+                    }, {
+                        // default background
+                    }, {
+                        backgroundColor: '#DDD',
+                        borderWidth: 0,
+                        outerRadius: '105%',
+                        innerRadius: '103%'
+                    }]
+                },
+                // the value axis
+                yAxis: {
+                    min: 0,
+                    max: 500,
+
+                    minorTickInterval: 'auto',
+                    minorTickWidth: 1,
+                    minorTickLength: 10,
+                    minorTickPosition: 'inside',
+                    minorTickColor: '#666',
+
+                    tickPixelInterval: 30,
+                    tickWidth: 2,
+                    tickPosition: 'inside',
+                    tickLength: 10,
+                    tickColor: '#666',
+                    labels: {
+                        step: 2,
+                        rotation: 'auto'
+                    },
+                    title: {
+                        text: '辆/当前'
+                    },
+                    plotBands: [{
+                        from: 0,
+                        to: 150,
+                        color: '#55BF3B' // green
+                    }, {
+                        from: 150,
+                        to: 300,
+                        color: '#DDDF0D' // yellow
+                    }, {
+                        from: 300,
+                        to: 500,
+                        color: '#DF5353' // red
+                    }]
+                },
+                series: [{
+                    name: '车',
+                    data: [500],
+                    tooltip: {
+                        valueSuffix: ' 辆/当前'
+                    }
+                }],
+                exporting: {
+                    enabled: false
+                }
+            }, function (chart) {
+                if (!chart.renderer.forExport) {
+                    var point = chart.series[0].points[0];
+                    AjaxJson("/WeightManager/WeightOut/GetCarsWarning", "", function (data) {
+                        var JsonData = data.rows;
+                        var rowData = JsonData[0];
+                        var newVal = parseInt(rowData.NOUTCARSNUM);
+                        point.update(newVal);
+                    });
+                    setInterval(function () {
+                        var point = chart.series[0].points[0];
+                        AjaxJson("/WeightManager/WeightOut/GetCarsWarning", "", function (data) {
+                            var JsonData = data.rows;
+                            var rowData = JsonData[0];
+                            var newVal = parseInt(rowData.NOUTCARSNUM);
+                            point.update(newVal);
+                        });
+                    }, 1200000);
+                }
+            });
+        }
+        function NewTabchange(e) {
+            $(e).parent().find('div').removeClass("actived");
+            $(e).addClass("actived");
+            var id = e.id;
+            if (id == "tb_JDay") {
+                $("#JDayInWeight").show();
+                $("#JDayOutWeight").show();
+                $("#ZDayInWeight").hide();
+                $("#ZDayOutWeight").hide();
+            } else {
+                $("#JDayInWeight").hide();
+                $("#JDayOutWeight").hide();
+                $("#ZDayInWeight").show();
+                $("#ZDayOutWeight").show();
+            }
+        }
+    </script>
+</head>
+<body>
+    <div style="margin: 0px;">
+        <table style="width: 100%;">
+            <tr>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div title="双击获取数据" ondblclick="GetWeightJDay();GetWeightZDay();" style="float: left"  >
+                                    <img src="~/Content/Images/Icon32/address_block.png" alt="" width="20" height="20"
+                                        style="padding-bottom: 3px; vertical-align: middle;" />
+                                    日统计(双击获取数据)
+                                </div>
+                                <div class="tab_list_top" style="float: right;">
+                                    <div id="tb_JDay" class="tab_list bd actived" onclick="NewTabchange(this)">
+                                        今日</div>
+                                    <div id="tb_ZDay" class="tab_list bd " onclick="NewTabchange(this)">
+                                        昨日</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-content" style="overflow: auto; height: 300px; width: 98%;">
+                            <table id="JDayInWeight" class="grid" style="width: 100%; margin-top: 1px;">
+                                <thead>
+                                    <tr>
+                                        <td style="width: 15%; text-align: center;">
+                                            <div class="table-header">
+                                                物料</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                未入厂车次</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                在厂车次</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                出厂车次</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                预到货量</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                到货量</div>
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody id="add_WeightInJDay">
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 15%;">
+                                            合计：
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_InJYTCarsNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_InJZCCarsNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_InJCCCarsNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_InJYTNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_InJZLNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <table id="JDayOutWeight" class="grid" style="width: 100%; margin-top: 1px;">
+                             <thead>
+                                    <tr>
+                                        <td style="width: 15%; text-align: center;">
+                                            <div class="table-header">
+                                                物料</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                未入厂车次</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                在厂车次</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                出厂车次</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                预发货量</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                发货量</div>
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody id="add_WeightOutJDay">
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 15%;">
+                                            合计：
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_OutJYTCarsNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_OutJZCCarsNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_OutJCCCarsNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_OutJYTNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_OutJZLNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <table id="ZDayInWeight" class="grid" style="width: 100%; margin-top: 1px; display: none;">
+                                <thead>
+                                    <tr>
+                                        <td style="width: 8%; text-align: center;">
+                                            <div class="table-header">
+                                                物料大类</div>
+                                        </td>
+                                        <td style="width: 15%; text-align: center;">
+                                            <div class="table-header">
+                                                物料</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                车次数</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                到货量</div>
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody id="add_WeightInZDay">
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            合计：
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 15%;">
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_InCarsNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_InZLNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <table id="ZDayOutWeight" class="grid" style="width: 100%; margin-top: 1px; display: none;">
+                            <thead>
+                                    <tr>
+                                        <td style="width: 8%; text-align: center;">
+                                            <div class="table-header">
+                                                物料大类</div>
+                                        </td>
+                                        <td style="width: 15%; text-align: center;">
+                                            <div class="table-header">
+                                                物料</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                车次数</div>
+                                        </td>
+                                        <td style="width: 8%;">
+                                            <div class="table-header">
+                                                发货量</div>
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody id="add_WeightOutZDay">
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            合计：
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 15%;">
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_OutCarsNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 8%;">
+                                            <label id="lbl_OutZLNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </td>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div title="双击获取数据" ondblclick="LodaChartData();" style="float: left">
+                                    <img src="~/Content/Images/Icon32/chart_bar.png" alt="" width="20" height="20" style="padding-bottom: 3px;
+                                        vertical-align: middle;" />
+                                    销量走势(双击获取数据)
+                                </div>
+                            </div>
+                        </div>
+                        <div id="container" class="box-content" style="overflow: auto; height: 300px;">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div title="双击获取数据" ondblclick="LodaChartDataB();" style="float: left">
+                                    <img src="~/Content/Images/Icon32/chart_pie(2).png" alt="" width="20" height="20"
+                                        style="padding-bottom: 3px; vertical-align: middle;" />
+                                    销售占比(双击获取数据)
+                                </div>
+                            </div>
+                        </div>
+                        <div id="piecontainer" class="box-content" style="overflow: auto; height: 300px;">
+                        </div>
+                    </div>
+                </td>
+                <td valign="top" style="width: 50%;">
+                 <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div title="双击获取数据" ondblclick="LodaChartDataC();"  style="float: left">
+                                    <img src="~/Content/Images/Icon32/chart_pie(2).png" alt="" width="20" height="20"
+                                        style="padding-bottom: 3px; vertical-align: middle;" />
+                                    在厂车辆占比(双击获取数据)
+                                </div>
+                            </div>
+                        </div>
+                        <div id="InCarsZB" class="box-content" style="overflow: auto; height: 300px;">
+                        </div>
+             
+                    </div>
+                 
+                </td>
+            </tr>
+            <tr>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div title="双击获取数据" ondblclick="GetWeightInDay();"  style="float: left">
+                                    <img src="~/Content/Images/Icon32/address_block.png" alt="" width="20" height="20"
+                                        style="padding-bottom: 3px; vertical-align: middle;" />
+                                    采购统计(双击获取数据)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-content" style="overflow: auto; height: 300px; width: 98%;">
+                            <table class="grid" style="width: 100%; margin-top: 1px;">
+                                <thead>
+                                    <tr>
+                                        <td style="width: 10%; text-align: center;">
+                                            <div class="table-header">
+                                                物料</div>
+                                        </td>
+                                        <td style="width: 10%;">
+                                            <div class="table-header">
+                                                车次
+                                            </div>
+                                        </td>
+                                        <td style="width: 10%;">
+                                            <div class="table-header">
+                                                日采购
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody id="add_WeightInDay">
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="font-weight: bold; color: Red; text-align: center; width: 160px;">
+                                            合计：
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 80px;">
+                                            <label id="lbl_CarsNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                        <td style="font-weight: bold; color: Red; text-align: left; width: 80px;">
+                                            <label id="lbl_InNum">
+                                                0.00
+                                            </label>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </td>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div title="双击获取数据" ondblclick="GetNews();" style="float: left">
+                                    <img src="~/Content/Images/Icon32/flower.png" alt="" width="20" height="20" style="padding-bottom: 3px;
+                                        vertical-align: middle;" />
+                                    公告(双击获取数据)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-content" style="overflow: auto; height: 300px; width: 98%;" id="add_News">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <style>
+        .grid tbody td
+        {
+            padding-left: 3px;
+        }
+    </style>
+</body>
+</html>

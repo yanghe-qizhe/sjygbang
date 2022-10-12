@@ -1,0 +1,393 @@
+﻿@{
+    ViewBag.Title = "转序化学检测";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("KeyValue");
+    var CYID = GetQuery("CYID");
+    var ModuleId = GetQuery("ModuleId");
+    $(function () {
+        InitControl();
+
+        SetEnter();
+        SetUpDown();
+    })
+
+    //回车切换
+    function SetEnter() {
+        //获取当前鼠标所在的焦点元素
+        var $inp = $("input:text");
+        $inp.bind('keydown', function (e) {
+            var key = e.which;
+            if (key == 13 || key == 108) {
+                var a = $(document.activeElement);
+                if ($(a).attr("enter") == "1") {
+                    e.preventDefault();
+                    var maxcode = $(a).attr("index");
+                    var maxcodenext = FloatAdd(maxcode, 1);
+                    $("#tbZJItem").find("input[index='" + maxcodenext + "'][enter='1']").focus().select();
+                }
+            }
+        });
+    }
+
+    //上下键切换
+    function SetUpDown() {
+        //获取当前鼠标所在的焦点元素
+        var $inp = $("input:text");
+        $inp.bind('keydown', function (e) {
+            var key = e.which;
+            if (key == 38 || key == 40) {
+                var a = $(document.activeElement);
+                if ($(a).attr("enter") == "1") {
+                    e.preventDefault();
+                    var maxcode = $(a).attr("index");
+                    var maxcodenext = key == 38 ? FloatSub(maxcode, 1) : FloatAdd(maxcode, 1);
+                    $("#tbZJItem").find("input[index='" + maxcodenext + "'][enter='1']").focus().select();
+                }
+            }
+        });
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJZXManager/ZJZXCYCHEMICAL/SetFormMain", { KeyValue: KeyValue, CYID: CYID }, function (data) {
+                SetWebControls(data);
+            });
+            LoadZJItem();
+            $("#ZJItemStatus").val("1");
+        }
+    }
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data.M[0]) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data.M[0][key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    //加载质检项目
+    function LoadZJItem() {
+        AjaxJson("/ZJZXManager/ZJZXCYCHEMICAL/LoadCHEZJItem?KeyValue=" + escape(KeyValue), "", function (data) {
+            if (IsNull(data)) {
+                var json = jQuery.parseJSON(data.Message);
+                LoadZJItemControls(json);
+            }
+        });
+    }
+
+    //循环加载化学质检项目
+    function LoadZJItemControls(json) {
+        var rowindex = 0;
+        var len = json.length;
+        var tr = '';
+        $.each(json, function (i, o) {
+            //var tr = '';
+            var index = i + 1;
+            if (index == 1 || (index > 2 && index % 2 == 1)) {
+                rowindex++;
+                tr += '<tr rowindex=' + rowindex + ' index=' + index + '>';
+            }
+            tr += '<th class="formTitle" style="white-space:pre-wrap">' + (o.ITEMNAME + "[" + (IsNull(o.UNIT) ? o.UNIT : "无单位") + "]") + '</th>';
+            tr += '<td class="formValue" id="name➩' + index + '" dbfield="true" index=' + index + ' enter="1">';
+            if (o.ZJVALUETYPENAME == "数值型") {
+                tr += '<input enter="1" rowindex=' + rowindex + ' index=' + index + ' id="' + o.ZJITEM + '" type="text" format="' + (IsNull(o.FORMAT) && o.FORMAT.indexOf('.') > 0 ? o.FORMAT.split('.')[1].length : "") + '" class="txt required" datacol="no" dbfield="true" err="' + o.ITEMNAME + '" value="' + (IsNull(o.ZJVALUE) ? o.ZJVALUE : "") + '" onfocus="IsMoneySubtract(this.id)" checkexpession="NotNull" />';
+            } else if (o.ZJVALUETYPENAME == "文本型") {
+                tr += '<select enter="1" rowindex=' + rowindex + ' index=' + index + ' id="' + o.ZJITEM + '" class="txtselect required" datacol="yes" err="' + o.ITEMNAME + '" checkexpession="NotNull">';
+                tr += '<option value="合格" ' + (o.ZJVALUE == "合格" ? "selected" : "") + '>合格</option>';
+                tr += '<option value="不合格" ' + (o.ZJVALUE == "不合格" ? "selected" : "") + '>不合格</option>';
+                tr += '</select>';
+            } else {
+                tr += '<input enter="1" rowindex=' + rowindex + ' index=' + index + ' id="' + o.ZJITEM + '" type="text" class="txt required" datacol="no" dbfield="true" err="' + o.ITEMNAME + '" value="' + (IsNull(o.ZJVALUE) ? o.ZJVALUE : "") + '" checkexpession="NotNull" />';
+            }
+            tr += '</td>';
+            tr += '<td class="formValue" id="result➩' + index + '" style="width:150px">';
+            //tr += '<input rowindex=' + rowindex + ' index=' + index + ' id="txtzjbz➩' + index + '" type="hidden" />';
+            tr += '<input rowindex=' + rowindex + ' index=' + index + ' id="ZJBZRESULT➩' + index + '" type="hidden" dbfield="true" value="' + (!IsNull(o.ZJBZRESULT) ? "" : o.ZJBZRESULT) + '"/>';
+            tr += '<input rowindex=' + rowindex + ' index=' + index + ' id="txtresult➩' + index + '" type="text" class="txt" value="' + (!IsNull(o.ZJBZRESULTNAME) ? "" : o.ZJBZRESULTNAME) + '" style="background-color:#dd7e6b" readonly="readonly" />';
+            tr += '</td>';
+            if (index == len || (index % 2 == 0)) {
+                tr += '</tr>';
+            }
+
+            $("#" + o.ZJITEM).live("blur", function () {
+                if (o.ZJVALUETYPENAME == "数值型" && IsNull(o.FORMAT) && o.FORMAT.indexOf('.') > 0) {
+                    if (!IsNull($(this).val())) {
+                        //$(this).val(FormatFloat("0.000000", o.FORMAT.split('.')[1].length));
+                    } else {
+                        $(this).val(FormatFloat($(this).val(), o.FORMAT.split('.')[1].length));
+                    }
+                }
+                var index = $(this).attr('index');
+                getAjax("/ZJZXManager/ZJZXCYCHEMICAL/ZXCHECheckZJBZ?ZJITEMNO=" + escape(o.ZJITEM) + "&ZJFA=" + escape(o.ZJFA) + "&ZJValue=" + escape($(this).val()), "", function (data) {
+                    var json = jQuery.parseJSON(data);
+                    $("#txtresult➩" + index).val(json.Message);
+                    $("#ZJBZRESULT➩" + index).val(json.Code);
+                });
+            })
+
+        })
+
+        $("#tbZJItem").append(tr);
+        $.each(json, function (i, list) {
+            if (list.ZJVALUETYPENAME == "数值型" && IsNull(list.FORMAT) && list.FORMAT.indexOf('.') > 0) {
+                TxtBandFocusBlurEvent(list.ZJITEM, list.FORMAT.split('.')[1].length);
+            }
+        })
+    }
+    function TxtBandFocusBlurEvent(txtid, type) {
+        $("#" + txtid).attr('maxlength', '10');
+        $("#" + txtid).focus(function () {
+            if ($("#" + txtid).val() == "0" || $("#" + txtid).val() == "0.000" || $("#" + txtid).val() == "0.00") {
+                $("#" + txtid).val("");
+            }
+        });
+    }
+
+    function FormatFloat(num, type) {
+        var stype = "100000".substr(0, parseInt(type) + 1);
+        num = num.toString().replace(/\$|\,/g, '');
+        if (isNaN(num))
+            num = "0";
+        sign = (num == (num = Math.abs(num)));
+        num = Math.floor(num * parseInt(stype) + 0.50000000001);
+        cents = num % parseInt(stype);
+        num = Math.floor(num / parseInt(stype)).toString();
+        while ((cents).toString().length < type) {
+            cents = "0" + cents;
+        }
+        for (var i = 0; i < Math.floor((num.length - (1 + i)) / 3) ; i++)
+            num = num.substring(0, num.length - (4 * i + 3)) + '' +
+                num.substring(num.length - (4 * i + 3));
+        return (((sign) ? '' : '-') + num + '.' + cents);
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if ($("#tbZJItem").find("tr").length <= 0) {
+            tipDialog("未发现质检项目", 3, 0);
+            tipCss($(this), "未发现质检项目");
+            return false;
+        }
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = jQuery.parseJSON('{"ZXCHEData":""}');
+            postData["ZXCHEData"] = GetTableDataJson("#tbZJItem");
+            postData["CHEMemo"] = $("#CHEMEMO").val();
+            AjaxJson("/ZJZXManager/ZJZXCYCHEMICAL/ZXCHESave?KeyValue=" + escape(KeyValue) + "&SaveType=UPDATE", postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames["tabs_iframe_" + ModuleId].windowload();
+                ThisCloseTab();
+            });
+        }, 200);
+    }
+    //铁水质检数据采集
+    function ZJCJ() {
+        AjaxJson("/ZJZXManager/ZJZXCYCHEMICALMoltenIron/ZJCJ?KeyValue=" + escape(CYID), "", function (data) {
+            if (data.Code == 1) {
+                var JSON = jQuery.parseJSON(data.Message);
+                $.each(JSON, function (i, o) {
+                    $("#" + o.ZJITEM).val(o.ZJVALUE);
+                    $("#" + o.ZJITEM).blur();
+                })
+            } else {
+                tipDialog(data.Message, 3, data.Code);
+            }
+        });
+    }
+    function GetTableDataJson(tableId) {
+        var item_Key_Value = "";
+        var index = 1;
+        var trjson = "";
+        if ($(tableId + " tbody tr").length > 0) {
+            $(tableId + " tbody tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[DBField=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    index = $(this).attr('index');
+                    tdjson += '{"id":"' + array[0] + '", "name"' + ':' + '"' + $.trim(pk_value) + '", "ZJBZRESULT"' + ':' + '"' + $.trim($("#ZJBZRESULT➩" + index).val()) + '", "ZJBZRESULTNAME"' + ':' + '"' + $.trim($("#txtresult➩" + index).val()) + '"},'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                //trjson += '{' + tdjson + '},';
+                trjson += '[' + tdjson + '],';
+            });
+        } else {
+            $(tableId + " tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[DBField=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    index = $(this).attr('index');
+                    //tdjson += '"' + array[0] + '"' + ':' + '"' + $.trim(pk_value) + '",'
+                    tdjson += '{"id":"' + array[0] + '", "name"' + ':' + '"' + $.trim(pk_value) + '", "ZJBZRESULT"' + ':' + '"' + $.trim($("#ZJBZRESULT➩" + index).val()) + '", "ZJBZRESULTNAME"' + ':' + '"' + $.trim($("#txtresult➩" + index).val()) + '"},'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                trjson += '[' + tdjson + '],';
+            });
+        }
+        trjson = trjson.substr(0, trjson.length - 1);
+        if (trjson == '[]') {
+            trjson = "";
+        }
+        //return '[' + trjson + ']';
+        return trjson;
+    }
+
+</script>
+<form id="form1" style="margin: 1px">
+    <input id="MaxID" type="hidden" value="0" />
+    <input id="ZJItemStatus" type="hidden" value="0" />
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a> <a id="button_Commit_CJ" title="质检数据采集" onclick="ZJCJ()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    质检数据采集
+                </b>
+            </span>
+        </a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    <div id="PCRAWCYCHESICAL">
+        <div id="RuleHead">
+            <table class="form">
+                <tr style="display: none">
+                    <th class="formTitle">
+                        批号：
+                    </th>
+                    <td class="formValue">
+                        <input id="BILLNO" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                               datacol="yes" dbfield="true" err="批号" checkexpession="NotNull" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">
+                        条码：
+                    </th>
+                    <td class="formValue">
+                        <input id="PRINTCODE" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                               datacol="yes" dbfield="true" err="条码" checkexpession="NotNull" />
+                    </td>
+                    <th class="formTitle">
+                        日期：
+                    </th>
+                    <td class="formValue">
+                        <input id="CYDATE" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                               datacol="yes" dbfield="true" err="日期" checkexpession="NotNull" />
+                    </td>
+                    <th class="formTitle">
+                        物料：
+                    </th>
+                    <td class="formValue">
+                        <input id="MATERIAL" type="hidden" dbfield="true" />
+                        <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" err="物料" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">
+                        制单日期：
+                    </th>
+                    <td class="formValue">
+                        <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                               err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+                    </td>
+                    <th class="formTitle">
+                        制单人：
+                    </th>
+                    <td class="formValue">
+                        <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                               err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+                    </td>
+                    <th class="formTitle">
+                    </th>
+                    <td class="formValue"></td>
+                </tr>
+                <tr style="display:none">
+                    <th class="formTitle">
+                        质检备注：
+                    </th>
+                    <td class="formValue" colspan="5">
+                        <input id="CHEMEMO" type="text" class="txt " err="质检备注" dbfield="true" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="bd" style="border: none; margin-bottom: 1px;">
+            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                <div class="tab_list_top" style="position: absolute">
+                    <div id="TabToolbar" class="tab_list bd actived" onclick="Tabchange('ZJItem')">
+                        检测项目
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ScrollBar" style="overflow: hidden">
+            <div id="ZJItem" class="tabPanel" style="display: block;">
+                <table id="tbZJItem" class="form"></table>
+            </div>
+        </div>
+    </div>
+</form>

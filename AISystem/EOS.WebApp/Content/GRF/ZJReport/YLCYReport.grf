@@ -1,0 +1,276 @@
+﻿Object Report
+	Version='6.6.2.0'
+	Title='主产品销售逐车明细'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		LeftMargin=1
+		TopMargin=0.5
+		RightMargin=1
+		BottomMargin=0.5
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=eosine123;User ID=c##sgeos;Data Source=192.168.142.198/orcl'
+			QuerySQL='select CARSNAME,MATERIALNAME,DEF5,CYUSER,CYUSER1,count(1) CARSNUM from VBD_PCRAWCYDETAILS\r\ngroup by CARSNAME,MATERIALNAME,DEF5,CYUSER,CYUSER1'
+			Items Field
+				Item
+					Name='CARSNAME'
+				End
+				Item
+					Name='MATERIALNAME'
+				End
+				Item
+					Name='DEF5'
+				End
+				Item
+					Name='CYUSER'
+				End
+				Item
+					Name='CYUSER1'
+				End
+				Item
+					Name='CARSNUM'
+					Type=Float
+				End
+			End
+		End
+		Items Column
+			Item
+				Name='CARSNAME'
+			End
+			Item
+				Name='MATERIALNAME'
+			End
+			Item
+				Name='DEF5'
+				Width=3.38667
+			End
+			Item
+				Name='CYUSER'
+				Width=2.40771
+			End
+			Item
+				Name='CYUSER1'
+				Width=2.40771
+			End
+			Item
+				Name='CARSNUM'
+				Width=1.79917
+			End
+		End
+		Object ColumnContent
+			CanGrow=T
+			Height=0.608542
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Items ColumnContentCell
+				Item
+					Column='CARSNAME'
+					TextAlign=MiddleCenter
+					DataField='CARSNAME'
+				End
+				Item
+					Column='MATERIALNAME'
+					TextAlign=MiddleCenter
+					DataField='MATERIALNAME'
+				End
+				Item
+					Column='DEF5'
+					TextAlign=MiddleCenter
+					DataField='DEF5'
+				End
+				Item
+					Column='CYUSER'
+					TextAlign=MiddleCenter
+					DataField='CYUSER'
+				End
+				Item
+					Column='CYUSER1'
+					TextAlign=MiddleCenter
+					DataField='CYUSER1'
+				End
+				Item
+					Column='CARSNUM'
+					TextAlign=MiddleCenter
+					DataField='CARSNUM'
+				End
+			End
+		End
+		Object ColumnTitle
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Bold=T
+				Charset=134
+			End
+			Items ColumnTitleCell
+				Item
+					GroupTitle=F
+					Column='CARSNAME'
+					TextAlign=MiddleCenter
+					Text='车号'
+				End
+				Item
+					GroupTitle=F
+					Column='MATERIALNAME'
+					TextAlign=MiddleCenter
+					Text='物料'
+				End
+				Item
+					GroupTitle=F
+					Column='DEF5'
+					TextAlign=MiddleCenter
+					Text='检验批'
+				End
+				Item
+					GroupTitle=F
+					Column='CYUSER'
+					TextAlign=MiddleCenter
+					Text='采样人甲'
+				End
+				Item
+					GroupTitle=F
+					Column='CYUSER1'
+					TextAlign=MiddleCenter
+					Text='采样人乙'
+				End
+				Item
+					GroupTitle=F
+					Column='CARSNUM'
+					TextAlign=MiddleCenter
+					Text='车数'
+				End
+			End
+		End
+		Items Group
+			Item
+				Name='Group1'
+				Object GroupHeader
+					Height=0
+				End
+				Object GroupFooter
+					Height=0.608542
+					RepeatOnPage=T
+					Items Control
+						Item
+							Type=SummaryBox
+							Name='SummaryBox1'
+							AlignColumn='CARSNUM'
+							Left=14.1817
+							Width=1.82563
+							Height=0.608542
+							Object Border
+								Styles=[DrawLeft|DrawBottom]
+							End
+							TextAlign=MiddleCenter
+							DataField='CARSNUM'
+						End
+						Item
+							Type=MemoBox
+							Name='MemoBox1'
+							AlignColumn='CARSNAME'
+							AlignColumnEx='CYUSER1'
+							Width=14.2081
+							Height=0.608542
+							Object Border
+								Styles=[DrawLeft|DrawBottom]
+							End
+							Object Font
+								Name='宋体'
+								Size=105000,0
+								Bold=T
+								Charset=134
+							End
+							TextAlign=MiddleCenter
+							Text='合计：'
+						End
+					End
+				End
+			End
+		End
+	End
+	Object PageHeader
+		Height=0
+	End
+	Items Parameter
+		Item
+			Name='title'
+		End
+		Item
+			Name='start_Date'
+		End
+		Item
+			Name='end_Date'
+		End
+		Item
+			Name='Query'
+		End
+	End
+	Items ReportHeader
+		Item
+			Height=1.79917
+			Items Control
+				Item
+					Type=MemoBox
+					Name='至'
+					Left=3.54542
+					Top=1.05833
+					Width=0.582083
+					Height=0.582083
+					Text='至'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox4'
+					Left=-0.0264583
+					Top=1.05833
+					Width=2.69875
+					Height=0.608542
+					Parameter='start_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox5'
+					Left=4.1275
+					Top=1.05833
+					Width=4.39208
+					Height=0.635
+					Parameter='end_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox14'
+					Left=0.211667
+					Top=0.211667
+					Width=18.3885
+					Height=0.79375
+					Object Font
+						Name='宋体'
+						Size=180000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Text='逐车明细表'
+					Parameter='title'
+				End
+			End
+		End
+	End
+End

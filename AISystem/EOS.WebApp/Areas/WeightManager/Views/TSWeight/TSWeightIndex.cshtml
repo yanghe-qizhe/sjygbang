@@ -1,0 +1,207 @@
+﻿@{
+    ViewBag.Title = "铁水磅单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+            var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var STOVENUM = $("#STOVENUM").val();
+        var BillNo=$("#BillNo").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/WeightManager/TSWeight/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&STOVENUM=' +escape(STOVENUM)+"&BillNo="+BillNo, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/WeightManager/TSWeight/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime  ,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '过磅单号', name: 'BILLNO', width: 130, align: 'left' },
+
+                    { label: '炉号', name: 'STOVENUM', index: 'STOVENUM', width: 100, align: 'center' },
+                { label: '罐号', name: 'CARNUM', index: 'CARNUM', width: 100, align: 'center' },
+                { label: '收货单位', name: 'ACCEPTUNITNAME', index: 'ACCEPTUNITNAME', width: 120, align: 'left' },
+                { label: '发货单位', name: 'SENDUNITNAME', index: 'SENDUNITNAME', width: 150, align: 'left' },
+                 
+                  { label: '物料', name: 'STANDNAME', index: 'STANDNAME', width: 150, align: 'left' },
+                   
+                { label: '毛重', name: 'MAOAMOUNT', index: 'MAOAMOUNT', width: 60, align: 'center' },
+                 { label: '皮重', name: 'PIAMOUNT', index: 'PIAMOUNT', width: 60, align: 'center' },
+                { label: '实际重量', name: 'FACTAMOUNT', index: 'FACTAMOUNT', width: 60, align: 'center' },
+                  { label: '扣减', name: 'KOUAMOUNT', index: 'KOUAMOUNT', width: 60, align: 'center' },
+                           { label: '预到量', name: 'CALCAMOUNT', index: 'CALCAMOUNT', width: 60, align: 'center' },
+                
+                { label: '计划单号', name: 'PK_EID', width: 120, align: 'center' },
+                {
+                    label: '毛重时间', name: 'MAOTIME', index: 'MAOTIME', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                {
+                    label: '皮重时间', name: 'PITIME', index: 'PITIME', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },  
+
+                { label: '称重点', name: 'WEIGHTSTATION', index: 'WEIGHTSTATION', width: 120, align: 'left' } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'BillNo',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+ 
+        });
+        
+    }
+      
+     //新增
+    function btn_add() {
+        AddTabMenu("WeightInForm", "@Url.Content("~/WeightManager/TSWeight/TSWeightForm")?op=add&ModuleId="+ModuleId, "新增铁水转序计量单", "page_white_add.png", true, true, true);
+    }
+       //新增
+    function btn_batchadd() {
+        AddTabMenu("WeightInForm", "@Url.Content("~/WeightManager/TSWeight/TSWeight_Form")?op=add&ModuleId="+ModuleId, "批量新增铁水转序计量单", "page_white_add.png", true, true, true);
+    }
+    
+ 
+   function btn_copy() {
+           var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+                AddTabMenu("WeightInForm", "@Url.Content("~/WeightManager/TSWeight/TSWeightForm")?op=add&KeyValue=" + KeyValue+"&ModuleId="+ModuleId, "新增铁水转序计量单", "page_white_add.png", true, true, true);
+        }
+    }
+    //编辑
+    function btn_edit() {
+           var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+                AddTabMenu("WeightInForm", "@Url.Content("~/WeightManager/TSWeight/TSWeightForm")?op=edit&KeyValue=" + KeyValue+"&ModuleId="+ModuleId, "编辑铁水转序计量单", "page_white_edit.png", true, true, true);
+        }
+    }
+
+
+   
+      //作废
+    function btn_Invalid(){
+     confirmDialog('提示', '注：您确认要作废此操作吗？', function (r) {
+            if (r) {
+               var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/WeightManager/TSWeight/InvalidOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+            }
+          });
+    }
+ 
+
+  function btn_query() {
+        QueryDialog("/WeightManager/TSWeight/TSWeightQuery", "TSWeightQuery", "查询过滤",350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/WeightManager/TSWeight/GetOrderList")?action=query" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+    
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    @*  <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>*@
+    <div style="margin-top: 1px; margin-bottom: 0px" class="tools_bar">
+        <div class="PartialButton">
+            <a id="lr-query" class="tools_btn" title="查找" onclick="btn_query()"><span><b style="background: url(../../Content/Images/Icon16/page_white_magnify.png) no-repeat 50% 4px">
+                查找</b></span></a> <a id="ai-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+                    <span><b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                        刷新</b></span></a>
+            <div class="tools_separator">
+            </div>    <a id="ai-add" class="tools_btn" title="批量补增" onclick="btn_batchadd()"><span><b
+                style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">批量补增</b></span></a>
+            <a id="ai-add" class="tools_btn" title="补增(Ctrl+Z)" onclick="btn_add()"><span><b
+                style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">补增</b></span></a>
+                   <a id="ai-copy" class="tools_btn" title="复制" onclick="btn_copy()"><span><b style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">
+                复制</b></span></a>
+             <a id="ai-edit" class="tools_btn" title="参照(Ctrl+W)" onclick="btn_edit()">
+                    <span><b style="background: url(../../Content/Images/Icon16/edit.gif) no-repeat 50% 4px">
+                        参照</b></span></a><a id="lr-delete" class="tools_btn" title="作废(Ctrl+S)" onclick="btn_Invalid()"><span><b
+                            style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">作废</b></span></a>
+            <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()"><span><b
+                style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                离开</b></span></a></div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    过磅单号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    炉号：
+                </th>
+                <td>
+                    <input id="STOVENUM" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    创建日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

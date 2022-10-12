@@ -1,0 +1,444 @@
+﻿@{
+    ViewBag.Title = "汽运到货单";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var json = [
+        { val: '40001000000000000000', txt: 'Ton' },
+        { val: '40002000000000000000', txt: 'KG' },
+        { val: '00000000000000000001', txt: 'PC', selected: true }
+    ];
+
+    var json1 = [
+         { val: '1', txt: '1' },
+        { val: '1000', txt: '1000' }
+    ];
+
+
+    $(function () {
+        GetGrid();
+        BindAutocomplete("DEPNAME", "PK_DEPT", "Department", "", "");
+        BindAutocomplete("PK_SUPPLIERNAME", "PK_SUPPLIER", "Supply", "", "", "");
+        BindAutocomplete("PK_ORGNAME", "PK_ORG", "Company", "", "", "");
+
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ExampleModule/POOrder/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+
+                    $("#CROWNO➩" + rowindex).val(rowData.CROWNO);
+                    $("#PK_ORDER➩" + rowindex).val(rowData.PK_ORDER);
+                    $("#PK_ORDER_B➩" + rowindex).val(rowData.PK_ORDER_B);
+
+                    $("#PK_MATERIAL➩" + rowindex).val(rowData.PK_MATERIAL);
+                    $("#PK_MATERIALNAME➩" + rowindex).val(rowData.PK_MATERIALNAME);
+                    $("#MATERIALSPEC➩" + rowindex).val(rowData.MATERIALSPEC);
+                    $("#MATERIALCODE➩" + rowindex).val(rowData.MATERIALCODE);
+                    $("#PURUNITNAME➩" + rowindex).val(rowData.PURUNITNAME);
+                    $("#PURUNITID➩" + rowindex).val(rowData.PURUNITID);
+                    $("#NASTNUM➩" + rowindex).val(rowData.NASTNUM);
+                    $("#SECPURUNITNAME➩" + rowindex).val(rowData.SECPURUNITNAME);
+                    $("#SECPURUNITID➩" + rowindex).val(rowData.SECPURUNITID);
+                    $("#SECQUANTITY➩" + rowindex).val(rowData.SECQUANTITY);
+                    $("#NPRICE➩" + rowindex).val(rowData.NPRICE);
+
+                    $("#NQTUNITNUM➩" + rowindex).val(rowData.NQTUNITNUM);
+                    $("#CQTUNITID➩" + rowindex).val(rowData.CQTUNITID);
+                    $("#RECCOMPANYNAME➩" + rowindex).val(rowData.RECCOMPANYNAME);
+                    $("#RECCOMPANYID➩" + rowindex).val(rowData.RECCOMPANYID);
+
+                    $("#DEF5➩" + rowindex).val(rowData.DEF5);
+
+                    $("#BARRIVECLOSE➩" + rowindex).val(rowData.BARRIVECLOSE);
+                    rowindex++;
+                });
+
+            });
+        }
+    })
+
+    /*明细begin=======================================*/
+    //订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 270,
+            autowidth: true,
+            colModel: [
+               { label: '行号', name: 'CROWNO', index: 'CROWNO', width: 80, align: 'center' },
+                { label: 'PK_ORDER', name: 'PK_ORDER', index: 'PK_ORDER', hidden: true },
+                 { label: '物料内码', name: 'MATERIALCODE', index: 'MATERIALCODE', width: 100, align: 'center' },
+                  { label: '物料', name: 'PK_MATERIALNAME', index: 'PK_MATERIALNAME', width: 150, align: 'center' },
+                   { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'center' },
+                   { label: '主计量', name: 'PURUNITNAME', index: 'PURUNITNAME', width: 60, align: 'center', hidden: true },
+                  { label: '主数量', name: 'NASTNUM', index: 'NASTNUM', width: 60, align: 'center', hidden: true },
+                  { label: '辅计量', name: 'SECPURUNITNAME', index: 'SECPURUNITNAME', width: 50, align: 'center' },
+                  { label: '辅数量', name: 'SECQUANTITY', index: 'SECQUANTITY', width: 60, align: 'center' },
+                 { label: '每', name: 'NQTUNITNUM', index: 'NQTUNITNUM', width: 60, align: 'center' },
+                { label: '价格单位', name: 'CQTUNITID', index: 'CQTUNITID', width: 60, align: 'center' },
+                  { label: '单价', name: 'NPRICE', index: 'NPRICE', width: 60, align: 'center' },
+                 { label: '工厂', name: 'RECCOMPANYNAME', index: 'RECCOMPANYNAME', width: 100, align: 'center' },
+                { label: 'BARRIVECLOSE', name: 'BARRIVECLOSE', index: 'BARRIVECLOSE', hidden: true },
+            { label: '备注', name: 'DEF5', index: 'DEF5', width: 100, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+        var rowno = 10;
+        for (var rowindex = 1; rowindex < 51; rowindex++) {
+            var rowdata = {
+                CROWNO: '<input id="CROWNO➩' + rowindex + '"  class="editable left"   type="text" value="' + rowno + '" />',
+                PK_ORDER: '<input id="PK_ORDER➩' + rowindex + '" type="hidden" value="" /><input id="PK_ORDER_B➩' + rowindex + '" type="text" value="" /><input id="DEF1➩' + rowindex + '" type="text" value="" /><input id="DEF2➩' + rowindex + '" type="text" value="" />',
+                MATERIALCODE: '<input readonly id="MATERIALCODE➩' + rowindex + '" class="editable disabled center"  type="text" value="" /><input id="PK_MATERIAL➩' + rowindex + '" type="hidden" value="" />',
+                PK_MATERIALNAME: '<input id="PK_MATERIALNAME➩' + rowindex + '"  class="editable center" type="text" value=""/>',
+                MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + rowindex + '" class="editable disabled center"  type="text" value="" />',
+                PURUNITNAME: '<input id="PURUNITNAME➩' + rowindex + '" class="editable center" type="text" value="KG"/><input id="PURUNITID➩' + rowindex + '" type="hidden" value="40002000000000000000" />',
+                NASTNUM: '<input id="NASTNUM➩' + rowindex + '" class="editable decimal center" type="text"  style="cursor:pointer"  value="0"/>',
+                SECPURUNITNAME: '<input id="SECPURUNITNAME➩' + rowindex + '"  class="editable center" type="text" value="KG"/><input id="SECPURUNITID➩' + rowindex + '" type="hidden" value="40002000000000000000" />',
+                SECQUANTITY: '<input id="SECQUANTITY➩' + rowindex + '" class="editable decimal center" type="text" style="cursor:pointer"  value="0"/>',
+                NQTUNITNUM: '<input id="NQTUNITNUM➩' + rowindex + '"  class="editable center" type="text" value="0"/>',
+                CQTUNITID: '<input id="CQTUNITID➩' + rowindex + '" class="editable center" type="text" value=""/>',
+                NPRICE: '<input id="NPRICE➩' + rowindex + '" class="editable center" type="text"  style="cursor:pointer"  value="0"/>',
+                RECCOMPANYNAME: '<input id="RECCOMPANYNAME➩' + rowindex + '"  class="editable center" type="text" value=""/><input id="RECCOMPANYID➩' + rowindex + '" type="hidden" value="" />',
+                BARRIVECLOSE: '<input id="BARRIVECLOSE➩' + rowindex + '" type="hidden" value="" />',
+                DEF5: '<input id="DEF5➩' + rowindex + '" class="editable center" type="text" value=""/>',
+            }
+            $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+            BindJSONAutocomplete(json, "SECPURUNITNAME➩" + rowindex, "SECPURUNITID➩" + rowindex, "", "");
+            BindJSONAutocomplete(json, "PURUNITNAME➩" + rowindex, "PURUNITID➩" + rowindex, "", "");
+            BindJSONAutocomplete1(json1, "NQTUNITNUM➩" + rowindex, "", "");
+            MateilAutocomplete(rowindex);
+            BindAutocomplete("RECCOMPANYNAME➩" + rowindex, "RECCOMPANYID➩" + rowindex, "Company1", "", "", "");
+            rowno++;
+        }
+
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+    }
+
+    /*选择物料明细end=======================================*/
+
+    function MateilAutocomplete(i) {
+
+        var txtname = "PK_MATERIALNAME➩" + i;
+        var $txtid = $("#PK_MATERIAL➩" + i);
+        var $txtname = $("#PK_MATERIALNAME➩" + i);
+        var $txtcode = $("#MATERIALCODE➩" + i);
+        var $txtspec = $("#MATERIALSPEC➩" + i);
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                if (this.value == "") {
+                    $txtid.val("");
+                    $txtcode.val("");
+                    $txtspec.val("");
+                }
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtcode.val(data.code);
+            $txtname.val(data.name);
+            $txtspec.val(data.materialspec);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    var datatypename = "自建";
+                    if (DataJson[i].datatype == "1") {
+                        datatypename = "SAP";
+                    }
+                    if (DataJson[i].datatype == "2") {
+                        datatypename = "BI";
+                    }
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 60%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="materialspec" style="width: 30%;">' + (DataJson[i].materialspec != null ? DataJson[i].materialspec : "") + '</td>';
+                    html += '<td id="datatype" style="width: 10%;">' + datatypename + '</td>';
+                    html += "</tr>";
+
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtcode.val(data.code);
+                    $txtname.val(data.name);
+                    $txtspec.val(data.materialspec);
+                });
+            });
+        }
+    }
+
+    function BINDTXTAutocomplete(DataJson, txtname, width, height) {
+        var $txtname = $("#" + txtname);
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource(DataJson);
+                }
+            }
+        }).focus(function () {
+            DataSource(DataJson);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $("#" + txtname).val(data.name)
+        });
+        //获取数据源
+        function DataSource(DataJson) {
+            var html = "";
+            $.each(DataJson, function (i) {
+                html += "<tr>";
+                html += '<td id="name" style="width: 100%;">' + DataJson[i].txt + '</td>';
+                html += "</tr>";
+            });
+            //点击事件回调
+            autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                $("#" + txtname).val(data.name)
+            });
+
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/POORDER/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                $("#PURORDERID").val(data.PURORDERID);
+                $("#DEF5").val(data.DEF5);
+                $("#BILLTYPE").val(data.BILLTYPE);
+                $("#FORDERSTATUS").val(data.FORDERSTATUS);
+                $("#DATATYPE").val(data.DATATYPE);
+                $("#PK_ORDER").val(data.PK_ORDER);
+                $("#VBILLCODE").val(data.VBILLCODE);
+                $("#SOURCEBILLNO").val(data.VBILLCODE);
+                $("#DBILLDATE").val(data.DBILLDATE);
+                $("#PK_ORG").val(data.PK_ORG);
+                $("#PK_ORGNAME").val(data.PK_ORGNAME);
+                $("#PK_DEPT").val(data.PK_DEPT);
+                $("#DEPNAME").val(data.DEPNAME);
+                $("#PK_SUPPLIER").val(data.PK_SUPPLIER);
+                $("#PK_SUPPLIERNAME").val(data.PK_SUPPLIERNAME);
+                $("#BILLTYPE").val(data.BILLTYPE);
+                $("#CREATIONTIME").val(data.CREATIONTIME);
+                $("#CREATOR").val(data.CREATOR);
+                $("#VMEMO").val(data.VMEMO);
+            });
+        }
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/ExampleModule/POORDER/SubmitOrderFormAdd?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+</script>
+<form id="form1" style="margin: 1px">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    <table id="tb_OrderFrom" class="form">
+        <tr>
+            <th class="formTitle">
+                订单编号：
+            </th>
+            <td class="formValue">
+                <input name="PURORDERID" id="PURORDERID" type="hidden" />
+                <input name="DEF5" id="DEF5" type="hidden" />
+                <input id="FORDERSTATUS" type="hidden" value="0" />
+                <input id="DATATYPE" type="hidden" value="0" />
+                <input id="PK_ORDER" type="hidden" />
+                <input id="VBILLCODE" maxlength="50" type="text" class="txt" datacol="yes" err="订单编号"
+                       checkexpession="NotNull" value="@ViewBag.BillNo" />
+            </td>
+            <th class="formTitle">
+                业务日期：
+            </th>
+            <td class="formValue">
+                <input id="DBILLDATE" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                       err="业务日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </td>
+            <th class="formTitle">
+                采购公司：
+            </th>
+            <td class="formValue">
+                <input name="PK_ORG" id="PK_ORG" type="hidden" />
+                <input id="PK_ORGNAME" type="text" class="txt" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                提货单号：
+            </th>
+            <td class="formValue">
+                <input id="SOURCEBILLNO" type="text" class="txt" datacol="yes"
+            </td>
+            <th class="formTitle">
+                供应商：
+            </th>
+            <td class="formValue">
+                <input name="PK_SUPPLIER" id="PK_SUPPLIER" type="hidden" />
+                <input id="PK_SUPPLIERNAME" type="text" class="txt" datacol="yes" err="供应商" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                采购部门：
+            </th>
+            <td class="formValue">
+                <input name="PK_DEPT" id="PK_DEPT" type="hidden" />
+                <input id="DEPNAME" maxlength="50" type="text" class="txt" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                订单类型：
+            </th>
+            <td class="formValue">
+                <select id="BILLTYPE" class="txt select">
+                    <option value="">===请选择===</option>
+                    <option value="YG01">标准采购订单</option>
+                    <option value="YG02">固定资产采购订单</option>
+                    <option value="YG03">寄售采购订单</option>
+                    <option value="YG04">委外维修采购订单</option>
+                    <option value="YG05">成本中心采购订单</option>
+                    <option value="YG06">内部订单采购订单</option>
+                    <option value="YG07">价格后置采购订单</option>
+                    <option value="YG08">免费采购订单</option>
+                    <option value="YG09">退货采购订单</option>
+                    <option value="YG10">公司间采购订单</option>
+                    <option value="YG11">基建采购订单</option>
+                    <option value="YG12">试用采购订单</option>
+                    <option value="YG13">项目采购订单</option>
+                    <option value="YG15">生产订单</option>
+                    <option value="YG16">散件订单</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                制单时间：
+            </th>
+            <td class="formValue">
+                <input id="CREATIONTIME" type="text" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" class="txt readonly" readonly="readonly" datacol="yes" err="制单时间" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                制单人：
+            </th>
+            <td class="formValue">
+                <input id="CREATOR" type="text" class="txt" datacol="No"
+                       err="制单人" checkexpession="NotNull" value="@ViewBag.CreateUserName" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                备注：
+            </th>
+            <td class="formValue" colspan="5">
+                <input id="VMEMO" name="VMEMO" type="text" class="txt" />
+            </td>
+        </tr>
+    </table>
+    <div class="bd" style="border-bottom: none; margin: 2px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                    明细信息
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+        <!--拼单信息-->
+        <div id="order" class="tabPanel">
+            <table id="gridTable"></table>
+            <style>
+                .ui-widget-content {
+                    border-left: none;
+                }
+
+                .ui-jqgrid tr.ui-row-ltr td {
+                    padding: 0px;
+                    border-bottom: 1px solid #ccc;
+                }
+
+                .ui-jqgrid .ui-jqgrid-htable th {
+                    line-height: 15px;
+                }
+
+                    .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+                        background: none;
+                    }
+
+                .editable {
+                    height: 22px;
+                    background-color: #fff;
+                }
+            </style>
+        </div>
+    </div>
+</form>

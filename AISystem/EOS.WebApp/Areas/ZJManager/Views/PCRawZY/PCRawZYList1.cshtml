@@ -1,0 +1,482 @@
+﻿@{
+    ViewBag.Title = "原煤制样管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var PCRAWTYPE = GetQuery('PCRAWTYPE');
+    CreateReport("Report");
+    $(function () {
+        $("#Report").css("display", "none");
+        BindAutocomplete("ORGNAME", "PK_ORG", "Company", "200", "150", "");
+        GetGrid();
+        setTimeout(function () {
+            Report.LoadFromURL(RootPath() + "/Content/GRF/ReportView/PrintCode1.grf");
+        }, "500");
+    });
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BILLNO = $("#BILLNO").val();
+        var PRINTCODE = $("#PRINTCODE").val();
+       
+        var TYPE = $("#TYPE").val();
+        var DEF6 = $("#DEF6").val();
+        var MATERIALNAME = $("#MATERIALNAME").val();
+        var MATERIALSPEC = $("#MATERIALSPEC").val();
+        var CYTYPE = $("#CYTYPE").val();
+        var ZYUSER = $("#ZYUSER").val();
+        var PK_ORG = $("#PK_ORG").val();
+        var DEF1 = $("#DEF1").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJManager/PCRawZY/GetPCRawZYList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&BILLNO=' + escape(BILLNO) + '&PRINTCODE=' + escape(PRINTCODE) +  "&TYPE=" + TYPE + '&DEF6=' + DEF6 + '&MATERIALNAME=' + escape(MATERIALNAME) + "&PCRAWTYPE=" + PCRAWTYPE + "&CYTYPE=" + CYTYPE + "&ZYUSER=" + escape(ZYUSER) + "&PK_ORG=" + PK_ORG + "&CQDEF1=" + DEF1, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var ISSEND = $("#ISSEND").val();
+        var TYPE = $("#TYPE").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJManager/PCRawZY/GetPCRawZYList")?StartTime=" + StartTime + '&EndTime=' + EndTime + "&ISSEND=" + ISSEND + "&TYPE=" + TYPE + "&PCRAWTYPE=" + PCRAWTYPE,
+            datatype: "json",
+            height: $(window).height() - 180,
+            autowidth: true,
+            colModel: [
+                  { label: 'ID', name: 'ID', index: 'ID', width: 180, align: 'left', align: 'center', hidden: true },
+                  { label: '采样单号', name: 'BILLNO', index: 'BILLNO', width: 110, align: 'left', align: 'center' },
+                 { label: '制样单号', name: 'PRINTCODE', index: 'PRINTCODE', width: 160, align: 'left', align: 'center' },
+                 {
+                     label: '状态', name: 'TYPENAME', index: 'TYPENAME', width: 80, align: 'center',
+                     formatter: function (cellvalue, options, rowObject) {
+                         if (cellvalue == '1') return "<span style='color:red;font-size:18px'>采样</span>";
+                         if (cellvalue == '4') return "<span style='color:green;font-size:18px'>制样</span>";
+                         if (cellvalue == '5') return "<span style='color:green;font-size:18px'>化验</span>";
+                     }
+                 },
+//                {
+//                    label: '送检状态', name: 'ISSEND', index: 'ISSEND', width: 80, align: 'center',
+//                    formatter: function (cellvalue, options, rowObject) {
+//                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未送检</span>";
+//                        if (cellvalue == '1') return "<span style='color:green;font-size:15px'>已送检</span>";
+//                    }
+//                },
+                { label: 'MATERIAL', name: 'MATERIAL', index: 'MATERIAL', hidden: true },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 130, align: 'center' },
+                { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'center' },
+                 { label: '扣杂', name: 'SUMKZ', index: 'SUMKZ', width: 60, align: 'center' },
+                 { label: '混样桶', name: 'ZYBUCKETNAME', index: 'ZYBUCKETNAME', width: 110, align: 'center' },
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 100, align: 'center' },
+                { label: '交样人甲', name: 'JYUSER', index: 'JYUSER', width: 80, align: 'center' },
+                 { label: '交样人乙', name: 'JYUSER1', index: 'JYUSER1', width: 80, align: 'center' },
+                 { label: '接样人甲', name: 'SYUSER', index: 'SYUSER', width: 80, align: 'center' },
+                { label: '接样人乙', name: 'SYUSER1', index: 'SYUSER1', width: 80, align: 'center' },
+                {
+                    label: '交接日期', name: 'JYDATE', index: 'JYDATE', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '制样人', name: 'DEF14', index: 'DEF14', width: 100, align: 'center' },
+                { label: '制样日期', name: 'DEF15', index: 'DEF15', width: 110, align: 'center' },
+//                { label: '送检人', name: 'SENDUSER', index: 'SENDUSER', width: 100, align: 'center' },
+//                {
+//                    label: '送检日期', name: 'SENDTIME', index: 'SENDTIME', width: 110, align: 'center',
+//                    formatter: function (cellvalue, options, rowObject) {
+//                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+//                    }
+//                },
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 100, align: 'center' },
+                 { label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center' },
+                { label: '异型卡序号', name: 'DEF6', index: 'DEF6', width: 110, align: 'center' },
+                { label: '异型卡编号', name: 'DEF7', index: 'DEF7', width: 110, align: 'center' },
+                { label: '打印次数', name: 'PRINTCOUNT', index: 'PRINTCOUNT', width: 80, align: 'center' },
+                {
+                    label: '采样类型', name: 'CYTYPE', index: 'CYTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:18px'>正常样</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:18px'>平均样</span>";
+                    }
+                },
+            { label: '入厂厂区', name: "CQDEF1", width: 100, sortable: false, align: 'center' ,
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1000')
+                        return "阳光纸业";
+                    else if (cellvalue == '6000')
+                        return "盛世热电";
+                    else if (cellvalue == '7000')
+                        return "新迈纸业";
+                    else if (cellvalue == '8000')
+                        return "阳光王子";
+                    else if (cellvalue == '9000')
+                        return "华迈纸业";
+                    else if (cellvalue == '9010')
+                        return "科迈制浆";
+                             else
+                             return "";
+                }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            multiselect: true,//复选框
+            multiboxonly: true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'DEF15',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        columnModelData("#gridTable");
+    }
+
+
+
+
+
+    //交接制样
+    function Finish() {
+        var url = "/ZJManager/PCRawZY/SelectJYCYData?ModuleId=" + ModuleId + "&PCRAWTYPE=" + PCRAWTYPE;
+        Dialog(url, "SelectJYCYData", "交接制样单", 900, 400);
+    }
+
+    //交接制样
+    function Finish1() {
+        var url = "/ZJManager/PCRawZY/SelectJYCYSGData?ModuleId=" + ModuleId + "&PCRAWTYPE=" + PCRAWTYPE;
+        Dialog(url, "SelectJYCYSGData", "交接制样单", 950, 450);
+    }
+
+    //送检
+    function SendCheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsNull(KeyValue)) {
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + KeyValue + '\"}');
+            AjaxJson("/ZJManager/PCRawZY/CheckCYData", postData, function (data) {
+                if (IsNull(data) && IsNull(data.Code)) {
+                    tipDialog(data.Message, 3, data.Code);
+                    windowload();
+                }
+            });
+        } else {
+            tipDialog('请至少选择一个批次', 4, 'warning');
+        }
+    }
+    //送检
+    function SendCheck1() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsNull(KeyValue)) {
+            var url = "/ZJManager/PCRawZY/PCRawZYSJForm?ModuleId=" + ModuleId + "&KeyValue=" + KeyValue;
+            Dialog(url, "PCRawZYSJForm", "制样送检", 500, 400);
+        } else {
+            tipDialog('请至少选择一个批次', 4, 'warning');
+        }
+    }
+    //取消送检
+    function UNSendCheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsNull(KeyValue) && KeyValue.indexOf(',') < 0) {
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + KeyValue + '\"}');
+            AjaxJson("/ZJManager/PCRawZY/UNSendCheck", postData, function (data) {
+                if (IsNull(data) && IsNull(data.Code)) {
+                    tipDialog(data.Message, 3, data.Code);
+                    windowload();
+                }
+            });
+        } else {
+            tipDialog('请选择一个批次', 4, 'warning');
+        }
+    }
+
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("PCRawZYForm", "@Url.Content("~/ZJManager/PCRawZY/PCRawZYForm")?ModuleId=" + ModuleId + "&KeyValue=" + escape(KeyValue), "编辑制样备注", "page_white_add.png", true, true, true);
+        }
+    }
+
+    //取消制样
+    function UNCheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+
+        if (IsNull(KeyValue) && KeyValue.indexOf(',') < 0) {
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + KeyValue + '\"}');
+            AjaxJson("/ZJManager/PCRawZY/UNCheck", postData, function (data) {
+                if (IsNull(data) && IsNull(data.Code)) {
+                    tipDialog(data.Message, 3, data.Code);
+                    windowload();
+                }
+            });
+        } else {
+            tipDialog('请选择一个批次', 4, 'warning');
+        }
+    }
+
+    //制样新增回调
+    function CallBackEvent() {
+        windowload();
+    }
+
+    //打印条码
+    function Print() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            Report.LoadDataFromURL("/ZJManager/PCRawZY/ZYPrintCode1?KeyValue=" + KeyValue);
+            //Report.Print(true);
+            Report.PrintPreview(true);
+        }
+    }
+    //补打条码
+    function BDPrint() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("BDPrintCodeReportIndex", "@Url.Content("~/ReportManager/PrintViewReport/BDPrintCodeReportIndex")?KeyValue=" + KeyValue, "补打条码", "page_white_edit.png", true, true, true);
+        }
+    }
+
+
+    //打印条码
+    function Print1() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            Report.LoadDataFromURL("/ZJManager/PCRawZY/ZYPrintCode1?KeyValue=" + KeyValue);
+            //Report.Print(true);
+            Report.PrintPreview(true);
+        }
+    }
+    //补打条码
+    function BDPrint1() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("BDPrintCodeReportIndex1", "@Url.Content("~/ReportManager/PrintViewReport/BDPrintCodeReportIndex1")?KeyValue=" + KeyValue, "补打条码", "page_white_edit.png", true, true, true);
+        }
+    }
+
+    //获取单据状态
+    function GetStatus(KeyValue) {
+        AjaxJson("/ZJManager/PCRawCY/GetStatus?KeyValue=" + escape(KeyValue), "", function (data) {
+            if (data.Success) {
+                TypeStatus = jQuery.parseJSON(data.Message);
+            } else {
+                tipDialog(data.Message, 3, data.Code);
+                return;
+            }
+        });
+    }
+
+    //批次新增回调
+    function CallBackEventCY() {
+        windowload();
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+    //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    var CardNumber = "";
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            tipDialog("打开读卡器失败！", 3, "");
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            tipDialog(version, 3, "");
+            CardNumber = MWRFATL.OpenCard(1);
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                tipDialog("IC卡没有放在读卡器上！", 3, "");
+            }
+            else {
+                res = 0;
+                $('#msg').text(CardNumber);
+            }
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        return res;
+    }
+
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var len = arr.length - 1;
+        for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        var cid = parseInt(num, 16);
+        return cid;
+    }
+
+    function ReadCard() {
+        CardOpen();
+        var ICCard = "";
+        if (IsNullOrEmpty(CardNumber)) {
+            ICCard = SetCardNo(CardNumber);
+            $("#DEF6").val(ICCard);
+            btn_Search();
+        }
+        if (ICCard == "") {
+            tipDialog("读IC卡失败，IC卡序号为空！", 3, "");
+            return false;
+        }
+    }
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    状态：
+                </th>
+                <td>
+                    <select id="TYPE" name="TYPE" class="select" style="width: 100px;">
+                        <option value="">请选择</option>
+                        <option value="4" selected="selected">制样</option>
+                        <option value="5">化验</option>
+                    </select>
+                </td>
+                <th>
+                    入厂厂区：
+                </th>
+                <td>
+                    <select id="DEF1" class="txt select" style="width: 105px">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        <option value="6000">盛世热电</option>
+                        <option value="7000">新迈纸业</option>
+                        <option value="8000">阳光王子</option>
+                        <option value="9000">华迈纸业</option>
+                        <option value="9010">科迈制浆</option>
+                    </select>
+                </td>
+                <th>
+                    采样单号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    制样单号：
+                </th>
+                <td>
+                    <input id="PRINTCODE" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    制样人：
+                </th>
+                <td>
+                    <input id="ZYUSER" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    异型卡序号：
+                </th>
+                <td>
+                    <input id="DEF6" type="text" class="txt" style="width: 100px" />
+                </td>
+                <td colspan="2">
+                    &nbsp;
+                    <input id="btnRead" type="button" class="btnSearch" value="读 卡" onclick="ReadCard()" />
+                </td>
+            </tr>
+            <tr>
+                @*<th>
+                        送检状态：
+                    </th>
+                    <td>
+                        <select id="ISSEND" class=" select" style="width: 100px">
+                            <option value="">全部</option>
+                            <option value="0" selected="true">未送检</option>
+                            <option value="1">已送检</option>
+                        </select>
+                    </td>*@
+                <th>
+                    采样类型：
+                </th>
+                <td>
+                    <select id="CYTYPE" name="CYTYPE" class="select" style="width: 100px;">
+                        <option value="">请选择</option>
+                        <option value="0">正常采样</option>
+                        <option value="1">加权采样</option>
+                    </select>
+                </td>
+                <th>
+                    接收公司：
+                </th>
+                <td>
+                    <input id="PK_ORG" type="hidden" />
+                    <input id="ORGNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    规格：
+                </th>
+                <td>
+                    <input id="MATERIALSPEC" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 100px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 100px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td colspan="2">
+                    &nbsp;
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

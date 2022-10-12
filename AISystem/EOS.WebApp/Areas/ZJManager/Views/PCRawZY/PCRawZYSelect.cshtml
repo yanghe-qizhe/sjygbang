@@ -1,0 +1,183 @@
+﻿@{
+    ViewBag.Title = "原料送检匹配质检方案";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        InitControl();
+    });
+
+    //得到一个对象实体
+    function InitControl() {
+        var postData = jQuery.parseJSON('{\"DATA\":\"' + KeyValue + '\"}');
+        AjaxJson("/ZJManager/PCRawZY/CheckCYDataSelect", postData, function (data) {
+            if (IsNull(data)) {
+                var json = eval(data.Message);
+                AddCloumn(json);
+            }
+        });
+    }
+
+    function AddCloumn(json) {
+        $.each(json, function (i, o) {
+            if ($("#add_TableInfo").find("input[value='" + o.billno + "']").length <= 0) {
+                var maxcode = parseInt($("#MaxID").val()) + 1;
+                var tr = '<tr index=' + maxcode + ' id="ZJTR➩' + maxcode + '" ><td class="td-div" style="width: 30px; text-align: center; border-left: none;" index=' + maxcode + ' >' + maxcode + '</td>';
+                tr += '<td class="formValue" style="width: 80px; text-align: center;"><input index=' + maxcode + ' id="BILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.billno + '" /><input id="ID➩' + maxcode + '" type="hidden" value="' + o.id + '"/></td>';
+                tr += '<td class="formValue" style="width: 80px; text-align: center;"><select index=' + maxcode + ' id="FANO➩' + maxcode + '" class="txtselect required" err="方案">';
+                tr += '<option value=' + o.fano + ' >' + o.faname + '</option>';
+                tr += '<td style="width: 80px; text-align: center;"><input id="MEMO➩' + maxcode + '" type="text" class="txt readonly" readonly="readonly" /></td>';
+                tr += '</tr>';
+                $("#add_TableInfo").append(tr);
+                $("#MaxID").val(maxcode);
+
+                $("FANO➩" + maxcode).attr("disabled", "disabled");
+
+                var v = "";
+                if (o.type != "3") {
+                    v += "批次未完成";
+                    $("#ZJTR➩" + maxcode).attr("disabled", "disabled");
+                }
+                if (o.issend == "1") {
+                    v += (IsNull(v) ? "," : "") + "批次已送检";
+                    $("#ZJTR➩" + maxcode).attr("disabled", "disabled");
+                }
+                $("#MEMO➩" + maxcode).val(IsNull(v) ? v + ",不提交" : v);
+            } else {
+                var index = $("#add_TableInfo").find("input[value='" + o.billno + "']").attr('index');
+                var tr = '<option value=' + o.fano + ' >' + o.faname + '</option>';
+                $("#FANO➩" + index).append(tr);
+                $("#BILLNO➩" + index).css({ "color": "red", "font-size": "18px" });
+                $("#FANO➩" + index).removeAttr("disabled");
+            }
+        })
+    }
+
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = jQuery.parseJSON('{"PCRAWZJFA":""}');
+            postData["PCRAWZJFA"] = GetTableDataJson("#Temp_List");
+            if (IsNull(postData["PCRAWZJFA"])) {
+                AjaxJson("/ZJManager/PCRawZY/PCRawZJFASendSave", postData, function (data) {
+                    tipDialog(data.Message, 3, data.Code);
+                    top.frames[tabiframeId()].windowload();
+                    closeDialog();
+                });
+            } else {
+                tipDialog("操作成功", 3, 1);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            }
+
+        }, 200);
+    }
+
+    function GetTableDataJson(tableId) {
+        var item_Key_Value = "";
+        var index = 1;
+        var trjson = "";
+        if ($(tableId + " tbody tr:not([disabled='disabled'])").length > 0) {
+            $(tableId + " tbody tr:not([disabled='disabled'])").each(function () {
+                var tdjson = "";
+                $(this).find('td').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    tdjson += '"' + array[0] + '"' + ':' + '"' + $.trim(pk_value) + '",'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                trjson += '{' + tdjson + '},';
+            });
+        } else {
+            $(tableId + " tr:not([disabled='disabled'])").each(function () {
+                var tdjson = "";
+                $(this).find('td').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    tdjson += '"' + array[0] + '"' + ':' + '"' + $.trim(pk_value) + '",'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                trjson += '{' + tdjson + '},';
+            });
+        }
+        trjson = trjson.substr(0, trjson.length - 1);
+        if (trjson == '{}') {
+            trjson = "";
+        }
+        if (IsNull(trjson)) {
+            return '[' + trjson + ']';
+        } else {
+            return "";
+        }
+
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+    <div class="PartialButton">
+        <a title="刷新" class="tools_btn" id="lr-replace" onclick="Replace()" ids="2e93cddb-303b-4584-bbc6-5bfe1fb9c858">
+            <span><b style='background: url("../../Content/Images/Icon16/arrow_refresh.png") no-repeat 50% 4px;'>
+                刷新 </b></span></a>
+        <div class="tools_separator">
+        </div>
+    </div>
+</div>
+<div id="PCRawZYSelect">
+    <table id="Temp_List" class="grid leftline form" style="width: 100%">
+        <thead>
+            <tr>
+                <td style="width: 30px; text-align: center; border-left: none;">
+                    <div class="table-header">
+                        行号
+                    </div>
+                </td>
+                <td style="width: 80px;">
+                    <div class="table-header">
+                        批次
+                    </div>
+                </td>
+                <td style="width: 80px;">
+                    <div class="table-header">
+                        质检方案
+                    </div>
+                </td>
+                <td style="width: 80px;">
+                    <div class="table-header">
+                        备注
+                    </div>
+                </td>
+            </tr>
+        </thead>
+        <tbody id="add_TableInfo">
+        </tbody>
+    </table>
+</div>
+</form>

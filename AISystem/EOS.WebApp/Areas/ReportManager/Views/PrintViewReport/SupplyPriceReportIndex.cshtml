@@ -1,0 +1,101 @@
+﻿@{
+    ViewBag.Title = "销售报表";
+    Layout = "~/Views/Shared/_LayoutReportIndex.cshtml";
+}
+<script type="text/javascript">
+    var Company = "@ViewBag.Company";
+    $(function () {
+        $("#layoutA").splitter({
+            type: "v",
+            outline: true,
+            minLeft: 235, sizeLeft: 235, maxLeft: 235,
+            anchorToWindow: true,
+            accessKey: "L"
+        });
+        LoadReport();
+        $("#reporttype").change(function () {
+            LoadReport();
+        });
+
+    })
+
+    function LoadReport() {
+        var Report = "";
+        var Data = "/ReportManager/SalesReport/BaseSetDataSetReport";
+
+        var ReportName = $("#reporttype").find("option:selected").text();
+        //报表参数对应值
+        var Parameter = "title|String|" + Company + ReportName;
+        //查询条件
+        var Parm_Key_Value = GetParm_Key_Value();
+
+        var ReportType = $("#reporttype").val();
+
+        if (ReportType == "0001002") {
+            Report = "BaseSet/SupplyPrice.grf";
+            Data = "/ReportManager/PrintViewReport/BaseSetDataSetReport";
+        }
+        var path = "/ReportManager/PrintViewReport/PrintViewReportIndex?Report=" + Report + "&Data=" + Data + "&ReportName=" + escape(ReportName);
+        path += "&Parm_Key_Value=" + escape(Parm_Key_Value) + escape("reporttype☻" + ReportType + "☻true");
+        path += "&Parameter=" + escape(Parameter);
+        $("#iframeReport").attr("src", path);
+    }
+    //查询条件PK值
+    function GetParm_Key_Value() {
+        var Parm_Key_Value = "";
+        $(".form-find tr td").find("[DBField=true]").each(function () {
+            var pk_id = $(this).attr('id');
+            var pk_value = $("#" + pk_id).val();
+            if (pk_value != "") {
+                var like = $(this).attr('like');
+                Parm_Key_Value += pk_id + "☻" + (pk_value == null ? "" : pk_value) + "☻" + like + "≌";
+            }
+        });
+        return Parm_Key_Value
+    }
+
+
+
+
+</script>
+<div id="layoutA" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="QueryArea">
+            <table border="0" class="form-find" style="height: 45px;">
+                <tr>
+                    <th>
+                        报表类型：
+                    </th>
+                    <td>
+                        <select id="reporttype" name="reporttype" class="select" style="width: 140px;">
+                            <option value="0001002">供应商系数报表</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        供应商：
+                    </th>
+                    <td>
+                        <input id="SUPPLIERNAME" type="text" class="txt" style="width: 135px" dbfield="true" like="true" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>
+                    </th>
+                    <td>
+                        <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="LoadReport()" />
+                        <input id="btnClear" type="button" class="btnSearch" value="清 空" onclick="ClearValue()" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <iframe id="iframeReport" src="" scrolling="auto" frameborder="0" scrolling="no"
+                width="100%" height="100%"></iframe>
+    </div>
+</div>

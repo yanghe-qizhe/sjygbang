@@ -1,0 +1,46 @@
+﻿@{
+    ViewBag.Title = "Query";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+        BindAutocomplete("CarsName", "Cars", "Cars", "200", "150", "");
+        BindAutocomplete("CARDNUMBER", "ICCard", "RegICCard", "200", "150", "");
+    })
+    //获取条件
+    function GetConditionURL() {
+        var url = "";
+        var Cars = $("#Cars").val();
+        var ICCard = $("#ICCard").val();
+        url += "&Cars=" + Cars + "&ICCard=" + ICCard;
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                卡面编号：
+            </th>
+            <td>
+                <input id="ICCard" type="hidden" />
+                <input id="CARDNUMBER" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                车号：
+            </th>
+            <td>
+                <input id="Cars" type="hidden" />
+                <input id="CarsName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+    </table>
+</div>

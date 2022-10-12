@@ -1,0 +1,237 @@
+﻿@{
+    ViewBag.Title = "上料磅单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var type = GetQuery("type");
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("STORAGELOCATIONNAME", "STORAGELOCATION", "Store", "", "", "");
+        BindAutocomplete("ITEMNAME", "ITEM", "Material", "", "", "");
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BATHNO = $("#BATHNO").val();
+        var ITEM = $("#ITEM").val();
+        var STORAGELOCATION = $("#STORAGELOCATION").val();
+        var SHIFT = $("#SHIFT").val();
+        var SITE = $("#SITE").val();
+        var ITEM_MARK = $("#ITEM_MARK").val();
+        var UPLOAD = $("#UPLOAD").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/WeightManager/WeightXB/GetOrderListMES")?StartTime=" + StartTime + '&EndTime=' + EndTime + "&SITE=" + SITE + "&STORAGELOCATION=" + STORAGELOCATION + "&ITEM=" + ITEM + "&BATHNO=" + BATHNO + "&SHIFT=" + SHIFT + "&ITEM_MARK=" + ITEM_MARK + "&UPLOAD=" + UPLOAD, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/WeightManager/WeightXB/GetOrderListMES")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 180,
+            autowidth: true,
+            colModel: [
+                { label: '序号', name: 'ROWNUMBER', width: 130, align: 'left', hidden: true },
+                { label: '站点', name: 'SITENAME', width: 130, align: 'left' },
+                {
+                    label: '类型', name: 'ITEM_MARK', index: 'ITEM_MARK', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "3")
+                            return "移库";
+                        else if (cellvalue == "2")
+                            return "验包";
+                        else
+                            return "直进车";
+                    }
+                },
+                  { label: '物料编号', name: 'ITEM', index: 'ITEM', width: 80, align: 'left' },
+                  { label: '物料', name: 'ITEMNAME', index: 'ITEMNAME', width: 130, align: 'left' },
+               { label: '班组', name: 'SHIFTNAME', index: 'SHIFTNAME', width: 60, align: 'center' },
+               { label: '收货仓库', name: 'STORAGELOCATIONNAME', index: 'STORAGELOCATIONNAME', width: 150, align: 'left' },
+                { label: '批次号', name: 'BATCH', index: 'BATCH', width: 100, align: 'left' },
+                { label: '车数', name: 'CARSNUM', index: 'CARSNUM', width: 60, align: 'center' },
+               { label: '重量', name: 'QTY', index: 'QTY', width: 60, align: 'center' },
+                {
+                    label: '日期', name: 'SHIFT_DATE', index: 'SHIFT_DATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd');
+                    }
+                },
+                {
+                    label: '上传状态', name: 'UPLOAD', index: 'UPLOAD', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "1")
+                            return "已上传";
+                        else
+                            return "未上传";
+                    }
+                }
+
+            ],
+            viewrecords: true,
+            rownumbers: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'ITEM',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+
+    }
+
+
+    //
+    function btn_HandOrder() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BATHNO = $("#BATHNO").val();
+        var ITEM = $("#ITEM").val();
+        var STORAGELOCATION = $("#STORAGELOCATION").val();
+        var SHIFT = $("#SHIFT").val();
+        var SITE = $("#SITE").val();
+        var ITEM_MARK = $("#ITEM_MARK").val();
+        if (ITEM_MARK == "") {
+            top.TipMsg("请您先选择类型！", 4000, "error");
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要上传操作吗？', function (r) {
+            if (r) {
+                var parm = "StartTime=" + StartTime + '&EndTime=' + EndTime + "&SITE=" + SITE + "&STORAGELOCATION=" + STORAGELOCATION + "&ITEM=" + ITEM + "&BATHNO=" + BATHNO + "&SHIFT=" + SHIFT + "&ITEM_MARK=" + ITEM_MARK;
+                AjaxJson('/WeightManager/WeightXB/HandOrderMES', parm, function (data) {
+                    tipDialog(data.Message, 3, data.Code);
+                    if (data.Code > 0) {
+                        windowload();
+                    }
+                });
+            }
+        });
+
+    }
+
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    创建日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(0)" style="width: 100px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 100px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th class="formTitle">
+                    站点：
+                </th>
+                <td class="formValue">
+                    <select id="SITE" class="select" style="width: 100px">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        <option value="6000">盛世热电</option>
+                        <option value="7000">新迈纸业</option>
+                        <option value="8000">阳光王子</option>
+                        <option value="9000">华迈纸业</option>
+                        <option value="9010">科迈制浆</option>
+                    </select>
+                </td>
+                <th>
+                    收货仓库：
+                </th>
+                <td>
+                    <input id="STORAGELOCATION" type="hidden" />
+                    <input id="STORAGELOCATIONNAME" type="text" class="txt" style="width: 100px" items="车间" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="ITEM" type="hidden" />
+                    <input id="ITEMNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+
+            </tr>
+            <tr>
+                <th>
+                    批次号：
+                </th>
+                <td>
+                    <input id="BATHNO" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    班组：
+                </th>
+                <td>
+                    <select id="SHIFT" name="SHIFT" class="select" style="width: 100px;">
+                        <option value="">---请选择---</option>
+                        <option value="A">夜班</option>
+                        <option value="B">白班</option>
+                        <option value="C">中班</option>
+                    </select>
+                </td>
+                <th>
+                    类型：
+                </th>
+                <td>
+                    <select id="ITEM_MARK" name="ITEM_MARK" class="select" style="width: 100px;"
+                            dbfield="true" like="false">
+                        <option value="">---请选择---</option>
+                        <option value="3">移库</option>
+                        <option value="2">验包</option>
+                        <option value="1">直进车</option>
+                    </select>
+                </td>
+                <th>
+                    状态：
+                </th>
+                <td>
+                    <select id="UPLOAD" name="UPLOAD" class="select" style="width: 100px;"
+                            dbfield="true" like="false">
+                        <option value="">---请选择---</option>
+                        <option value="0">未上传</option>
+                        <option value="1">已上传</option>
+                    </select>
+                </td>
+                <th></th>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div><table id="gridETable"></table>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

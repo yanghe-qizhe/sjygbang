@@ -1,0 +1,246 @@
+﻿@{
+    ViewBag.Title = "ICCardInDetail";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    $(function () {
+        $("#NEWICNUMBER").keyup(function () {
+            var ICNUMBER = this.value;
+            AjaxJson("/ExampleModule/RegICCard/GetICNEntity", { KeyValue: ICNUMBER }, function (data) {
+                if (data.ICNO != null) {
+                    if (data.TYPE == "2") {
+                        $('#msg').text('IC采样卡不可以补卡！');
+                        $("#NEWICNUMBER").val("");
+                    } else {
+                        $("#NEWICCARD").val(data.ICNO);
+                        $("#NEWICNUMBER").val(data.ICNUMBER);
+                    }
+                }
+            });
+        });
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+        }
+    })
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/WeightAudit/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+                var DATATYPE = $("#DATATYPE").val();
+                if (DATATYPE == "2") {
+                    $("#DATATYPE").val("电商平台");
+                } else {
+                    $("#DATATYPE").val("业务平台");
+                }
+            });
+        }
+    }
+    //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    var CardNumber = "";
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            $('#msg').text('打开读卡器失败！');
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            $('#msg').text(version);
+            CardNumber = MWRFATL.OpenCard(1);
+
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                $('#msg').text('IC卡没有放在读卡器上！');
+            }
+            else {
+                res = 0;
+                $('#msg').text(CardNumber);
+            }
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        return res;
+    }
+
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var len = arr.length - 1;
+        for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        var cid = parseInt(num, 16);
+        return cid;
+    }
+
+
+    function ReadCard() {
+        CardOpen();
+        var ICCard = "";
+        if (IsNullOrEmpty(CardNumber)) {
+            ICCard = SetCardNo(CardNumber);
+            $("#NEWICCARD").val(ICCard);
+            AjaxJson("/ExampleModule/RegICCard/GetEntity", { KeyValue: ICCard }, function (data) {
+                $("#NEWICNUMBER").val(data.ICNUMBER);
+            });
+        }
+        if (ICCard == "") {
+            tipDialog("读IC卡失败，IC卡序号为空！", 3, "");
+            return false;
+        }
+    }
+
+    //补卡
+    function btn_iccard() {
+        var KeyValue = $("#PK_TASK").val();
+        if (IsChecked(KeyValue)) {
+            var ICNumber = $("#NEWICNUMBER").val();
+            var ICCard = $("#NEWICCARD").val(); ;
+            if (ICCard == "") {
+                tipDialog("IC卡号不能为空！", 3, "");
+                return false;
+            }
+            var parm = 'KeyValue=' + KeyValue + "&ICCard=" + ICCard + "&ICNumber=" + ICNumber;
+            AjaxJson('/ExampleModule/ICCard/SetICCard', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+   
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="读卡" onclick="ReadCard()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    读卡</b></span></a>
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            新IC卡号：
+        </th>
+        <td class="formValue">
+            <input id="NEWICCARD" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            新卡面编号：
+        </th>
+        <td class="formValue">
+            <input id="NEWICNUMBER" maxlength="50" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            提示：
+        </th>
+        <td class="formValue" colspan="3">
+            <label id="msg" style="color: Red;">
+            </label>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            IC卡号：
+        </th>
+        <td class="formValue">
+            <input id="ICCARD" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            卡面编号：
+        </th>
+        <td class="formValue">
+            <input id="ICNUMBER" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            门禁单号：
+        </th>
+        <td class="formValue">
+            <input id="PK_TASK" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            通知单号：
+        </th>
+        <td class="formValue">
+            <input id="PK_ORDER" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            车号：
+        </th>
+        <td class="formValue">
+            <input id="CARSNAME" type="text" class="txt readonly" readonly="readonly " />
+        </td>
+        <th class="formTitle">
+            司机：
+        </th>
+        <td class="formValue">
+            <input id="DRIVERSNAME" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            发货单位：
+        </th>
+        <td class="formValue">
+            <input id="SENDNAME" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            收货单位：
+        </th>
+        <td class="formValue">
+            <input id="SETTLEMERECEIVENAMENTMETHODNAME" maxlength="50" type="text" class="txt readonly"
+                readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            状态：
+        </th>
+        <td class="formValue">
+            <input id="STATUS" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            来源：
+        </th>
+        <td class="formValue">
+            <input id="DATATYPE" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            进厂时间：
+        </th>
+        <td class="formValue">
+            <input id="INDATE" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            出厂时间：
+        </th>
+        <td class="formValue">
+            <input id="OUTDATE" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+</table>

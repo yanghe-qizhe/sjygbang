@@ -1,0 +1,164 @@
+﻿@{
+    ViewBag.Title = "厂内工序任务单》详细";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    $(function () {
+        InitControl();
+        Test();
+    })
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/GXCONVOPER/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    function Test() {
+        var ISUSE = $("#STATUS").val();
+        if (ISUSE == '1') {
+            $("#STATUS").val("启用");
+        }
+        else {
+            $("#STATUS").val("未启用");
+        }
+    } 
+
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开</b></span></a>
+</div>
+ 
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    任务单号：
+                </th>
+                <td class="formValue">
+                    <input id="TASKNO" maxlength="50" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    发货单位：
+                </th>
+                <td class="formValue">
+                    <input id="SENDUNITNAME" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    收货单位：
+                </th>
+                <td class="formValue">
+                    <input id="ACCEPTUNITNAME" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    过磅秤点：
+                </th>
+                <td class="formValue">
+                    <input id="SCALENAME" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    物料：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALNAME" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    规格：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALSPEC" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    长度：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALSPECNAME" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    件数：
+                </th>
+                <td class="formValue">
+                    <input id="MATERPIECENUM" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    单根重：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALWEI" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+               
+                <th class="formTitle">
+                    件根数：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALNUM" type="text" class="txt" readonly="readonly" />
+                </td><th class="formTitle">
+                    总根数：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALSNUM" type="text" class="txt" readonly="readonly" />
+                </td>
+                 <th class="formTitle">
+                    理重：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALSUTTLE" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                
+                <th class="formTitle">
+                    开始时间：
+                </th>
+                <td class="formValue">
+                    <input id="STARTTIME" type="text" class="txt" readonly="readonly" />
+                </td>
+               <th class="formTitle">
+                    结束时间：
+                </th>
+                <td class="formValue">
+                    <input id="ENDTIME" type="text" class="txt" readonly="readonly" />
+                </td> <th class="formTitle">
+                    单据状态：
+                </th>
+                <td class="formValue">
+                    <input id="STATUS" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    创建用户：
+                </th>
+                <td class="formValue">
+                    <input id="CREUSER" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    创建时间：
+                </th>
+                <td class="formValue">
+                    <input id="CRETIME" type="text" class="txt" readonly="readonly" />
+                </td> 
+          
+               
+                <th class="formTitle">
+                    备注：
+                </th>
+                <td class="formValue"  >
+                    <input id="MEMO" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+        </table>
+ 
+</form>

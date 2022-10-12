@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "质检用户分组设置";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var FormID = GetQuery('FormID');
+    $(function () {
+        BindDropItemForID("#DEF3", "ZJUserGroup", "==请选择="); //质检用户分组         
+    })
+
+    //保存事件  
+    function btn_OK() {
+        var DEF3 = $("#DEF3").val();
+        var DEF4 = $("#DEF3").find("option:selected").text();
+        if (IsNull(DEF3)) {
+            if (IsNull(FormID)) {
+                $parentobj = top.frames[FormID];
+            } else {
+                $parentobj = top.frames[tabiframeId()];
+            }
+            $parentobj.CallBackEvent(DEF3, DEF4);
+            closeDialog();
+        } else {
+            tipDialog('分组不能为空', 4, 'warning');
+        }
+    }
+    
+</script>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="btn_OK()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    确定</b></span></a> <a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn"><span>
+                        <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<div id="RuleHead">
+    <table class="form">
+        <tr>
+            <th class="formTitle">
+                用户分组：
+            </th>
+            <td class="formValue">
+                <select id="DEF3" class="txtselect required" style="width: 125px" datacol="yes" err="用户分组">
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,100 @@
+﻿@{
+    ViewBag.Title = "POORDERQuery";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+        BindComBoxTree("matclassname", "matclass", "200", "/BaseSet/Material/TreeJson");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+        BindAutocomplete("RECCOMPANYNAME", "RECCOMPANYID", "Company", "200", "150", "");
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#BillNo").val();
+        var Supply = $("#Supply").val();
+        var Material = $("#Material").val();
+        var matclass = $("#matclass").val();
+        var RECCOMPANYID = $("#RECCOMPANYID").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&BillNo=" + BillNo;
+        url += "&Supply=" + Supply + "&Material=" + Material;
+        url += "&matclass=" + matclass + "&RECCOMPANYID=" + RECCOMPANYID;
+        return url;
+    }
+
+
+
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-90)" style="width: 200px" onfocus="var EndTime=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(30)" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                接收公司：
+            </th>
+            <td>
+                <input id="RECCOMPANYID" type="hidden" />
+                <input id="RECCOMPANYNAME" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                供应商：
+            </th>
+            <td>
+                <input id="Supply" type="hidden" />
+                <input id="SupplyName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料分类：
+            </th>
+            <td>
+                <input id="matclass" type="hidden" />
+                <input id="matclassname" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="Material" type="hidden" />
+                <input id="MaterialName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                订单编号：
+            </th>
+            <td>
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+    </table>
+</div>

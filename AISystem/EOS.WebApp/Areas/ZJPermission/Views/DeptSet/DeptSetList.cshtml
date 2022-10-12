@@ -1,0 +1,145 @@
+﻿@{
+    ViewBag.Title = "质检部门设置";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键 
+    //var CompanyId='0001E510000000002HZD';
+    $(function () {   
+        GetTree();
+        GetGrid("");
+    }) 
+        
+    var CompanyId, CompanyName = "";
+    //加载左边树
+    function GetTree() {
+        var itemtree = {
+            onnodeclick: function (item) {
+                CompanyId = item.id;            //ID
+                CompanyName = item.text;        //名称
+                $("#CenterTitle").html(" - " + CompanyName);
+                $("#gridTable").jqGrid('setGridParam', { url: "@Url.Content("~/ZJPermission/DeptSet/LoadDeptData")?TYPE=0&CompanyId=" + CompanyId }).trigger('reloadGrid');
+            },
+            url: "@Url.Content("~/CommonModule/Company/TreeJson")"
+        };
+        $("#ItemsTree").treeview(itemtree);
+    }
+    //加载表格
+    function GetGrid(CompanyId) {
+         $("#gridTable").jqGrid({
+            //url: "@Url.Content("~/CommonModule/Department/TreeGridListJson")",
+            url: "@Url.Content("~/ZJPermission/DeptSet/LoadDeptData")?TYPE=0",
+            datatype: "json",
+            treeGrid: true,
+            treeGridModel: "nested",
+            ExpandColumn: "Code",
+            height: $(window).height() - 77,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'DepartmentId', index: "DepartmentId", hidden: true },
+                { label: '部门', name: 'FullName', index: "FullName", width: 220 },
+                { label: '编码', name: 'Code', index: "Code", width: 80 },
+                { label: '简称', name: 'ShortName', index: "ShortName", width:220 },
+                { label: '所属公司Id', name: 'CompanyId', index: 'CompanyId', hidden: true },
+                { label: '所属公司', name: 'CompanyName', index: "CompanyName", width: 120 }, 
+                { label: '说明', name: 'Remark', index: "remark", width: 300 }
+            ],
+            pager: "false",
+            rowNum: 1000,
+            rownumbers: true,
+            shrinkToFit: false
+        });
+        
+    }
+   
+    //新增部门
+    function btn_add() {  
+        var KeyValue = GetJqGridRowValue("#gridTable", "DepartmentId");  
+        if (IsNull(KeyValue)) { 
+            if (!!CompanyId) {
+                var url = "/ZJPermission/DeptSet/DeptSetAdd?CompanyId=" + escape(CompanyId) + "&ParentId=" + escape(KeyValue);
+                openDialog(url, "DeptSetAdd", "新增部门信息", 650, 260, function (iframe) {
+                    top.frames[iframe].AcceptClick()
+                });
+            } else {
+                alertDialog("请选择左边公司", 0);
+            }
+        } else{
+            tipDialog('请选择一父节点部门', 4, 'warning');
+        }
+    }
+
+    //编辑部门 
+    function btn_edit(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "DepartmentId");  
+        if (IsNull(KeyValue)) { 
+            if (!!CompanyId) {
+                var url = "/ZJPermission/DeptSet/DeptSetAdd?CompanyId=" + escape(CompanyId) + "&KeyValue=" + escape(KeyValue);
+                openDialog(url, "DeptSetAdd", "新增部门信息", 650, 260, function (iframe) {
+                    top.frames[iframe].AcceptClick()
+                });
+            } else {
+                alertDialog("请选择左边公司", 0);
+            }
+        } else{
+            tipDialog('请选择一父节点部门', 4, 'warning');
+        }
+    }
+
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "DepartmentId"); 
+        if (IsDelData(KeyValue)) { 
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ZJPermission/DeptSet/DeleteItem', delparm, KeyValue.split(",").length);
+        }
+    }
+    //标记质检部门
+    function btn_setzjdept(){
+        var url = "/ZJPermission/DeptSet/DeptSetZJ";
+        openDialog(url, "DeptSetZJ", "标记质检部门信息", 650, 460, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+@*<div class="tools_bar leftline rightline" style="margin-bottom: 0px; margin: 1px;">
+    <div class="PartialButton">
+        @Html.Partial("_PartialButton")
+    </div>
+</div>
+<div class="rightline" style="margin: 1px; margin-top: -1px;">
+    <table id="gridTable">
+    </table>
+</div>*@
+<div id="layout" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="btnbartitle">
+            <div>
+                公司目录
+            </div>
+        </div>
+        <div class="ScrollBar" id="ItemsTree">
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <div class="btnbartitle">
+            <div>
+                部门列表<span id="CenterTitle"></span>
+            </div>
+        </div>
+        <div class="tools_bar" style="border-top: none; margin-bottom: 0px;">
+            <div class="PartialButton">
+                @Html.Partial("_PartialButton")
+            </div>
+        </div>
+        <table id="gridTable">
+        </table>
+    </div>
+</div>

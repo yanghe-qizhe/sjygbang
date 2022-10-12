@@ -1,0 +1,137 @@
+﻿@{
+    ViewBag.Title = "质检人员部门设置";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键 
+    var DeptID = GetQuery('KeyValue'); //菜单主键 
+    $(function () {    
+        setTimeout(function(){
+            GetGrid();
+        },"300");  
+        BindDropItemForID("#DEF3", "ZJUserGroup", "==请选择="); //质检用户分组
+    })
+     
+    //搜索
+    function btn_Search() {
+        var keywords = $("#keywords").val(); 
+        var DEF2 = $("#DEF2").val(); 
+        var DEF3 = $("#DEF3").val(); 
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJPermission/UserDept/GridZJUserListNoDept")?keywords=" + escape(keywords)+"&DEF2="+escape(DEF2)+"&DEF3="+escape(DEF3), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() { 
+        var SelectRowIndx;
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJPermission/UserDept/GridZJUserListNoDept")",
+            datatype: "json",
+            height: $(window).height() - 110,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'USERID', index: 'USERID', width: 80, align: 'left', hidden: true },
+                { label: '工号', name: 'CODE', index: 'CODE', width: 80, align: 'left' },
+                { label: '登录账户', name: 'ACCOUNT', index: 'ACCOUNT', width: 80, align: 'left' },
+                { label: '姓名', name: 'REALNAME', index: 'REALNAME', width: 80, align: 'left' },
+                { label: '性别', name: 'GENDER', index: 'GENDER', width: 45, align: 'center' },
+                { label: '手机', name: 'MOBILE', index: 'MOBILE', width: 100, align: 'left' },
+                { label: '电话', name: 'TELEPHONE', index: 'TELEPHONE', width: 100, align: 'left' }, 
+                { label: '类型', name: 'DEF2', index: 'DEF2', width: 100, align: 'left' }, 
+                { label: '分组', name: 'DEF4', index: 'DEF4', width: 100, align: 'left' }, 
+                { label: '说明', name: 'REMARK', index: 'REMARK', width: 300, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: "userid",
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            multiselect: true,
+            onSelectRow: function () {
+                SelectRowIndx = GetJqGridRowIndx("#" + this.id);
+            } 
+        });
+        
+        //自应高度
+        $(window).resize(function () {
+            $("#gridTable").setGridHeight($(window).height() - 178);
+        });
+    } 
+   
+    function AcceptClick(){
+        var USERIDS = GetJqGridRowValue("#gridTable", "USERID"); 
+        var REALNAMES = GetJqGridRowValue("#gridTable", "REALNAME"); 
+        if (IsNull(USERIDS)) { 
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + USERIDS + '\",\"REALNAMES\":\"' + REALNAMES + '\",\"Dept\":\"' + DeptID + '\"}'); 
+            AjaxJson("/ZJPermission/UserDept/ZJUserDeptSave", postData, function (data) {
+                if(IsNull(data) && IsNull(data.Code)){
+                    tipDialog(data.Message, 3, data.Code);
+                    windowload();
+                    top.frames[tabiframeId()].windowload();
+                } 
+            }); 
+        } else{
+            tipDialog('请至少选择一个用户', 4, 'warning');
+        }
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    @*<div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>*@
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    关键字：
+                </th>
+                <td>
+                    <input id="keywords" type="text" class="txt" style="width: 200px" />
+                </td>
+                <th>
+                    用户类型：
+                </th>
+                <td>
+                    <select id="DEF2" class="txtselect required" style="width: 125px" datacol="yes" err="用户类型">
+                        <option value="" selected="true">==请选择==</option>
+                        <option value="管理员">管理员</option>
+                        <option value="职员">职员</option>
+                    </select>
+                </td>
+                <th>
+                    分组：
+                </th>
+                <td>
+                    <select id="DEF3" class="txtselect required" style="width: 125px" datacol="yes" err="用户分组">
+                    </select>
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

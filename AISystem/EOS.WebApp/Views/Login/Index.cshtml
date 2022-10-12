@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>世纪阳光纸业计质量管理系统 - MQIS</title>
+    <script src="~/Content/Scripts/jquery/jquery-1.8.2.min.js"></script>
+    <script src="~/Content/Scripts/EOSui-framework.js"></script>
+    <script src="~/Content/Scripts/jquery/jQuery.md5.js"></script>
+    <script src="~/Content/Scripts/cookie/jquery.cookie.js"></script>
+    <link href="~/Content/Login/css/login.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Login/css/flexslider.css" rel="stylesheet" type="text/css" />
+    <script>
+        /*
+        检查浏览器是否支持
+        */
+        var isIE = !!window.ActiveXObject;
+        var isIE6 = isIE && !window.XMLHttpRequest;
+        if (isIE6) {
+            window.location.href = "../Error/Browser";
+        }
+        //回车键
+        document.onkeydown = function (e) {
+            if (!e) e = window.event; //火狐中是 window.event
+            if ((e.keyCode || e.which) == 13) {
+                var btlogin = document.getElementById("submit");
+                btlogin.focus();
+                btlogin.click();
+            }
+        }
+        $(function () {
+            $("#submit").click(function () {
+                var txtaccount = $("#user").val();
+                var txtpassword = $("#pwd").val();
+                if (txtaccount == "") {
+                    $("#user").focus();
+                    formMessage('登录账户不能为空', 'warning');
+                    return false;
+                } else if (txtpassword == "") {
+                    $("#pwd").focus();
+                    formMessage('登录密码不能为空', 'warning');
+                    return false;
+                } else {
+                    formMessage('正在登录...', 'succeed');
+                    window.setTimeout(function () {
+                        var postData = {
+                            Account: escape(txtaccount),
+                            Password: escape($.md5(txtpassword))
+
+
+                        }
+                        getAjax('/Login/CheckLogin', postData, function (rs) {
+                            if (parseInt(rs) == -1) {
+                                $("#user").focus();
+                                formMessage('登录账户不存在', 'error');
+                            } else if (parseInt(rs) == 2) {
+                                $("#user").focus();
+                                formMessage('登录账户被系统锁定', 'error');
+                            } else if (parseInt(rs) == 4) {
+                                $("#user").focus();
+                                $("#pwd").val("");
+                                formMessage('登录密码错误', 'error');
+                            } else if (parseInt(rs) == 3) {
+                                formMessage('登录验证成功,正在跳转首页', 'succeed');
+                                setInterval(Load, 1000);
+                            } else {
+                                alert(rs);
+                            }
+                        });
+                    }, 500);
+                }
+            })
+        })
+        //登录加载
+        function Load() {
+            var Index = $.cookie('UItheme');
+            if (Index) {
+                window.location.href = '@Url.Content("~/Home/")' + Index;
+            } else {
+                window.location.href = '@Url.Content("~/Home/TreeIndex")';
+            }
+            return false;
+        }
+        //提示信息
+        function formMessage(msg, type) {
+            $('#error-message').html('');
+            $('#error-message').append(msg);
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="~/Content/Login/img/logo.png">
+        </div>
+        <div class="news">
+            <h4>
+                <font color='#007EFF'>世纪阳光纸业计质量管理系统 - MQIS</font></h4>
+        </div>
+    </div>
+    <div id="banner" class="flexslider">
+        <ul class="slides">
+                 @*<li style="background: #02050a">
+                <img src="~/Content/Login/img/benjing.png" /></li>*@
+            <li>
+                <img src="~/Content/Login/img/benjing1.png" /></li>
+            @*<li>
+                <img src="~/Content/Login/img/benjing2.png" /></li>*@
+        </ul>
+    </div>
+    <div class="logink">
+        <input type="text" name="" class="user" id="user" placeholder="请输入用户名" style="margin-top: 84px;"
+            value="System">
+        <input type="password" name="" class="user" id="pwd" placeholder="请输入密码" style="margin-top: 30px;"
+            value="YG1001!">
+        <div id="error-message">
+        </div>
+        <button id="submit">
+            登&nbsp;录</button>
+    </div>
+    <div class="footer">
+        Copyright © 1946 - 2021 YGZY. All Rights Reserved
+    </div>
+    <script type="text/javascript" src="~/Content/Login/js/slider.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $(".flexslider").flexslider({
+                keyboard: false,
+                controlNav: false,
+                pauseOnHover: false
+            });
+        }); 
+    </script>
+    <script type="text/javascript">
+        // 针对ie8不兼容placeholder的
+        (function ($) {
+            $.fn.placeholder = function (options) {
+                var opts = $.extend({}, $.fn.placeholder.defaults, options);
+                var isIE = document.all ? true : false;
+                return this.each(function () {
+                    var _this = this,
+                 placeholderValue = _this.getAttribute("placeholder"); //缓存默认的placeholder值
+                    if (isIE) {
+                        _this.setAttribute("value", placeholderValue);
+                        _this.onfocus = function () {
+                            $.trim(_this.value) == placeholderValue ? _this.value = "" : '';
+                        };
+                        _this.onblur = function () {
+                            $.trim(_this.value) == "" ? _this.value = placeholderValue : '';
+                        };
+                    }
+                });
+            };
+        })(jQuery);
+        $("#user").placeholder("请输入用户名");
+        $("#pwd").placeholder("请输入密码");
+    </script>
+</body>
+</html>

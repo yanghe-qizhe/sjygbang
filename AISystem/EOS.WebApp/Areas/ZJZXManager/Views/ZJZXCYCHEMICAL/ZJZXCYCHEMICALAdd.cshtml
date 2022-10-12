@@ -1,0 +1,220 @@
+﻿@{
+    ViewBag.Title = "转序化学检测任务新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var InteReadSerial;
+    var ModuleId = GetQuery("ModuleId");
+    $(function () {
+        Bind();
+        InteReadSerial = document.getElementById("ReadSerial");
+        InteReadSerial.Init(window, "GetSerialValue");
+    })
+    function GetSerialValue(result) {
+        $("#Code").val($("#Code").val() + result);
+    }
+    function Bind() {
+        $("#Code").bind("blur", function () {
+            if (IsNull($(this).val())) {
+                Loading(true, "正在读取数据...");
+                InitControl();
+            } else {
+                //tipCss($(this), "请扫码或输入正确的条码号");
+                tipDialog("请扫码或输入正确的条码号", 3, 0);
+            }
+        })
+        //        $("#Code").bind("keyup", function () {
+        //            alert($(this).val());
+        //        })
+    }
+
+
+    //得到一个对象实体
+    function InitControl() {
+        $.each($("#RuleHead1").find("input"), function (i, o) {
+            $(o).val("");
+        })
+        $("#tbZJItem").empty();
+
+        var KeyValue = $("#Code").val();
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJZXManager/ZJZXCYCHEMICAL/SetFormCode", { KeyValue: KeyValue }, function (data) {
+                if (IsNull(data) && data.Code == "1") {
+                    SetWebControls(data.Message);
+                    LoadZJItemControls(data.Message);
+                } else {
+                    tipCss($(this), "未查询到数据,请稍后重试");
+                    tipDialog("未查询到数据,请稍后重试", 3, 0);
+                }
+            });
+        }
+    }
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                var json = jQuery.parseJSON(data).M[0];
+                for (var key in json) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(json[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+
+    //循环加载化学质检项目 
+    function LoadZJItemControls(json) {
+        var rowindex = 0;
+        var len = jQuery.parseJSON(json).D;
+        var tr = ''
+        $.each(jQuery.parseJSON(json).D, function (i, o) {
+            var index = i + 1;
+            if (index == 1 || (index > 2 && index % 2 == 1)) {
+                rowindex++;
+                tr += '<tr index=' + rowindex + '>';
+            }
+            tr += '<th class="formTitle">' + (o.ITEMNAME) + '</th>';
+            tr += '<td class="formValue">';
+            tr += '<input type="text" class="txt required readonly" readonly="readonly" datacol="yes" dbfield="true" value=' + (IsNull(o.UNIT) ? o.UNIT : "无单位") + ' />';
+            tr += '</td>';
+            if (index == len || (index % 2 == 0)) {
+                tr += '</tr>';
+            }
+        })
+        $("#tbZJItem").append(tr);
+    }
+
+    //保存事件
+    function AcceptClick() {
+        InitControl();
+        if ($("#tbZJItem").find("tr").length <= 0) {
+            tipDialog("未发现质检项目", 3, 0);
+            tipCss($(this), "未发现质检项目");
+            return false;
+        }
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            AjaxJson("/ZJZXManager/ZJZXCYCHEMICAL/ZXCHESYSave?KeyValue=" + escape($("#Code").val()), "", function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames["tabs_iframe_" + ModuleId].windowload();
+                Replace();
+            });
+        }, 200);
+    } 
+    
+</script>
+<object id="ReadSerial" classid="clsid:713AA484-D1D4-4FFA-9A5D-7E0F9215B9F2" style="display: none">
+</object>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> @*<a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a>*@
+</div>
+<div id="ZJRECEIVE">
+    <div id="RuleHead">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    扫码：
+                </th>
+                <td class="formValue">
+                    <input id="Code" maxlength="50" type="text" class="txt required" datacol="yes" dbfield="true"
+                        err="扫码" checkexpession="NotNull" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="bd" style="border: none; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div id="TabToolbar" class="tab_list bd actived">
+                    批次信息</div>
+            </div>
+        </div>
+    </div>
+    <div id="RuleHead1">
+        <table class="form">
+            <tr>
+                @*<th class="formTitle">
+                    批号：
+                </th>
+                <td class="formValue">
+                    <input id="BILLNO" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                        datacol="yes" dbfield="true" err="批号" checkexpession="NotNull" />
+                </td>*@
+                <th class="formTitle">
+                    日期：
+                </th>
+                <td class="formValue">
+                    <input id="CYDATE" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                        datacol="yes" dbfield="true" err="日期" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    物料：
+                </th>
+                <td class="formValue">
+                    <input id="MATERIAL" type="hidden" dbfield="true" />
+                    <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" err="物料" />
+                </td>
+                <th class="formTitle">
+                    制单日期：
+                </th>
+                <td class="formValue">
+                    <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    制单人：
+                </th>
+                <td class="formValue">
+                    <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+                </td>
+                <th class="formTitle">
+                </th>
+                <td class="formValue">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="bd" style="border: none; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div id="TabToolbar1" class="tab_list bd actived">
+                    化验项目</div>
+            </div>
+        </div>
+    </div>
+    <div class="ScrollBar" style="overflow: hidden">
+        <div id="ZJItem" class="tabPanel" style="display: block;">
+            <table id="tbZJItem" class="form">
+            </table>
+        </div>
+    </div>
+</div>
+</form>

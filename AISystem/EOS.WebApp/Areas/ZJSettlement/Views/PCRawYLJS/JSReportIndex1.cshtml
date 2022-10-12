@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "检斤单";
+    Layout = "~/Views/Shared/_LayoutReportIndex.cshtml";
+}
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <script type="text/javascript">
+        var CreateUser = "@ViewBag.CreateUser";
+        var ReportName = "检斤检验单";
+        var Parm_Key_Value = GetQuery("Parm_Key_Value");
+        Parm_Key_Value = unescape(Parm_Key_Value);
+        //报表参数对应值
+        //var Parameter = "title|String|" + Company + ReportName;
+        var Parameter = "title,createuser|String,String|" + ReportName + "," + CreateUser;
+        $(function () {
+            UpdateToolbar("2");
+            window_onload();
+        })
+        //        var OrderDetails;
+        function window_onload() {
+            var OrderDetails = ReportViewer.Report.ControlByName("srByOrder").AsSubReport.Report;
+            //关联事件 
+            OrderDetails.OnInitialize = OnOrderInitialize;
+
+            //开启报表生成进度条显示
+            ReportViewer.Report.ShowProgressUI = true;
+            //启动运行
+            ReportViewer.Start();
+        }
+
+        function OnOrderInitialize() {
+            var BillNo = ReportViewer.Report.FieldByName("BILLNO").AsString;
+            var Parm_Key_ValueC = escape("reporttype☻☻true≌KeyValue☻" + BillNo + "☻true≌");
+            var SubDataUrl = "/ZJSettlement/PCRawYLJS/CGJSReport?Type=2&Parm_Key_Value=" + Parm_Key_ValueC;
+            var OrderDetails = ReportViewer.Report.ControlByName("srByOrder").AsSubReport.Report;
+            OrderDetails.LoadDataFromURL(SubDataUrl);
+        }
+     
+    </script>
+    <style type="text/css">
+        html, body
+        {
+            margin: 0;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <script type="text/javascript">
+        var height = $(window).height() - 5;
+        NewMyCreateReport('@Url.Content("~/Content/GRF/JSReport/PSORDERList.grf")', '/ZJSettlement/PCRawYLJS/CGJSReport', escape(Parm_Key_Value), "100%", height + "px", false);
+        SetParameter(Parameter);
+    </script>
+</body>
+</html>

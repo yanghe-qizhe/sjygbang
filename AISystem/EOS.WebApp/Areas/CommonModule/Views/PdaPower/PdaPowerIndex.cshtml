@@ -1,0 +1,310 @@
+﻿@{
+    ViewBag.Title = "手持机用户注册》列表";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("USERGROUPNAME", "USERGROUP", "Dictionary", "", "", "");//用户组
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var TaskNo = $("#TaskNo").val();
+        var USERGROUP = $("#USERGROUP").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/CommonModule/PdaPower/GetOrderList")?USERGROUP=" + USERGROUP + '&TaskNo=' + escape(TaskNo), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = "";
+        var EndTime = "";
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/CommonModule/PdaPower/GetOrderList")",
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+            { label: '主键', name: 'ID', hidden: true },
+            { label: '用户PK', name: 'NUM', hidden: true },
+            { label: '工号', name: 'ACCOUNT', index: 'ACCOUNT', width: 60, align: 'center' },
+            { label: '姓名', name: 'NAME', index: 'HNUM', width: 80, align: 'center' },
+            { label: 'USERGROUP', name: 'USERGROUP', hidden: true },
+             { label: '用户组', name: 'USERGROUPNAME', index: 'USERGROUPNAME', width: 80, align: 'center' },
+            //{ label: '系统设置', name: 'FLIST1',index: 'FLIST1', width: 60, align: 'center',
+            //        formatter: function (cellvalue, options, rowObject) {
+            //        if (cellvalue == '0')
+            //        return "<span style='color:red;'>无</span>";
+            //        if (cellvalue == '1')
+            //        return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //    }
+            // },
+            //{ label: '采购收货', name: 'FLIST2',index: 'FLIST2', width: 60, align: 'center',
+            //        formatter: function (cellvalue, options, rowObject) {
+            //        if (cellvalue == '0')
+            //        return "<span style='color:red;'>无</span>";
+            //        if (cellvalue == '1')
+            //        return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //    }
+            // },
+            //{ label: '销售发货', name: 'FLIST3',index: 'FLIST3', width: 60, align: 'center',
+            //        formatter: function (cellvalue, options, rowObject) {
+            //        if (cellvalue == '0')
+            //        return "<span style='color:red;'>无</span>";
+            //        if (cellvalue == '1')
+            //        return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //    }
+            // },
+            // { label: '厂内转序收货', name: 'FLIST4',index: 'FLIST4', width: 80, align: 'center',
+            //        formatter: function (cellvalue, options, rowObject) {
+            //        if (cellvalue == '0')
+            //        return "<span style='color:red;'>无</span>";
+            //        if (cellvalue == '1')
+            //        return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //    }
+            // },
+            //{ label: '厂内转序发货', name: 'FLIST5',index: 'FLIST5', width: 80, align: 'center',
+            //        formatter: function (cellvalue, options, rowObject) {
+            //        if (cellvalue == '0')
+            //        return "<span style='color:red;'>无</span>";
+            //        if (cellvalue == '1')
+            //        return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //    }
+            // },
+            //     { label: '厂际转序收货', name: 'FLIST9',index: 'FLIST9', width: 80, align: 'center',
+            //        formatter: function (cellvalue, options, rowObject) {
+            //        if (cellvalue == '0')
+            //        return "<span style='color:red;'>无</span>";
+            //       else  if (cellvalue == '1')
+            //        return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //         else return "<span style='color:red;'>无</span>";
+            //    }
+            // },
+            //{ label: '厂际转序发货', name: 'FLIST10',index: 'FLIST10', width: 80, align: 'center',
+            //        formatter: function (cellvalue, options, rowObject) {
+            //        if (cellvalue == '0')
+            //        return "<span style='color:red;'>无</span>";
+            //       else if (cellvalue == '1')
+            //        return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //       else return "<span style='color:red;'>无</span>";
+            //    }
+            // },
+            // { label: '采样制卡', name: 'FLIST6',index: 'FLIST1', width: 60, align: 'center',
+            //        formatter: function (cellvalue, options, rowObject) {
+            //        if (cellvalue == '0')
+            //        return "<span style='color:red;'>无</span>";
+            //        if (cellvalue == '1')
+            //        return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //    }
+            // },
+            // { label: '历史记录', name: 'FLIST7',index: 'FLIST1', width: 60, align: 'center',
+            //        formatter: function (cellvalue, options, rowObject) {
+            //        if (cellvalue == '0')
+            //        return "<span style='color:red;'>无</span>";
+            //        if (cellvalue == '1')
+            //        return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //    }
+            // },
+            //{ label: '门禁核验', name: 'FLIST8',index: 'FLIST8', width: 60, align: 'center',
+            //    formatter: function (cellvalue, options, rowObject) {
+            //    if (cellvalue != '1')
+            //    return "<span style='color:red;'>无</span>";
+            //    if (cellvalue == '1')
+            //    return "<span style='color: blue; font-weight: bold;'>有</span>";
+            //}
+            //},
+            //{ label: '关联仓库', name: 'DEF2', index: 'DEF2', width: 180, align: 'center' },
+            {
+                label: '厂区', name: "PK_ORG", width: 100, sortable: false, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1000')
+                        return "阳光纸业";
+                    else if (cellvalue == '6000')
+                        return "盛世热电";
+                    else if (cellvalue == '7000')
+                        return "新迈纸业";
+                    else if (cellvalue == '8000')
+                        return "阳光王子";
+                    else if (cellvalue == '9000')
+                        return "华迈纸业";
+                    else if (cellvalue == '9010')
+                        return "科迈制浆";
+                    else
+                        return "";
+                }
+            },
+            {
+                label: '注册时间', name: 'CRETIME', index: 'CRETIME', width: 130, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                }
+            },
+             {
+                 label: '是否启用', name: 'STATUE', index: 'STATUE', width: 60, align: 'center',
+                 formatter: function (cellvalue, options, rowObject) {
+                     if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                     else if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                     else return "<img src='../../Content/Images/checknomark.gif'/>";
+                 }
+             }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true
+        });
+
+    }
+    //新增
+    function btn_add() {
+        AddTabMenu("PdaPowerFForm", "@Url.Content("~/CommonModule/PdaPower/PdaPowerFForm")?ModuleId=" + ModuleId, "新增手持机用户", "page_white_add.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("PdaPowerFForm", "@Url.Content("~/CommonModule/PdaPower/PdaPowerFForm")?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, "编辑手持机用户", "page_white_edit.png", true, true, true);
+        }
+    }
+    //启用
+    function btn_Check() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            if (status == "1") {
+                tipDialog("此单据已启用,无法重复启用！", 3, "");
+                return false;
+            }
+            var isuse = GetJqGridRowValue("#gridTable", "ISDEL");
+            if (isuse == "1") {
+                tipDialog("此单据已启用,无法启用操作！", 3, "");
+                return false;
+            }
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GXCONVOPER/CheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+    //停用
+    function btn_UnCheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            if (status == "1") {
+                tipDialog("此单据已使用,无法继续停用！", 3, "");
+                return false;
+            }
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (isuse == "0") {
+                tipDialog("此单据已停用,无法停用操作！", 3, "");
+                return false;
+            }
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/GXCONVOPER/UnCheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            if (status == "1") {
+                tipDialog("单据已使用，不可删除！！", 3, "");
+                return false;
+            }
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/CommonModule/PdaPower/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("PdaPowerDetail", "@Url.Content("~/CommonModule/PdaPower/PdaPowerDetail")?KeyValue=" + KeyValue, "手持机用户细信息", "page_white_edit.png", true, true, true);
+        }
+    }
+    //查询
+    function btn_query() {
+        QueryDialog("/CommonModule/PdaPower/PdaPowerFQuery", "PdaPowerFQuery", "查询过滤", 350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/CommonModule/PdaPower/GetSerOrderList")?" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+
+    //用户权限组
+    function btn_AllotPermission() {
+        var USERGROUP = $("#USERGROUP").val();
+        var USERGROUPNAME = $("#USERGROUPNAME").val();
+        if (USERGROUP == "") {
+             top.TipMsg("请您先选择用户组！", 4000, "error");
+           return false;
+        } else {
+            var url = "/CommonModule/PdaPower/AllotPermission?ObjectId=" + USERGROUP + '&Category=5';
+            openDialog(url, "AllotPermission", "用户组权限 - " + USERGROUPNAME, 830, 480, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    工号/姓名：
+                </th>
+                <td>
+                    <input id="TaskNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th class="formTitle">
+                    用户组：
+                </th>
+                <td class="formValue">
+                    <input name="USERGROUP" id="USERGROUP" type="hidden" dbfield="true" />
+                    <input id="USERGROUPNAME" type="text" class="txt required" items="用户组" />
+                </td>
+               
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

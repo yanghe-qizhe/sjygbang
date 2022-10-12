@@ -1,0 +1,179 @@
+﻿@{
+    ViewBag.Title = "质检月度指标》表单页面";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    $(function () {
+        InitControl();
+    })
+
+    function Dialog(url, _id, _title, _width, _height) {
+        Loading(true);
+        top.$.dialog({
+            id: _id,
+            width: _width,
+            height: _height,
+            max: false,
+            lock: false,
+            title: _title,
+            content: 'url:' + RootPath() + url
+        });
+    }
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/ZJMonthTarget/SetForm", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/ZJMonthTarget/SubmitForm?KeyValue=" + GetQuery('KeyValue'), postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            项目：
+        </th>
+        <td class="formValue">
+            <select id="ZJITEM" class="txtselect required" datacol="yes" err="项目" checkexpession="NotNull">
+                <option value="ZJ000319">碱度</option>
+                <option value="ZJ000300">TFe</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            标准值：
+        </th>
+        <td class="formValue">
+            <input id="BASETARGET" type="text" class="txt required" datacol="yes" err="标准值" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            比较符：
+        </th>
+        <td class="formValue">
+            <select id="SIGNMAX" class="txtselect required" datacol="yes" err="比较符" checkexpession="NotNull">
+                <option value="<" selected="true">&lt;</option>
+                <option value="&lt;=">&lt;=</option>
+                <option value="=">=</option>
+                <option value=">">&gt;</option>
+                <option value="&gt;=">&gt;=</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            最大标准值：
+        </th>
+        <td class="formValue">
+            <input id="MAXTARGET" type="text" class="txt required" datacol="yes" err="最大标准值"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            比较符：
+        </th>
+        <td class="formValue">
+            <select id="SIGNMIN" class="txtselect required" datacol="yes" err="比较符" checkexpession="NotNull">
+                <option value="<" selected="true">&lt;</option>
+                <option value="&lt;=">&lt;=</option>
+                <option value="=">=</option>
+                <option value=">">&gt;</option>
+                <option value="&gt;=">&gt;=</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            最小标准值：
+        </th>
+        <td class="formValue">
+            <input id="MINTARGET" type="text" class="txt required" datacol="yes" err="最小标准值"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            比较符：
+        </th>
+        <td class="formValue">
+            <select id="TOPSIGNMAX" class="txtselect required" datacol="yes" err="比较符" checkexpession="NotNull">
+                <option value="<" selected="true">&lt;</option>
+                <option value="&lt;=">&lt;=</option>
+                <option value="=">=</option>
+                <option value=">">&gt;</option>
+                <option value="&gt;=">&gt;=</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            一级品上限：
+        </th>
+        <td class="formValue">
+            <input id="TOPMAXTARGET" type="text" class="txt required" datacol="yes" err="一级品最大标准值"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            比较符：
+        </th>
+        <td class="formValue">
+            <select id="TOPSIGNMIN" class="txtselect required" datacol="yes" err="比较符" checkexpession="NotNull">
+                <option value="<" selected="true">&lt;</option>
+                <option value="&lt;=">&lt;=</option>
+                <option value="=">=</option>
+                <option value=">">&gt;</option>
+                <option value="&gt;=">&gt;=</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            一级品最下限：
+        </th>
+        <td class="formValue">
+            <input id="TOPMINTARGET" type="text" class="txt required" datacol="yes" err="一级品最小标准值"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            开始时间：
+        </th>
+        <td class="formValue">
+            <input id="STIME" type="text" class="txt Wdate" datacol="yes" err="开始时间" onfocus="WdatePicker({onpicked:function(){ETIME.focus();},maxDate:'#F{$dp.$D(\'ETIME\')}'})"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            结束时间：
+        </th>
+        <td class="formValue">
+            <input id="ETIME" type="text" class="txt Wdate" datacol="yes" err="结束时间" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'STIME\')}'})"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="3">
+            <textarea id="MEMO" name="MEMO" maxlength="200" class="txtArea" rows="5"></textarea>
+        </td>
+    </tr>
+</table>
+</form>

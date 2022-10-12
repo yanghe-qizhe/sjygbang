@@ -1,0 +1,184 @@
+﻿@{
+    ViewBag.Title = "卡注册管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var ICNUMBER = $("#ICNUMBER").val();
+        var TYPE = $("#TYPE").val();
+        var  ICNO= $("#ICNO").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/RegICCard/GetList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&ICNUMBER=' +escape(ICNUMBER)+'&ICNO='+ICNO +'&TYPE='+TYPE, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+          var TYPE = $("#TYPE").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/RegICCard/GetList")?StartTime=" + StartTime + '&EndTime=' + EndTime+'&TYPE='+TYPE  ,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', width: 80, align: 'left', hidden: true }, 
+                { label: '编号 ', name: 'BILLNO', index: 'BILLNO', width: 100, align: 'center' },
+                { label: '卡序号', name: 'ICNO', index: 'ICNo', width: 100, align: 'center' },
+                { label: '卡面编号', name: 'ICNUMBER', index: 'ICNUMBER', width: 100, align: 'left' },
+                { label: '卡状态', name: 'ISUSE', index: 'ISUSE', width: 45, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "有效";
+                        if (cellvalue == '0') return "无效";
+                         if (cellvalue == '2') return "注销";
+                    }
+                }, { label: '卡类型', name: 'TYPE', index: 'TYPE', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "IC外部计量卡";
+                        if (cellvalue == '2') return "IC采样卡";
+                        if (cellvalue == '3') return "IC内部计量卡";
+                    }
+                },
+                { label: '登记人', name: 'SIGNUSER', index: 'SIGNUSER', width: 90, align: 'center' },
+                   {
+                    label: '注册时间', name: 'SIGNDATE', index: 'SIGNDATE', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'SIGNDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+        });
+    }
+
+
+
+     //新增
+    function btn_add() {
+      var url = "/ExampleModule/RegICCard/Form?ModuleId="+ModuleId;
+        openDialog(url, "Form11111", "新增IC卡注册", 650, 380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/ExampleModule/RegICCard/Form?KeyValue=" + KeyValue;
+            openDialog(url, "Form11111", "编辑IC卡注册", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue ;
+            delConfig('/ExampleModule/RegICCard/Delete', delparm, KeyValue.split(",").length);
+        }
+    }
+ 
+    
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        @*      <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>*@
+        <div class="PartialButton">
+            <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+                <b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                    刷新</b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="lr-add" class="tools_btn" title="新增(Ctrl+Z)" onclick="btn_add()"><span><b
+                style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">新增</b></span></a><a
+                    id="lr-edit" class="tools_btn" title="编辑(Ctrl+W)" onclick="btn_edit()"><span><b style="background: url(../../Content/Images/Icon16/edit.gif) no-repeat 50% 4px">编辑</b></span></a><a
+                        id="lr-delete" class="tools_btn" title="删除(Ctrl+S)" onclick="btn_delete()"><span><b
+                            style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">删除</b></span></a><a
+                                id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()"><span><b
+                                    style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">离开</b></span></a>
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    卡面编号：
+                </th>
+                <td>
+                    <input id="ICNUMBER" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    卡序号：
+                </th>
+                <td>
+                    <input id="ICNO" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    卡类型：
+                </th>
+                <td>
+                    <select id="TYPE" class="txt select" style="width: 125px">
+                        <option value="">===请选择===</option>
+                        <option value="1">IC外部计量卡</option>
+                        <option value="2">IC采样卡</option>
+                        <option value="3">IC内部计量卡</option>
+                    </select>
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,694 @@
+﻿Object Report
+	Version='6.6.2.0'
+	Title='采购收货逐车明细'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		Size=256
+		Width=24.1
+		Height=9.3
+		LeftMargin=0.5
+		TopMargin=0.5
+		RightMargin=1.5
+		BottomMargin=0.5
+	End
+	Object DetailGrid
+		CenterView=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=eosine123;User ID=EOSTYZY;Data Source=192.168.31.83/orcl'
+			QuerySQL='select JSDATE 结算日期,BEGINDATE as 开始日期,ENDDATE as 结束日期,BILLNO as 检斤单号,MATERIALNAME 物料,MATERIALSPEC 规格,SUPPLYNAME 供应商,YFPIECE as 件数,\r\nYFSUTTLE as 应收数量,SUTTLE 净料,JJSUTTLE 采购部检斤重量,ZJSUTTLE as 质检扣重,TZSUTTLE as 调整重量,\r\nBDSUTTLE as 水分补点,JSSUTTLE as 结算重量 , PRICE as 结算单价,CHARGE 金额,CARSNUM as 车数,HZUSERNAME 货主,CREATEUSER 制单人 from DP_PSORDER a \r\nwhere rownum<15 and SUPPLYNAME ='散户'\r\norder by JSDATE desc'
+			Items Field
+				Item
+					Name='结算日期'
+				End
+				Item
+					Name='开始日期'
+				End
+				Item
+					Name='结束日期'
+				End
+				Item
+					Name='检斤单号'
+				End
+				Item
+					Name='物料'
+				End
+				Item
+					Name='规格'
+				End
+				Item
+					Name='供应商'
+				End
+				Item
+					Name='净料'
+					Type=Float
+					Format='0.000'
+				End
+				Item
+					Name='质检扣重'
+					Type=Float
+					Format='0.000'
+				End
+				Item
+					Name='结算重量'
+					Type=Float
+					Format='0.000'
+				End
+				Item
+					Name='结算单价'
+					Type=Float
+					Format='0.00'
+				End
+				Item
+					Name='金额'
+					Type=Float
+					Format='0.00'
+				End
+				Item
+					Name='车数'
+					Type=Integer
+				End
+				Item
+					Name='货主'
+				End
+				Item
+					Name='制单人'
+				End
+			End
+		End
+		Items Column
+			Item
+				Name='结算日期'
+				Width=2.38125
+			End
+			Item
+				Name='检斤单号'
+				Width=2.59292
+			End
+			Item
+				Name='物料'
+				Width=2.01083
+			End
+			Item
+				Name='规格'
+				Width=1.5875
+			End
+			Item
+				Name='供应商'
+				Width=1.77271
+			End
+			Item
+				Name='车数'
+				Width=1.03188
+			End
+			Item
+				Name='净料'
+				Width=1.61396
+			End
+			Item
+				Name='质检扣重'
+				Width=1.40229
+			End
+			Item
+				Name='结算重量'
+				Width=1.95792
+			End
+			Item
+				Name='结算单价'
+				Width=1.82563
+			End
+			Item
+				Name='金额'
+				Width=2.19604
+			End
+		End
+		Object ColumnContent
+			CanGrow=T
+			Height=0.6
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			AdjustRowHeight=F
+			RowsPerPage=9
+			Items ColumnContentCell
+				Item
+					Column='结算日期'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='结算日期'
+				End
+				Item
+					Column='检斤单号'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='检斤单号'
+				End
+				Item
+					Column='物料'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='物料'
+				End
+				Item
+					Column='规格'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='规格'
+				End
+				Item
+					Column='供应商'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='供应商'
+				End
+				Item
+					Column='车数'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='车数'
+				End
+				Item
+					Column='净料'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='净料'
+				End
+				Item
+					Column='质检扣重'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='质检扣重'
+				End
+				Item
+					Column='结算重量'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='结算重量'
+				End
+				Item
+					Column='结算单价'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='结算单价'
+				End
+				Item
+					Column='金额'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='金额'
+				End
+			End
+		End
+		Object ColumnTitle
+			Height=0.6
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Bold=T
+				Charset=134
+			End
+			Items ColumnTitleCell
+				Item
+					GroupTitle=F
+					Column='结算日期'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='结算日期'
+				End
+				Item
+					GroupTitle=F
+					Column='检斤单号'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='检斤单号'
+				End
+				Item
+					GroupTitle=F
+					Column='物料'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='物料'
+				End
+				Item
+					GroupTitle=F
+					Column='规格'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='规格'
+				End
+				Item
+					GroupTitle=F
+					Column='供应商'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='供应商'
+				End
+				Item
+					GroupTitle=F
+					Column='车数'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='车 数'
+				End
+				Item
+					GroupTitle=F
+					Column='净料'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='净 料'
+				End
+				Item
+					GroupTitle=F
+					Column='质检扣重'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='质检扣重'
+				End
+				Item
+					GroupTitle=F
+					Column='结算重量'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='结算重量'
+				End
+				Item
+					GroupTitle=F
+					Column='结算单价'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='结算单价'
+				End
+				Item
+					GroupTitle=F
+					Column='金额'
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='金 额'
+				End
+			End
+		End
+	End
+	Object PageHeader
+		Height=0
+	End
+	Object PageFooter
+		Height=0
+		Items Control
+			Item
+				Type=MemoBox
+				Name='MemoBox2'
+				Anchor=[Top|Right]
+				Left=56.0123
+				Width=3.59833
+				Height=0.608542
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+			End
+		End
+	End
+	Items Parameter
+		Item
+			Name='title'
+			Value='收购单 '
+		End
+		Item
+			Name='start_Date'
+		End
+		Item
+			Name='end_Date'
+		End
+		Item
+			Name='hzusername'
+		End
+		Item
+			Name='createuser'
+		End
+	End
+	Items ReportHeader
+		Item
+			Height=1.5875
+			Items Control
+				Item
+					Type=StaticBox
+					Name='StaticBox14'
+					Left=0.211667
+					Top=0.211667
+					Width=20.5846
+					Height=0.79375
+					Object Font
+						Name='Arial'
+						Size=142500,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='收购单'
+					Parameter='title'
+				End
+				Item
+					Type=MemoBox
+					Name='MemoBox3'
+					Left=0.211667
+					Top=1.03188
+					Width=3.59833
+					Height=0.529167
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					Text='开始日期：[#{start_Date}#]'
+				End
+				Item
+					Type=MemoBox
+					Name='MemoBox4'
+					Left=4.39208
+					Top=1.03188
+					Width=3.59833
+					Height=0.529167
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					Text='结束日期：[#{end_Date}#]'
+				End
+				Item
+					Type=MemoBox
+					Name='MemoBox5'
+					Left=7.99042
+					Top=1.03188
+					Width=4.20688
+					Height=0.529167
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					Text='物料：[#物料#]'
+				End
+				Item
+					Type=MemoBox
+					Name='MemoBox6'
+					Left=12.409
+					Top=1.03188
+					Width=3.78354
+					Height=0.529167
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					Text='货主名称：[#货主#]'
+				End
+				Item
+					Type=MemoBox
+					Name='MemoBox7'
+					Left=16.5894
+					Top=1.03188
+					Width=2.80458
+					Height=0.529167
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					Text='制单人：[#{createuser}#]'
+				End
+			End
+		End
+	End
+	Items ReportFooter
+		Item
+			Name='ReportFooter2'
+			Height=0.6
+			Items Control
+				Item
+					Type=StaticBox
+					Name='StaticBox25'
+					AlignColumn='结算日期'
+					AlignColumnEx='供应商'
+					Left=-0.0264583
+					Width=10.3717
+					Height=0.56
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+					Text='合计：'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox28'
+					AlignColumn='质检扣重'
+					Left=12.9646
+					Width=1.42875
+					Height=0.56
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='质检扣重'
+					Format='0.000'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox31'
+					AlignColumn='结算单价'
+					Left=16.3513
+					Width=1.85208
+					Height=0.56
+					Object Border
+						Styles=[DrawBottom]
+					End
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					Format='0.000'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox33'
+					AlignColumn='结算重量'
+					Left=14.3933
+					Width=1.95792
+					Height=0.56
+					Object Border
+						Styles=[DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='结算重量'
+					Format='0.000'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox35'
+					AlignColumn='金额'
+					Left=18.1504
+					Width=2.2225
+					Height=0.56
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='金额'
+					Format='0.00'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox26'
+					Left=59.8752
+					Width=82.3383
+					Height=0.56
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox27'
+					Left=48.0219
+					Width=3.01625
+					Height=0.56
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Bold=T
+					End
+					TextAlign=MiddleCenter
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox37'
+					AlignColumn='车数'
+					Left=10.3452
+					Width=1.05833
+					Height=0.56
+					Object Border
+						Styles=[DrawBottom]
+					End
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='车数'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox40'
+					AlignColumn='净料'
+					Left=11.3506
+					Width=1.66688
+					Height=0.56
+					Object Border
+						Styles=[DrawLeft|DrawBottom]
+					End
+					Object Font
+						Name='Arial'
+						Size=90000,0
+						Weight=400
+					End
+					TextAlign=MiddleCenter
+					DataField='净料'
+					Format='0.000'
+				End
+			End
+		End
+	End
+End

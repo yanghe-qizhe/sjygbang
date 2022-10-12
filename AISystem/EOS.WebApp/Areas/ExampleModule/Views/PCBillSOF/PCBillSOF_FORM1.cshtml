@@ -1,0 +1,808 @@
+﻿@{
+    ViewBag.Title = "汽运到货单";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("SUPPLIERNAME", "PK_SUPPLIER", "Supply", "", "", "");
+        BindAutocomplete("PK_SENDADDRESS", "SENDADDRESS", "Supply", "", "", "");
+        BindAutocomplete("TRAFFICCOMPANYNAME", "TRAFFICCOMPANY", "TrafficCompany", "", "", "");
+        BindAutocomplete("HZUSERNAME", "HZUSER", "SourceArea", "", "", "");
+        BindAutocomplete("SENDADDRESS", "PK_SENDADDRESS", "Supply", "", "", "");
+        SupplyAutocomplete();
+        CarsAutocomplete();
+        DriversAutocomplete();
+        GetGrid();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ExampleModule/PCBillSOF/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    $("#ORDERINDEX➩" + rowindex).val(rowData.ORDERINDEX);
+                    $("#ID➩" + rowindex).val(rowData.ID);
+                    $("#PK_ORDER➩" + rowindex).val(rowData.PK_ORDER);
+                    $("#PK_ORDER_B➩" + rowindex).val(rowData.PK_ORDER_B);
+                    $("#VBILLCODE➩" + rowindex).val(rowData.VBILLCODE);
+                    $("#PK_SUPPLIER➩" + rowindex).val(rowData.PK_SUPPLIER);
+                    $("#SUPPLIERNAME➩" + rowindex).val(rowData.SUPPLIERNAME);
+                    $("#PK_MATERIAL➩" + rowindex).val(rowData.PK_MATERIAL);
+                    $("#MATERIALNAME➩" + rowindex).val(rowData.MATERIALNAME);
+                    $("#MATERIALSPEC➩" + rowindex).val(rowData.MATERIALSPEC);
+                    $("#MATERIALCODE➩" + rowindex).val(rowData.MATERIALCODE);
+                    $("#DBILLDATE➩" + rowindex).val(rowData.DBILLDATE);
+                    $("#PK_ORG➩" + rowindex).val(rowData.PK_ORG);
+                    $("#ORGNAME➩" + rowindex).val(rowData.ORGNAME);
+                    $("#PK_DEPT➩" + rowindex).val(rowData.PK_DEPT);
+                    $("#DEPTNAME➩" + rowindex).val(rowData.DEPTNAME);
+                    $("#NASTNUM➩" + rowindex).val(rowData.NASTNUM);
+                    $("#NASTNUM➩" + rowindex).val("0");
+                    $("#YLNUM➩" + rowindex).val(rowData.YLNUM);
+                    $("#AMOUNT➩" + rowindex).val(rowData.AMOUNT);
+                    $("#MDSUTTLE➩" + rowindex).val(rowData.MDSUTTLE);
+                    $("#MDAMOUNT➩" + rowindex).val(rowData.MDAMOUNT);
+                    $("#MDMINAMOUNT➩" + rowindex).val(rowData.MDMINAMOUNT);
+                    $("#MINAMOUNT➩" + rowindex).val(rowData.MINAMOUNT);
+                    $("#MJAMOUNT➩" + rowindex).val(rowData.MJAMOUNT);
+                    $("#MATERIALLEVEL➩" + rowindex).val(rowData.MATERIALLEVEL);
+
+                    $("#DEF1➩" + rowindex).val(rowData.DEF1);
+                    $("#DEF2➩" + rowindex).val(rowData.DEF2);
+                    $("#DEF9➩" + rowindex).val(rowData.DEF9);
+                    $("#DEF12➩" + rowindex).val(rowData.DEF12);
+                    $("#ISJH➩" + rowindex).val(rowData.ISJH);
+                    $("#STORE➩" + rowindex).val(rowData.STORE);
+                    $("#STORENAME➩" + rowindex).val(rowData.STORENAME);
+                    $("#CALLDATE➩" + rowindex).val(rowData.CALLDATE);
+                    $("#PK_SENDADDRESS➩" + rowindex).val(rowData.PK_SENDADDRESS);
+                    $("#SENDADDRESS➩" + rowindex).val(rowData.SENDADDRESS);
+                    $("#PDATE➩" + rowindex).val(rowData.PDATE);
+                    $("#PZBILLNO➩" + rowindex).val(rowData.PZBILLNO);
+                    $("#ZJBILLNO➩" + rowindex).val(rowData.ZJBILLNO);
+                    $("#DEF5➩" + rowindex).val(rowData.DEF5);
+
+                    $("#MEMO➩" + rowindex).val(rowData.MEMO);
+                    $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').attr("datacol", "yes");
+                    Conversion(rowindex);
+                    rowindex++;
+                    $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').removeAttr('disabled');
+                    $("#gridTable").find('.disabled').attr("disabled", "disabled");
+                    $("#AMOUNT➩" + rowindex).focus();
+                });
+            });
+        }
+    })
+
+    /*车皮明细begin=======================================*/
+    //订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 385,
+            autowidth: true,
+            colModel: [
+                { label: '计量顺序[<font face="宋体">*</font>]', name: 'ORDERINDEX', width: 100, sortable: false, align: 'center' },
+                { label: '发货量[<font face="宋体">*</font>]', name: 'AMOUNT', width: 120, sortable: false, align: 'center' },
+                { label: '订单编号[<font face="宋体">*</font>]', name: "VBILLCODE", width: 200, sortable: false },
+                { label: '供应商', name: "SUPPLIERNAME", width: 200, sortable: false },
+                { label: '物料', name: "MATERIALNAME", width: 100, sortable: false, align: 'center' },
+                { label: '规格', name: "MATERIALSPEC", width: 100, sortable: false, align: 'center' },
+                { label: '订单数量', name: "NASTNUM", width: 70, sortable: false, align: 'center' },
+                { label: '余量', name: 'YLNUM', width: 70, sortable: false, align: 'center' },
+                 { label: '码单重量', name: 'MDSUTTLE', width: 120, sortable: false, align: 'center' },
+                  { label: '码单件数', name: 'MDAMOUNT', width: 120, sortable: false, align: 'center' },
+                         { label: '码单小包总数', name: 'MDMINAMOUNT', width: 120, sortable: false, align: 'center' },
+                  { label: '当车小包总数', name: 'MINAMOUNT', width: 120, sortable: false, align: 'center' },
+                         { label: '每件包数', name: 'MJAMOUNT', width: 120, sortable: false, align: 'center' },
+                  { label: '品牌', name: 'MATERIALLEVEL', width: 120, sortable: false, align: 'center' },
+                { label: '单位', name: 'DEF2', width: 70, sortable: false, align: 'center' },
+                              { label: '凭证单号', name: 'PZBILLNO', width: 70, sortable: false, align: 'center' },
+              { label: '检验批号', name: 'ZJBILLNO', width: 70, sortable: false, align: 'center' },
+                 { label: '批次号', name: 'DEF5', width: 70, sortable: false, align: 'center' },
+                     { label: '验级地点', name: "STORENAME", width: 100, sortable: false, align: 'center' },
+                       { label: '送货单位', name: "SENDADDRESS", width: 100, sortable: false, align: 'center' },
+                { label: '工厂', name: "ORGNAME", width: 100, sortable: false, align: 'center' },
+                { label: ' 采购部门', name: "DEPTNAME", width: 100, sortable: false, align: 'center' },
+                { label: '订单日期', name: "DBILLDATE", width: 130, sortable: false },
+                { label: '备注', name: "MEMO", width: 120, sortable: false }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计
+                $(this).footerData("set", {
+                    "ORDERINDEX": "合计",
+                    "AMOUNT": "<span id='TotalAMOUNT'>0.00</span>",
+                    "NASTNUM": "<span id='TotalNASTNUM'>0.00</span>",
+                    "YLNUM": "<span id='TotalYLNUM'>0.00</span>"
+                });
+            }
+        });
+        //        //表头合并
+        $("#gridTable").jqGrid('setGroupHeaders', {
+            useColSpanStyle: true,
+            groupHeaders: [
+              { startColumnName: 'VBILLCODE', numberOfColumns: 11, titleText: '订单信息' }
+            ]
+        });
+        //默认添加6行 空行
+        for (var i = 1; i < 16; i++) {
+            var rowdata = {
+                ORDERINDEX: '<input id="ORDERINDEX➩' + i + '" maxlength="10"  class="editable decimal center" type="text" datacol="No" err="排序" checkexpession="Double" value="' + i + '"/>',
+                AMOUNT: '<input id="AMOUNT➩' + i + '" maxlength="10"  class="editable decimal center" type="text" onkeyup="Conversion(' + i + ')"   value="0"/><input id="PRICE➩' + i + '" type="hidden" value="0"/><input id="ID➩' + i + '" type="hidden" value=""/>',
+                VBILLCODE: '<input readonly id="VBILLCODE➩' + i + '" class="editable" type="text" style="cursor:pointer" datacol="no" err="订单编号" checkexpession="NotNull" /><input id="PK_ORDER➩' + i + '" type="hidden" /><input id="PK_ORDER_B➩' + i + '" type="hidden" />',
+                SUPPLIERNAME: '<input readonly id="SUPPLIERNAME➩' + i + '" class="editable disabled" type="text" datacol="no" err="供应商" checkexpession="NotNull" /><input id="PK_SUPPLIER➩' + i + '" type="hidden" />',
+                MATERIALNAME: '<input readonly id="MATERIALNAME➩' + i + '" class="editable disabled " type="text" style="cursor:pointer" datacol="no" err="物料" checkexpession="NotNull" /><input id="PK_MATERIAL➩' + i + '" type="hidden" />',
+                MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + i + '" class="editable disabled " type="text" style="cursor:pointer"/><input id="MATERIALCODE➩' + i + '" type="hidden" />',
+                NASTNUM: '<input id="NASTNUM➩' + i + '" class="editable disabled center" type="text" datacol="No" err="订单量" checkexpession="Double" value="0"/>',
+                YLNUM: '<input id="YLNUM➩' + i + '" class="editable disabled center" type="text" datacol="No" err="余量" checkexpession="Double" value="0"/>',
+                MDSUTTLE: '<input id="MDSUTTLE➩' + i + '" maxlength="20"  class="editable decimal center" type="text"  value="0"/>',
+                MDAMOUNT: '<input id="MDAMOUNT➩' + i + '" maxlength="20"  class="editable decimal center" type="text" value="0"/>',
+                MDMINAMOUNT: '<input id="MDMINAMOUNT➩' + i + '" maxlength="20"  class="editable decimal center" type="text"  value="0"/>',
+                MINAMOUNT: '<input id="MINAMOUNT➩' + i + '" maxlength="20"  class="editable decimal center" type="text"  value="0"/>',
+                MJAMOUNT: '<input id="MJAMOUNT➩' + i + '" maxlength="20"  class="editable decimal center" type="text"   value="0"/>',
+                MATERIALLEVEL: '<input id="MATERIALLEVEL➩' + i + '"  class="editable center" type="text"  value=""/>',
+                DEF2: '<input readonly id="DEF2➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" /><input id="DEF1➩' + i + '" type="hidden" />',
+                PZBILLNO: '<input readonly id="PZBILLNO➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" /><input id="PDATE➩' + i + '" type="hidden" />',
+                ZJBILLNO: '<input readonly id="ZJBILLNO➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" />',
+                DEF5: '<input id="DEF5➩' + i + '" class="editable" type="text" style="cursor:pointer" />',
+                STORENAME: '<input readonly id="STORENAME➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" /><input id="STORE➩' + i + '" type="hidden" /><input id="DEF9➩' + i + '" type="hidden" /><input id="DEF12➩' + i + '" type="hidden" value="0"/>',
+                SENDADDRESS: '<input readonly id="SENDADDRESS➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" /><input id="PK_SENDADDRESS➩' + i + '" type="hidden" /><input id="ISJH➩' + i + '" type="hidden" /><input id="CALLDATE➩' + i + '" type="hidden" />',
+                ORGNAME: '<input readonly id="ORGNAME➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" /><input id="PK_ORG➩' + i + '" type="hidden" />',
+                DEPTNAME: '<input readonly id="DEPTNAME➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" /><input id="PK_DEPT➩' + i + '" type="hidden" />',
+                DBILLDATE: '<input id="DBILLDATE➩' + i + '" class="editable disabled center" type="text" />',
+                MEMO: '<input id="MEMO➩' + i + '" class="editable center" type="text" />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        }
+
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $("#gridTable").find('input').attr("disabled", "disabled");
+        $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "yes");
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').click(function () {
+            var index = $(this).text();
+            $("#CARS➩" + index).val("");
+            $("#CARSNAME➩" + index).val("");
+            $("#PK_ORDER➩" + index).val("");
+            $("#PK_ORDER_B➩" + index).val("");
+            $("#VBILLCODE➩" + index).val("");
+            $("#PK_SUPPLIER➩" + index).val("");
+            $("#SUPPLIERNAME➩" + index).val("");
+            $("#PK_MATERIAL➩" + index).val("");
+            $("#MATERIALNAME➩" + index).val("");
+            $("#MATERIALSPEC➩" + index).val("");
+            $("#MATERIALCODE➩" + index).val("");
+            $("#DBILLDATE➩" + index).val("");
+            $("#PK_ORG➩" + index).val("");
+            $("#ORGNAME➩" + index).val("");
+            $("#PK_DEPT➩" + index).val("");
+            $("#DEPTNAME➩" + index).val("");
+            $("#NASTNUM➩" + index).val("");
+            $("#YLNUM➩" + index).val("0.00");
+            $("#AMOUNT➩" + index).val("0");
+            $("#DEF1➩" + index).val("");
+            $("#DEF2➩" + index).val("");
+            $("#MEMO➩" + index).val("");
+        });
+        //点击订单文本框时间，弹出选择订单信息
+        $("#gridTable tbody tr").find('td:eq(3)').find('input').click(function () {
+            if ($(this).attr('disabled') == 'disabled') {
+                return false;
+            }
+            var index = $(this).attr('id').split('➩')[1];
+            //            var PK_SUPPLIER = $("#PK_SUPPLIER").val();
+            //            if (PK_SUPPLIER == "") {
+            //                top.TipMsg("请您先选择供应商！", 4000, "error");
+            //                return false;
+            //            }
+            var url = "/ExampleModule/PCBillSOF/SELECTPOORDERS?op=0&index=" + index; // +"&Supply=" + PK_SUPPLIER;
+            Dialog(url, "SELECTPOORDERS", "选取采购订单信息（双击表格添加）", 900, 400);
+        });
+        //价格信息文本框点击事件
+        $("#gridTable").find('.decimal').click(function () {
+            $(this).select();
+        });
+    }
+    var array = new Array();
+    function IsExistOrder(index, json) {
+        if (!ArrayOrderExists(array, json)) {
+            array[index] = json;
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function ArrayOrderExists(arr, json) {
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] != null) {
+                if (arr[i].PK_SUPPLIER == json.PK_SUPPLIER && arr[i].PK_MATERIAL == json.PK_MATERIAL)
+                    return true;
+            }
+        }
+        return false;
+    }
+    //订单明细换算+合计
+    function Conversion(index) {
+        var NASTNUM = $("#NASTNUM➩" + index).val();                                //订单数量
+        var YLNUM = $("#YLNUM➩" + index).val();                            //余量
+        var AMOUNT = $("#AMOUNT➩" + index).val();                //预提
+        if (parseFloat(NASTNUM) > 1 && parseFloat(AMOUNT) > 0 && parseFloat(AMOUNT) > parseFloat(YLNUM) && parseFloat(YLNUM) > 0) {
+            top.TipMsg("发货量" + AMOUNT + "不能大与订单余量" + YLNUM + "！", 4000, "error");
+            $("#AMOUNT➩" + index).val(YLNUM);
+            AMOUNT = YLNUM;
+        }
+        //统计合计
+        var TotalNASTNUM = 0, TotalYLNUM = 0.00, TotalAMOUNT = 0.00, TotalAMOUNT1 = 0.00;
+        $("#gridTable tbody tr").each(function (i) {
+            var NASTNUM = $(this).find('td:eq(7)').find('input').val();
+            if (NASTNUM != "" && NASTNUM != undefined) {
+                TotalNASTNUM += Number(NASTNUM);
+            }
+            var YLNUM = $(this).find('td:eq(8)').find('input').val();
+            if (YLNUM != "" && YLNUM != undefined) {
+                TotalYLNUM += Number(YLNUM);
+            }
+            var AMOUNT = $(this).find('td:eq(2)').find('input').val();
+            if (AMOUNT != "" && AMOUNT != undefined) {
+                TotalAMOUNT += Number(AMOUNT);
+            }
+            //            var SECQUANTITY = $(this).find('td:eq(3)').find('input').val();
+            //            if (SECQUANTITY != "" && SECQUANTITY != undefined) {
+            //                TotalSECQUANTITY += Number(SECQUANTITY);
+            //            }
+        });
+
+        $("#TotalNASTNUM").text(getFloat(TotalNASTNUM, 3));
+        $("#TotalYLNUM").text(getFloat(TotalYLNUM, 3));
+        $("#TotalAMOUNT").text(getFloat(TotalAMOUNT, 3));
+        $("#NASTNUM").val(getFloat(TotalAMOUNT, 3));
+    }
+    /*明细end=======================================*/
+    function CarsAutocomplete() {
+        var txtname = "CARSNAME";
+        var $txtid = $("#CARS");
+        var $txtname = $("#CARSNAME");
+        var $txtcard = $("#CARDNO");
+        var $txtdef11 = $("#DEF11");
+
+
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtcard.val(data.epccode);
+            $txtdef11.val(data.tggweight);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Cars", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 80%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="epccode" style="display: none;">' + DataJson[i].epccode + '</td>';
+                    html += '<td id="tggweight" style="width: 20%;">' + DataJson[i].tggweight + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtcard.val(data.epccode);
+                    $txtdef11.val(data.tggweight);
+                });
+            });
+        }
+    }
+
+    function DriversAutocomplete() {
+        var txtname = "DRIVERSNAME";
+        var $txtid = $("#DRIVERS");
+        var $txtname = $("#DRIVERSNAME");
+        var $txtpsd = $("#PSDNO");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            if (data.isblack == "1") {
+                tipDialog("司机为黑名单!", 3, "");
+                return false;
+            } else {
+                $txtid.val(data.id);
+                $txtname.val(data.name);
+                $txtpsd.val(data.idnum);
+            }
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Drivers", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="idnum" style="display: none;">' + DataJson[i].idnum + '</td>';
+                    html += '<td id="isblack" style="display: none;">' + DataJson[i].isblack + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    if (data.isblack == "1") {
+                        tipDialog("司机为黑名单!", 3, "");
+                        return false;
+                    } else {
+                        $txtid.val(data.id);
+                        $txtname.val(data.name);
+                        $txtpsd.val(data.idnum);
+                    }
+                });
+            });
+        }
+    }
+
+    function SupplyAutocomplete() {
+        var txtname = "SUPPLIERNAME";
+        var $txtid = $("#PK_SUPPLIER");
+        var $txtname = $("#SUPPLIERNAME");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            ClearPOOrder();
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Supply", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    var datatypename = "自建";
+                    if (DataJson[i].datatype == "1") {
+                        datatypename = "GS";
+                    }
+                    if (DataJson[i].datatype == "2") {
+                        datatypename = "U9";
+                    }
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 90%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="datatype" style="width:10%;">' + datatypename + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    ClearPOOrder();
+                });
+            });
+        }
+    }
+
+    function SetRFCard(val) {
+        if (IsNullOrEmpty(val)) {
+            $("#CARDNO").val(val);
+            $("#span_drivers").text("司机：");
+            $("#span_drivers").removeClass("ck_span");
+            $("#span_cardnumber").text("身份证号：");
+            $("#span_cardnumber").removeClass("ck_span");
+            $("#span_rfid").text("RFID[*]：");
+            $("#span_rfid").addClass("ck_span");
+            $("#DRIVERS").attr("datacol", "No");
+            $("#DRIVERSNAME").attr("datacol", "No");
+            $("#PSDNO").attr("datacol", "No");
+        }
+        else {
+            $("#CARDNO").val(val);
+            $("#span_drivers").text("司机[*]：");
+            $("#span_drivers").addClass("ck_span");
+            $("#span_cardnumber").text("身份证号[*]：");
+            $("#span_cardnumber").addClass("ck_span");
+
+            $("#span_rfid").text("RFID：");
+            $("#span_rfid").removeClass("ck_span");
+            $("#DRIVERS").attr("datacol", "yes");
+            $("#DRIVERSNAME").attr("datacol", "yes");
+            $("#PSDNO").attr("datacol", "yes");
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/PCBillSOF/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    function ClearPOOrder() {
+        for (var index = 1; index < 6; index++) {
+            $("#CARS➩" + index).val("");
+            $("#CARSNAME➩" + index).val("");
+            $("#PK_ORDER➩" + index).val("");
+            $("#PK_ORDER_B➩" + index).val("");
+            $("#VBILLCODE➩" + index).val("");
+            $("#PK_SUPPLIER➩" + index).val("");
+            $("#SUPPLIERNAME➩" + index).val("");
+            $("#PK_MATERIAL➩" + index).val("");
+            $("#MATERIALNAME➩" + index).val("");
+            $("#MATERIALSPEC➩" + index).val("");
+            $("#MATERIALCODE➩" + index).val("");
+            $("#DBILLDATE➩" + index).val("");
+            $("#PK_ORG➩" + index).val("");
+            $("#ORGNAME➩" + index).val("");
+            $("#PK_DEPT➩" + index).val("");
+            $("#DEPTNAME➩" + index).val("");
+            $("#NASTNUM➩" + index).val("0.00");
+            $("#YLNUM➩" + index).val("0.00");
+            $("#AMOUNT➩" + index).val("0");
+            $("#DEF1➩" + index).val("");
+            $("#DEF2➩" + index).val("");
+            $("#SECQUANTITY➩" + index).val("0");
+            $("#MEMO➩" + index).val("");
+        }
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/ExampleModule/PCBillSOF/SubmitOrderForm1?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+</script>
+<form id="form1" style="margin: 1px">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    <table id="tb_OrderFrom" class="form">
+        <tr>
+            <th class="formTitle">
+                到货单号：
+            </th>
+            <td class="formValue">
+                <input id="BILLSOFTYPE" type="hidden" value="NORMAL" />
+                <input id="DATATYPE" type="hidden" value="0" />
+                <input id="ID" maxlength="50" type="text" class="txt readonly required" datacol="yes" readonly=readonly
+                       err="到货单号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+            </td>
+            <th class="formTitle">
+                供应商：
+            </th>
+            <td class="formValue">
+                <input name="PK_SUPPLIER" id="PK_SUPPLIER" type="hidden" />
+                <input id="SUPPLIERNAME" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" err="供应商" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                承运商：
+            </th>
+            <td class="formValue">
+                <input id="TRAFFICCOMPANY" type="hidden" />
+                <input id="TRAFFICCOMPANYNAME" type="text" class="txt" />
+            </td>
+            <th class="formTitle">
+                车号：
+            </th>
+            <td class="formValue">
+                <input id="CARS" type="hidden" datacol="yes" err="车号" checkexpession="NotNull" />
+                <input id="CARSNAME" type="text" class="txt required" datacol="yes" err="车号" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+
+            <th class="formTitle">
+                <span id="span_drivers">司机：</span>
+            </th>
+            <td class="formValue">
+                <input id="DRIVERS" type="hidden" datacol="yes" err="司机" checkexpession="NotNull" />
+                <input id="DRIVERSNAME" type="text" class="txt required" datacol="yes" err="司机" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                身份证号：
+            </th>
+            <td class="formValue">
+                <input id="PSDNO" type="text" class="txt readonly" readonly="readonly" datacol="No"
+                       err="身份证号" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                RFID：
+            </th>
+            <td class="formValue">
+                <input id="RFID" type="text" class="txt readonly" readonly="readonly" datacol="No"
+                       err="RFID" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                IC卡编号：
+            </th>
+            <td class="formValue">
+                <input id="ICCARD" type="hidden" />
+                <input id="CARDNO" type="text" class="txt readonly" readonly="readonly" datacol="No"
+                       err="CARDNO" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+
+            <th class="formTitle">
+                发货量：
+            </th>
+            <td class="formValue">
+                <input id="NASTNUM" type="text" class="txt readonly" onfocus="IsMoney(this.id);"
+                       maxlength="5" readonly="readonly" />
+            </td>
+
+
+            <th class="formTitle">
+                车货总重：
+            </th>
+            <td class="formValue">
+                <input id="DEF11" type="text" class="txt readonly" readonly="readonly" onkeyup="clearNoNum(this)"
+                       maxlength="20" value="0" />
+            </td>
+            <th class="formTitle">
+                制单人：
+            </th>
+            <td class="formValue">
+                <input id="CREATEUSER" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" err="制单人" checkexpession="NotNull" value="@ViewBag.CreateUserName" />
+            </td>
+            <th class="formTitle">
+                制单时间：
+            </th>
+            <td class="formValue">
+                <input id="CREATEDATE" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" err="制单时间" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                预计到货时间：
+            </th>
+            <td class="formValue">
+                <input id="PDATE" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()"
+                       onfocus="WdatePicker({minDate:'#F{$dp.$D(\'PDATE\')}'})" />
+            </td>
+            <th class="formTitle">
+                货源地：
+            </th>
+            <td class="formValue">
+                <input name="HZUSER" id="HZUSER" type="hidden" />
+                <input id="HZUSERNAME" maxlength="50" type="text" class="txt"
+                       datacol="No" err="货源地" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                原箱号：
+            </th>
+            <td class="formValue">
+                <input id="JZXCODE" type="text" class="txt" />
+            </td>
+            <th class="formTitle">
+                现箱号：
+            </th>
+            <td class="formValue">
+                <input id="JZXCODE1" type="text" class="txt" />
+            </td>
+        </tr>
+        <tr>
+
+            <th class="formTitle">
+                原箱重量：
+            </th>
+            <td class="formValue">
+                <input id="JZXSUTTLE" type="text" class="txt" />
+            </td>
+            <th class="formTitle">
+                现箱重量：
+            </th>
+            <td class="formValue">
+                <input id="JZXSUTTLE1" type="text" class="txt" />
+            </td>
+
+            <th class="formTitle">
+                入厂厂区：
+            </th>
+            <td class="formValue">
+                <select id="DEF1" class="txtselect">
+                    <option value="">---请选择---</option>
+                    <option value="1000">阳光纸业</option>
+                    @*<option value="6000">盛世热电</option>
+                        <option value="7000">新迈纸业</option>
+                        <option value="8000">阳光王子</option>
+                        <option value="9000">华迈纸业</option>
+                        <option value="9010">科迈制浆</option>*@
+                </select>
+            </td>
+            <th class="formTitle">
+                提单号：
+            </th>
+            <td class="formValue">
+                <input id="DEF6" type="text" class="txt" />
+            </td>
+
+        </tr>
+        <tr>
+            <th class="formTitle">
+                铅封号：
+            </th>
+            <td class="formValue">
+                <input id="QFCODE" type="text" class="txt" />
+            </td>
+            <th class="formTitle">
+                送货单位：
+            </th>
+            <td class="formValue">
+                <input name="PK_SENDADDRESS" id="PK_SENDADDRESS" type="hidden" />
+                <input id="SENDADDRESS" type="text" class="txt"
+                       datacol="yes" err="送货单位" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                包装类型：
+            </th>
+            <td class="formValue">
+                <select id="DEF10" class="txtselect">
+                    <option value="">---请选择---</option>
+                    <option value="散装">散装</option>
+                    <option value="打包">打包</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                备注：
+            </th>
+            <td class="formValue">
+                <input id="MEMO" type="text" class="txt" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                提醒：
+            </th>
+            <td class="formValue" colspan="7">
+                <span class="ck_span">
+                    <label id="lbl_msg">
+                        无
+                    </label>
+                </span>
+            </td>
+        </tr>
+    </table>
+    <div class="bd" style="border-bottom: none; margin: 2px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                    明细信息
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+        <!--拼单信息-->
+        <div id="order" class="tabPanel">
+            <table id="gridTable"></table>
+            <style>
+                .ui-widget-content {
+                    border-left: none;
+                }
+
+                .ui-jqgrid tr.ui-row-ltr td {
+                    padding: 0px;
+                    border-bottom: 1px solid #ccc;
+                }
+
+                .ui-jqgrid .ui-jqgrid-htable th {
+                    line-height: 15px;
+                }
+
+                    .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+                        background: none;
+                    }
+
+                .editable {
+                    height: 22px;
+                    background-color: #fff;
+                }
+            </style>
+        </div>
+    </div>
+</form>

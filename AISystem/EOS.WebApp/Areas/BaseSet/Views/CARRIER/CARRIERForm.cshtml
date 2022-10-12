@@ -1,0 +1,177 @@
+﻿@{
+    ViewBag.Title = "承运商管理";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        $("#NAME").keyup(function () {
+            $("#SHORTNAME").val(this.value);
+        });
+        InitControl();
+         $("#PK_ORGNAME").focus(function () {
+            var objId = this.id;
+            comboBoxTree(objId, "150px");
+            var itemtree = {
+                onnodeclick: function (item) {
+                    $("#PK_ORG").val(item.id);
+                    $('#PK_ORGNAME').val(item.text);
+                          },
+                url: "@Url.Content("~/CommonModule/Company/TreeJson")"
+            };
+            $("#comboBoxTree" + objId).treeview(itemtree);
+        })
+
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/CARRIER/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/CARRIER/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue')+ "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            内码：
+        </th>
+        <td class="formValue">
+            <input id="CODE" type="text"  class="txt required" datacol="yes" err="内码" checkexpession="NotNull" value="@ViewBag.Code"/>
+        </td>
+        <th class="formTitle">
+            名称：
+        </th>
+        <td class="formValue">
+            <input id="NAME" type="text" class="txt required" datacol="yes" err="名称" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            简称：
+        </th>
+        <td class="formValue">
+            <input id="SHORTNAME" type="text" class="txt required" datacol="yes" err="简称" checkexpession="NotNull" />
+        </td>
+         <th class="formTitle">
+            英文名称：
+        </th>
+        <td class="formValue">
+            <input id="ENAME" type="text" class="txt" datacol="no" err="英文名称" checkexpession="NotNull" />
+        </td>
+        
+    </tr>
+    <tr>
+        <th class="formTitle">
+            承运商分类：
+        </th>
+        <td class="formValue">
+            <select id="PK_CARRCLASS" class="txtselect">
+                <option value="0">内部</option>
+                <option value="1" selected="selected">外部</option>
+            </select>
+        </td> 
+        <th class="formTitle">
+            纳税人登记号：
+        </th>
+        <td class="formValue">
+            <input id="TAXPAYERID" type="text" class="txt " datacol="no" err="纳税人登记号"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            法人：
+        </th>
+        <td class="formValue">
+            <input id="LEGALBODY" type="text" class="txt " datacol="no" err="法人" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            电话：
+        </th>
+        <td class="formValue">
+            <input id="TEL" type="text" class="txt" datacol="no" err="电话" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            传真：
+        </th>
+        <td class="formValue">
+            <input id="FAX" type="text" class="txt" datacol="no" err="传真" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            电子邮箱：
+        </th>
+        <td class="formValue">
+            <input id="EMAILL" type="text" class="txt" datacol="no" err="电子邮箱"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            企业地址：
+        </th>
+        <td class="formValue">
+            <input id="CORPADDRESS" type="text" class="txt" datacol="no" err="企业地址" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            注册资金：
+        </th>
+        <td class="formValue">
+            <input id="REGISTERFUND" type="text" class="txt" datacol="no" err="注册资金" checkexpession="NotNull" />
+        </td>
+    </tr>
+     
+    <tr> 
+     <th class="formTitle">
+            所属组织：
+        </th>
+        <td class="formValue">
+            <input id="PK_ORG" type="hidden" />
+            <input id="PK_ORGNAME" type="text" class="txt icontree" datacol="yes" err="所在公司"
+                checkexpession="NotNull" />
+        </td>
+      <th class="formTitle">
+            选项：
+        </th>
+         <td class="formValue" >
+            <span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISUSE" />
+                <label for="ISUSE">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="3">
+            <textarea id="MEMO" name="Description" maxlength="200" class="txtArea" rows="5"></textarea>
+        </td>
+    </tr>
+</table>
+</form>
+

@@ -1,0 +1,162 @@
+﻿@{
+    ViewBag.Title = "物料配置";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<style>
+    .tableobj
+    {
+        margin: 0px;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    .tableobj tbody td
+    {
+        text-align: left;
+        border-right: 1px solid #ccc;
+        padding: 1px 1px;
+        height: 20px;
+        word-break: break-all;
+    }
+    .tableobj tbody .selected
+    {
+        background-color: #6699cc;
+        color: #fff;
+    }
+    .buttonHuge
+    {
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        -khtml-border-radius: 6px;
+        border-radius: 6px;
+        -moz-box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3);
+        -webkit-box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3);
+        box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3);
+        cursor: pointer;
+        display: inline-block;
+        font-family: "Helvetica Neue" ,Helvetica,Arial,sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+        padding: 10px 16px;
+        outline: none !important;
+        text-align: center;
+        text-decoration: none;
+        position: relative;
+        -moz-box-sizing: border-box !important;
+        line-height: 16px;
+        border-radius: 6px;
+        behavior: url(/Themes/Styles/ie-css3.htc);
+    }
+</style>
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var KeyValue = GetQuery('KeyValue');
+    $(function () {
+        BindAutocomplete("MATERIALNAME", "MATERIAL", "Material", "200", "150", "");
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/JYPGCConfig/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/JYPGCConfig/SubmitOrderForm?KeyValue=" + escape(KeyValue) + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            物料名称：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALNAME" type="text" class="txt required" datacol="yes" err="物料名称"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            物料编号：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="text" class="txt required" datacol="yes" err="物料编号" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            化验物料简称：
+        </th>
+        <td class="formValue" colspan="3">
+            <input id="MATERIALSHORTNAME" type="text" class="txt required" datacol="yes" err="化验物料简称"
+                checkexpession="NotNull" dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue" colspan="3">
+            <span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISCY" />
+                <label for="ISCY">
+                    采样码</label>
+            </span><span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISZY" />
+                <label for="ISZY">
+                    制样码</label>
+            </span><span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISBF" />
+                <label for="ISBF">
+                    备份码</label>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            采样码打印数：
+        </th>
+        <td class="formValue">
+            <input id="CYNUM" type="text" class="txt" datacol="yes" err="采样码打印数" checkexpession="DoubleOrNull"
+                maxlength="2" onkeyup="clearNoNum(this)" value="1" />
+        </td>
+        <th class="formTitle">
+            制样码打印数：
+        </th>
+        <td class="formValue">
+            <input id="ZYNUM" type="text" class="txt" datacol="yes" err="制样码打印数" checkexpession="DoubleOrNull"
+                maxlength="2" onkeyup="clearNoNum(this)" value="1" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            备份码打印数：
+        </th>
+        <td class="formValue">
+            <input id="BFNUM" type="text" class="txt" datacol="yes" err="备份码打印数" checkexpession="DoubleOrNull"
+                maxlength="2" onkeyup="clearNoNum(this)" value="1" />
+        </td>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue">
+            <textarea id="MEMO" name="Description" maxlength="200" class="txtArea" rows="1"></textarea>
+        </td>
+    </tr>
+</table>
+</form>

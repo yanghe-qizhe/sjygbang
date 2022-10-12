@@ -1,0 +1,200 @@
+﻿@{
+    ViewBag.Title = "选择采购磅单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    var PRINTCODE = GetQuery('PRINTCODE');
+ 
+          var PCRAWTYPE = GetQuery('PCRAWTYPE');
+    $(function () {
+ 
+        if (PRINTCODE != "") {
+             $("#PRINTCODE").val(PRINTCODE);
+     }
+        $("#keywords").focus();
+        setTimeout(function () {
+            GetGrid();
+        }, 300);
+        //绑定键盘按下事件  
+        $(document).keypress(function (e) {
+            // 回车键事件  
+            if (e.which == 13) {
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    
+      function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var PRINTCODE = $("#PRINTCODE").val(); 
+          var DATETYPE = $("#DATETYPE").val();  
+          var CQDEF1 = $("#CQDEF1").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJManager/PCRawCheck/GetAVGOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&PRINTCODE=' + escape(PRINTCODE)+'&PCRAWTYPE='+PCRAWTYPE+'&DATETYPE='+DATETYPE+"&CQDEF1="+CQDEF1 , page: 1
+        }).trigger('reloadGrid');
+    }
+   
+   function SelectText() {
+        var datas = [];
+        var ids = $("#gridTable").getGridParam('selarrrow');
+        $.each(ids, function (i, o) {
+            var rowData = $("#gridTable").jqGrid("getRowData", ids[i]);
+            datas.push(rowData);
+        })
+        var frameid = tabiframeId();
+        var $parentobj = top.frames[frameid];
+        $parentobj.AVGZJRESULT(datas);
+        closeDialog();
+    }
+
+ 
+    function ClearText() {
+        closeDialog();
+    }
+    //显示 
+    function GetGrid() {
+        var index = GetQuery('index');
+        var PRINTCODE = GetQuery('PRINTCODE');
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+         $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJManager/PCRawCheck/GetAVGOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime +'&PCRAWTYPE='+PCRAWTYPE+"&PRINTCODE="+PRINTCODE,
+            datatype: "json",
+       height: 290,
+         
+        autowidth: true,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', width: 100, align: 'center',align:'center',hidden:true }, 
+                      { label: '化验单号', name: 'BILLNO', index: 'BILLNO', width: 120, align: 'center'  }, 
+                 { label: 'CYID', name: 'CYID', index: 'CYID', width: 100,  align:'center',hidden:true }, 
+                { label: '制样码', name: 'PRINTCODE', index: 'PRINTCODE', width: 150, align: 'left',align:'center' },  
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 150, align: 'center'  },  
+                 { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'center'  },  
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 110, align: 'center' },
+                  { label: 'ZJRESULT', name: 'ZJRESULT', index: 'ZJRESULT', width: 100,  align:'center',hidden:true }, 
+                {
+                    label: '合格判定', name: 'ZJRESULTNAME', index: 'ZJRESULTNAME', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:blue;font-size:15px'>检验合格</span>";
+                        if (cellvalue == '1') return "<span style='color:red;font-size:15px'>检验不合格</span>"; 
+                    }
+                },
+                 { label: '检验结果', name: 'ZJRESULTMEMO', index: 'ZJRESULTMEMO', width: 200,  align:'center'}, 
+                { label: 'CZTYPE', name: 'CZTYPE', index: 'CZTYPE', width: 100,  align:'center',hidden:true }, 
+               {
+                    label: '处置方式', name: 'CZTYPENAME', index: 'CZTYPENAME', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:blue;font-size:15px'>合格</span>";
+                       else if (cellvalue == '1') return "<span style='color:green ;font-size:15px'>让步接收</span>"; 
+                       else if (cellvalue == '2') return "<span style='color:blue;font-size:15px'>退货</span>"; 
+                        else  if (cellvalue == '3') return "<span style='color:blue;font-size:15px'>合格扣减</span>"; 
+                          else return "";
+                    }
+                },
+                { label: 'ISKZ', name: 'ISKZ', index: 'ISKZ', width: 100,  align:'center',hidden:true }, 
+                 {
+                    label: '提交采购扣重', name: 'ISKZNAME', index: 'ISKZNAME', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>否</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>是</span>"; 
+                    }
+                }, 
+                { label: 'AUDITSTATUS', name: 'AUDITSTATUS', index: 'AUDITSTATUS', width: 100,  align:'center',hidden:true }, 
+                {
+                    label: '审批状态', name: 'AUDITSTATUSNAME', index: 'AUDITSTATUSNAME', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:15px'>未审批</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>已审批</span>"; 
+                    }
+                },
+                
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'center' }
+            ],
+            //multiselect: true,
+            viewrecords: true,
+            rowNum: 100,
+            rownumbers:true,
+            rowList: [  100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true ,    
+                  multiselect: true  
+
+        });
+
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    入厂厂区：
+                </th>
+                <td>
+                    <select id="CQDEF1" class="txt select" style="width: 125px">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        <option value="6000">盛世热电</option>
+                        <option value="7000">新迈纸业</option>
+                        <option value="8000">阳光王子</option>
+                        <option value="9000">华迈纸业</option>
+                        <option value="9010">科迈制浆</option>
+                    </select>
+                </td>
+                <th>
+                    日期类型：
+                </th>
+                <td>
+                    <select id="DATETYPE" name="DATETYPE" class="select" style="width: 125px;">
+                        <option value="0">采样日期</option>
+                        <option value="1">计量日期</option>
+                    </select>
+                </td>
+                <th>
+                    日期：
+                </th>
+                <td>
+                    <input id="PRINTCODE" type="hidden" />
+                    <input id="StartTime" type="text" class="txt Wdate"  style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM-dd 00:00:00")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" dbfield="true" like="false"/>
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" style="width: 135px" value="@DateTime.Now.ToString("yyyy-MM-dd 23:59:59")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" dbfield="true" like="false"/>
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

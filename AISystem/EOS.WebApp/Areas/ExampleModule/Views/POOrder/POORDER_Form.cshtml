@@ -1,0 +1,399 @@
+﻿@{
+    ViewBag.Title = "汽运到货单";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var json = [
+         { val: '40001000000000000000', txt: 'Ton' },
+         { val: '40002000000000000000', txt: 'KG' },
+         { val: '00000000000000000001', txt: 'PC', selected: true }
+    ];
+    var json1 = [
+        { val: '青岛港', txt: '青岛港', selected: true },
+        { val: '连云港', txt: '连云港' },
+        { val: '日照港', txt: '日照港' },
+		{ val: '常熟港', txt: '常熟港' },
+		{ val: '济宁港', txt: '济宁港' }
+        ];
+
+    $(function () {
+        GetGrid();
+        //仓库
+        BindAutocomplete("RECEIVESTORE", "PK_RECEIVESTORE", "U9Store", "", "", "");
+        BINDTXTAutocomplete(json1, "PORTARRIVAL", "", "");
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ExampleModule/POOrder/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var rowdata = {
+                        CROWNO: '<input id="CROWNO➩' + rowindex + '" type="hidden" value="' + (rowData.CROWNO == null ? "" : rowData.CROWNO) + '" />',
+                        PK_ORDER: '<input id="PK_ORDER➩' + rowindex + '" type="hidden" value="' + (rowData.PK_ORDER == null ? "" : rowData.PK_ORDER) + '" /><input id="PK_ORDER_B➩' + rowindex + '" type="text" value="' + (rowData.PK_ORDER_B == null ? "" : rowData.PK_ORDER_B) + '" /><input id="DEF1➩' + rowindex + '" type="text" value="' + (rowData.PK_ORDER == null ? "" : rowData.PK_ORDER) + '" /><input id="DEF2➩' + rowindex + '" type="text" value="' + (rowData.PK_ORDER_B == null ? "" : rowData.PK_ORDER_B) + '" />',
+                        PK_MATERIAL: '<input readonly id="PK_MATERIAL➩' + rowindex + '" class="editable disabled center"  type="text" value="' + (rowData.PK_MATERIAL == null ? "" : rowData.PK_MATERIAL) + '" />',
+                        PK_MATERIALNAME: '<input readonly id="PK_MATERIALNAME➩' + rowindex + '"  class="editable disabled center" type="text" value="' + (rowData.PK_MATERIALNAME == null ? "" : rowData.PK_MATERIALNAME) + '"/><input id="MATERIALCODE➩' + rowindex + '" type="hidden" value="' + (rowData.MATERIALCODE == null ? "" : rowData.MATERIALCODE) + '" />',
+                        MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + rowindex + '" class="editable disabled center"  type="text" value="' + (rowData.MATERIALSPEC == null ? "" : rowData.MATERIALSPEC) + '" />',
+                        PURUNITNAME: '<input id="PURUNITNAME➩' + rowindex + '" class="editable center" type="text" value="' + (rowData.PURUNITNAME == null ? "" : rowData.PURUNITNAME) + '"/><input id="PURUNITID➩' + rowindex + '" type="hidden" value="' + (rowData.SECPURUNITID == null ? "" : rowData.PURUNITID) + '" />',
+                        NASTNUM: '<input id="NASTNUM➩' + rowindex + '" class="editable decimal center editable" type="text"  style="cursor:pointer"  value="' + (rowData.NASTNUM == null ? "" : rowData.NASTNUM) + '"/>',
+                        SECPURUNITNAME: '<input id="SECPURUNITNAME➩' + rowindex + '"  class="editable center" type="text" value="件"/><input id="SECPURUNITID➩' + rowindex + '" type="hidden" value="00000000000000000001" />',
+                        SECQUANTITY: '<input id="SECQUANTITY➩' + rowindex + '" class="editable decimal center" type="text" style="cursor:pointer"  value="' + (rowData.DHYLNUM == null ? "" : rowData.DHYLNUM) + '"/>',
+                        NPRICE: '<input readonly id="NPRICE➩' + rowindex + '" class="editable disabled center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + (rowData.NPRICE == null ? "" : rowData.NPRICE) + '"/>',
+                        VBDEF2: '<input readonly id="VBDEF2➩' + rowindex + '"  class="editable disabled center" type="text" value="' + (rowData.VBDEF2 == null ? "" : rowData.VBDEF2) + '"/>',
+                        VBDEF3: '<input readonly id="VBDEF3➩' + rowindex + '" class="editable disabled center" type="text" value="' + (rowData.VBDEF3 == null ? "" : rowData.VBDEF3) + '"/>',
+                        VBDEF4: '<input readonly id="VBDEF4➩' + rowindex + '"  class="editable disabled center" type="text" value="' + (rowData.VBDEF4 == null ? "" : rowData.VBDEF4) + '"/>',
+                        DEF4: '<input id="DEF4➩' + rowindex + '"  class="editable center" type="text" value="' + (rowData.DEF4 == null ? "" : rowData.DEF4) + '"/>',
+                        RECCOMPANYNAME: '<input readonly id="RECCOMPANYNAME➩' + rowindex + '"  class="editable disabled center" type="text" value="' + (rowData.RECCOMPANYNAME == null ? "" : rowData.RECCOMPANYNAME) + '"/><input id="RECCOMPANYID➩' + rowindex + '" type="hidden" value="' + (rowData.RECCOMPANYID == null ? "" : rowData.RECCOMPANYID) + '" />',
+                        RECORGNAME: '<input readonly id="RECORGNAME➩' + rowindex + '"  class="editable disabled center" type="text" value="' + (rowData.RECORGNAME == null ? "" : rowData.RECORGNAME) + '"/><input id="RECORGID➩' + rowindex + '" type="hidden" value="' + (rowData.RECORGID == null ? "" : rowData.RECORGID) + '" /><input id="RECORGCODE➩' + rowindex + '" type="hidden" value="' + (rowData.RECORGCODE == null ? "" : rowData.RECORGCODE) + '" />',
+                        DEF5: '<input id="DEF5➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.DEF5 == null ? "" : rowData.DEF5) + '"/>',
+                        RECWHNAME: '<input id="RECWHNAME➩' + rowindex + '" type="hidden" value="' + (rowData.RECWHNAME == null ? "" : rowData.RECWHNAME) + '" /><input id="RECWHID➩' + rowindex + '" type="hidden" value="' + (rowData.RECWHID == null ? "" : rowData.RECWHID) + '" />',
+                        BARRIVECLOSE: '<input id="BARRIVECLOSE➩' + rowindex + '" type="hidden" value="' + (rowData.BARRIVECLOSE == null ? "" : rowData.BARRIVECLOSE) + '" />'
+                    }
+                    $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                    BindJSONAutocomplete(json, "SECPURUNITNAME➩" + rowindex, "SECPURUNITID➩" + rowindex, "", "");
+                    BindJSONAutocomplete(json, "PURUNITNAME➩" + rowindex, "PURUNITID➩" + rowindex, "", "");
+                    rowindex++;
+                });
+                $("#gridTable").find('.disabled').attr("disabled", "disabled");
+                $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+                $("#gridTable").find('.center').css('text-align', 'center')
+            });
+        }
+    })
+
+    /*明细begin=======================================*/
+    //订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 270,
+            autowidth: true,
+            colModel: [
+               { label: 'CROWNO', name: 'CROWNO', index: 'RECWHID', hidden: true },
+                { label: 'PK_ORDER', name: 'PK_ORDER', index: 'PK_ORDER', hidden: true },
+                 { label: '物料编号', name: 'PK_MATERIAL', index: 'PK_MATERIAL', width: 100, align: 'center' },
+                  { label: '物料', name: 'PK_MATERIALNAME', index: 'PK_MATERIALNAME', width: 150, align: 'center' },
+                   { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'center' },
+                   { label: '主计量', name: 'PURUNITNAME', index: 'PURUNITNAME', width: 60, align: 'center' },
+                  { label: '主数量', name: 'NASTNUM', index: 'NASTNUM', width: 60, align: 'center' },
+                  { label: '辅计量', name: 'SECPURUNITNAME', index: 'SECPURUNITNAME', width: 50, align: 'center' },
+                  { label: '辅数量', name: 'SECQUANTITY', index: 'SECQUANTITY', width: 60, align: 'center' },
+                 { label: '亏吨率', name: 'VBDEF2', index: 'VBDEF2', width: 60, align: 'center' },
+                { label: '亏吨金额', name: 'VBDEF3', index: 'VBDEF3', width: 60, align: 'center' },
+                  { label: '单价', name: 'NPRICE', index: 'NPRICE', width: 60, align: 'center' },
+                 { label: '结算方式', name: 'VBDEF4', index: 'VBDEF4', width: 60, align: 'center' },
+                 { label: '交货日期', name: 'DEF4', index: 'DEF4', width: 100, align: 'center' },
+                 { label: '接收公司', name: 'RECCOMPANYNAME', index: 'RECCOMPANYNAME', width: 100, align: 'center' },
+                  { label: '接收组织', name: 'RECORGNAME', index: 'RECORGNAME', width: 100, align: 'center' },
+                  { label: '备注', name: 'DEF5', index: 'DEF5', width: 160, align: 'center' },
+                { label: 'RECWHNAME', name: 'RECWHNAME', index: 'RECWHNAME', hidden: true },
+                { label: 'BARRIVECLOSE', name: 'BARRIVECLOSE', index: 'BARRIVECLOSE', hidden: true }
+              ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+    }
+
+
+    /*选择物料明细end=======================================*/
+
+
+
+
+    function BINDTXTAutocomplete(DataJson, txtname, width, height) {
+        var $txtname = $("#" + txtname);
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource(DataJson);
+                }
+            }
+        }).focus(function () {
+            DataSource(DataJson);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $("#" + txtname).val(data.name)
+        });
+        //获取数据源
+        function DataSource(DataJson) {
+            var html = "";
+            $.each(DataJson, function (i) {
+                html += "<tr>";
+                html += '<td id="name" style="width: 100%;">' + DataJson[i].txt + '</td>';
+                html += "</tr>";
+            });
+            //点击事件回调
+            autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                $("#" + txtname).val(data.name)
+            });
+
+        }
+    }
+
+    //得到一个对象实体
+
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/POORDER/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                $("#PURORDERID").val(data.PURORDERID);
+                $("#DEF5").val(data.DEF5);
+                $("#BILLTYPE").val(data.BILLTYPE);
+                $("#FORDERSTATUS").val(data.FORDERSTATUS);
+                $("#DATATYPE").val(data.DATATYPE);
+                $("#PK_ORDER").val(data.PK_ORDER);
+                //$("#VBILLCODE").val(data.VBILLCODE);
+                $("#SOURCEORDER").val(data.PK_ORDER);
+                $("#SOURCEBILLNO").val(data.VBILLCODE);
+                $("#DBILLDATE").val(data.DBILLDATE);
+                $("#PK_ORG").val(data.PK_ORG);
+                $("#PK_DEPT").val(data.PK_DEPT);
+                $("#DEPNAME").val(data.DEPNAME);
+                $("#PK_SUPPLIER").val(data.PK_SUPPLIER);
+                $("#PK_SUPPLIERNAME").val(data.PK_SUPPLIERNAME);
+                $("#ACTUALVALIDATE").val(data.ACTUALVALIDATE);
+                $("#ACTUALINVALIDATE").val(data.ACTUALINVALIDATE);
+                $("#CREATIONTIME").val(data.CREATIONTIME);
+                $("#CREATOR").val(data.CREATOR);
+                $("#DEF3").val(data.DEF3);
+
+                $("#TRADEMODE").val(data.TRADEMODE);
+                $("#VCONTRACTCODE").val(data.VCONTRACTCODE);
+                $("#HKCGBILLNO").val(data.HKCGBILLNO);
+                $("#PORTARRIVAL").val(data.PORTARRIVAL);
+                $("#REGISTERACCOUNT").val(data.REGISTERACCOUNT);
+                $("#PK_RECEIVESTORE").val(data.PK_RECEIVESTORE);
+                $("#RECEIVESTORE").val(data.RECEIVESTORE);
+                $("#VMEMO").val(data.VMEMO);
+            });
+        }
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/ExampleModule/POORDER/SubmitOrderFormCopy?KeyValue=&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+     
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            来源单号：
+        </th>
+        <td class="formValue">
+            <input name="SOURCEORDER" id="SOURCEORDER" type="hidden" />
+            <input id="SOURCEBILLNO" name="SOURCEBILLNO" type="text" class="txt readonly" readonly="readonly"
+                datacol="yes" err="来源单号" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            到货单号：
+        </th>
+        <td class="formValue">
+            <input name="PURORDERID" id="PURORDERID" type="hidden" />
+            <input name="DEF5" id="DEF5" type="hidden" />
+            <input id="BILLTYPE" type="hidden" value="入库通知标准单据" />
+            <input id="FORDERSTATUS" type="hidden" value="0" />
+            <input id="DATATYPE" type="hidden" value="0" />
+            <input id="PK_ORDER" type="hidden" />
+            <input id="VBILLCODE" maxlength="50" type="text" class="txt" datacol="yes" err="到货单号"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            业务日期：
+        </th>
+        <td class="formValue">
+            <input id="DBILLDATE" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                err="业务日期" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input name="PK_SUPPLIER" id="PK_SUPPLIER" type="hidden" />
+            <input id="PK_SUPPLIERNAME" type="text" class="txt readonly" readonly="readonly"
+                datacol="yes" err="供应商" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            生效时间：
+        </th>
+        <td class="formValue">
+            <input id="ACTUALVALIDATE" type="text"  dbfield="true"  class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" onfocus="WdatePicker({onpicked:function(){ENDDATE.focus();},maxDate:'#F{$dp.$D(\'ACTUALINVALIDATE\')}'})" />
+        </td>
+        <th class="formTitle">
+            终止时间：
+        </th>
+        <td class="formValue">
+            <input id="ACTUALINVALIDATE" type="text"  dbfield="true"  class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'ACTUALVALIDATE\')}'})" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            采购部门：
+        </th>
+        <td class="formValue">
+            <input name="PK_ORG" id="PK_ORG" type="hidden" />
+            <input name="PK_DEPT" id="PK_DEPT" type="hidden" />
+            <input id="DEPNAME" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            船名航次：
+        </th>
+        <td class="formValue">
+            <input id="DEF3" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            贸易方式：
+        </th>
+        <td class="formValue">
+            <select id="TRADEMODE" class="txt select">
+                <option value="">===请选择===</option>
+                <option value="一般贸易">一般贸易</option>
+                <option value="来料加工">来料加工</option>
+                <option value="收料加工">收料加工</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            合同号：
+        </th>
+        <td class="formValue">
+            <input id="VCONTRACTCODE" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            HK木浆采购单号：
+        </th>
+        <td class="formValue">
+            <input id="HKCGBILLNO" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            到货港口：
+        </th>
+        <td class="formValue">
+            <input id="PORTARRIVAL" name="PORTARRIVAL" type="text" class="txt" datacol="No" err="到货港口"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制单时间：
+        </th>
+        <td class="formValue">
+            <input id="CREATIONTIME" type="text"   value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" class="txt readonly" readonly="readonly" datacol="yes" err="制单时间" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREATOR" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                err="制单人" checkexpession="NotNull" value="@ViewBag.CreateUserName" />
+        </td>
+        <th class="formTitle">
+            加工贸易手册：
+        </th>
+        <td class="formValue">
+            <input id="REGISTERACCOUNT" name="REGISTERACCOUNT" type="text" class="txt" datacol="No"
+                err="加工贸易手册" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            加工仓库：
+        </th>
+        <td class="formValue">
+            <input id="PK_RECEIVESTORE" type="hidden" />
+            <input id="RECEIVESTORE" type="text" class="txt icontree" />
+        </td>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue" colspan="3">
+            <input id="VMEMO" name="VMEMO" type="text" class="txt" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                明细信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

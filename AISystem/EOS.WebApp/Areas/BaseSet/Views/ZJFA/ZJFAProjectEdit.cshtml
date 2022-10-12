@@ -1,0 +1,94 @@
+﻿@{
+    ViewBag.Title = "质检方案管理》编辑质检项";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = unescape(GetQuery("KeyValue"));
+    $(function () {
+        InitControl();
+    })
+
+    function Dialog(url, _id, _title, _width, _height) {
+        Loading(true);
+        top.$.dialog({
+            id: _id,
+            width: _width,
+            height: _height,
+            max: false,
+            lock: false,
+            title: _title,
+            content: 'url:' + RootPath() + url
+        });
+    }
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/BaseSet/ZJFA/SetFormForFAITEM", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/ZJFA/ZJFAITEMSave?KeyValue=" + KeyValue, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            项目编号：
+        </th>
+        <td class="formValue"> 
+            <input id="ITEMNO" type="text" class="txt required readonly" readonly="readonly"
+                datacol="yes" err="项目编号" checkexpession="NotNull" value="@ViewBag.FANO" />
+        </td>
+        <th class="formTitle">
+            项目名称：
+        </th>
+        <td class="formValue">
+            <input id="FANAME" type="text" class="txt required readonly" readonly="readonly"
+                datacol="yes" err="项目名称" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            是否判定项：
+        </th>
+        <td class="formValue">
+            <select id="ISJUDGE" class="txtselect required" datacol="yes" err="是否判定项" checkexpession="NotNull">
+                <option value="0" selected="true">否</option>
+                <option value="1">是</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            排序：
+        </th>
+        <td class="formValue">
+            <input id="SORT" type="text" class="txt required" datacol="yes" err="排序" onfocus="IsNumber(this.id)"
+                checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="3">
+            <textarea id="MEMO" name="MEMO" maxlength="200" class="txtArea" rows="5"></textarea>
+        </td>
+    </tr>
+</table>
+</form>

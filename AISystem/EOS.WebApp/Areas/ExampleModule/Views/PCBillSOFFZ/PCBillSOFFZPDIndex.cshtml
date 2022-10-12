@@ -1,0 +1,326 @@
+﻿@{
+    ViewBag.Title = "汽运废纸到货单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+ var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+     BindAutocomplete("ORGNAME", "PK_ORG", "Company1", "200", "150", "");
+         BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+          BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+       BindAutocomplete("CarsName", "Cars", "Cars", "200", "150", "");
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var BillNo = $("#BillNo").val();
+        var Supply = $("#Supply").val();
+        var Material= $("#Material").val();
+        var Cars = $("#Cars").val();
+          var DEF1=$("#DEF1").val();
+            var DEF5=$("#DEF5").val();
+           var PK_ORG = $("#PK_ORG").val();
+            var MISUSE = $("#MISUSE").val(); 
+                var DATETYPE= $("#DATETYPE").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/PCBillSOFFZ/GetSQYOrderList2")?istype=4&StartTime=" + StartTime + '&EndTime=' + EndTime + '&BillNo=' + BillNo+ "&Cars=" + escape(Cars) + "&Supply=" + Supply  + "&Material=" + Material +"&DEF1="+DEF1+"&PK_ORG="+PK_ORG+"&MISUSE="+MISUSE+"&DEF5="+DEF5+"&DATETYPE="+DATETYPE , page: 1
+        }).trigger('reloadGrid');
+    }
+
+    //加载表格
+    function GetGrid() {
+      var MISUSE = $("#MISUSE").val(); 
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var DATETYPE= $("#DATETYPE").val();
+        $("#gridTable").jqGrid({
+           url: "@Url.Content("~/ExampleModule/PCBillSOFFZ/GetSQYOrderList2")?istype=4&StartTime=" + StartTime + '&EndTime=' + EndTime +"&MISUSE="+MISUSE +"&DATETYPE="+DATETYPE,
+            datatype: "json",
+            height: $(window).height() - 180,
+            autowidth: true,
+            colModel: [
+                { label: 'ID', name: 'ID',    hidden: true },
+                { label: '到货单号', name: 'PK_DP_POCARSORDER', index: 'PK_DP_POCARSORDER', width: 120, align: 'center' },
+             { label: 'CARS', name: 'CARS',    hidden: true },
+             { label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 80, align: 'center' },
+             { label: '状态', name: 'MISUSE', index: 'MISUSE', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "1")
+                             return "<span style='color:blue;'>未入厂</span>";
+                         else if (cellvalue == "4")
+                             return "<span style='color: red; font-weight: bold;'>作废</span>";
+                         else if (cellvalue == "5")
+                             return "<span style='color: blue; font-weight: bold;'>发卡</span>";
+                         else if (cellvalue == "6")
+                             return "<span style='color: blue; font-weight: bold;'>出厂</span>";
+                         else if (cellvalue == "7")
+                             return "<span style='color: blue; font-weight: bold;'>入厂</span>";
+                         else
+                             return "<span style='color: blue; font-weight: bold;'>其它</span>";
+                    }
+            },
+              { label: '内外地', name: 'WDDEFNAME5', index: 'WDDEFNAME5', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0')  
+                             return "<span style='color:Red; font-weight: bold;'>内地</span>";
+                        else if (cellvalue == '1')  
+                           return "<span style='color: Blue; font-weight: bold;'>外地</span>";
+                        else  
+                           return "<span style='color: Black; font-weight: bold;'>未判定</span>";
+                    }
+                },
+              { label: '判定人', name: 'WDPDUSER', index: 'WDPDUSER', width: 60, align: 'center' },
+              { label: '判定时间', name: 'WDPDDATE', index: 'WDPDDATE', width: 100, align: 'center' },
+             { label: '判定备注', name: 'WDPDMEMO', index: 'WDPDMEMO', width: 60, align: 'center' },
+              {  label: '预计到货时间', name: 'PDATE', index: 'PDATE', width:70, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd');
+                    }
+                }, 
+             { label: 'PK_ORDER', name: 'PK_ORDER',    hidden: true },
+            { label: 'PK_ORDER_B', name: 'PK_ORDER_B',    hidden: true },
+           { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 120, align: 'left' },
+             { label: 'PK_SUPPLIER', name: 'PK_SUPPLIER',    hidden: true },
+            { label: '供应商', name: 'SUPPLIERNAME', index: 'SUPPLIERNAME', width: 200, align: 'left' },
+              { label: '重车时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 110, align: 'left' },
+                { label: '轻车时间', name: 'LIGHTDATE', index: 'LIGHTDATE', width: 110, align: 'left' },
+             { label: '入厂厂区', name: "CQDEFNAME1", width: 80, sortable: false, align: 'center' ,
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1000')
+                        return "阳光纸业";
+                    else if (cellvalue == '6000')
+                        return "盛世热电";
+                    else if (cellvalue == '7000')
+                        return "新迈纸业";
+                    else if (cellvalue == '8000')
+                        return "阳光王子";
+                    else if (cellvalue == '9000')
+                        return "华迈纸业";
+                    else if (cellvalue == '9010')
+                        return "科迈制浆";
+                            else
+                             return "";
+                }
+                },
+              { label: '来源地区', name: 'LYDEF3', index: 'LYDEF3', width: 130, align: 'left' },
+             { label: 'PK_MATERIAL', name: 'PK_MATERIAL',    hidden: true },
+            { label: 'MATERIALCODE', name: 'MATERIALCODE',    hidden: true },
+           { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width:100, align: 'left' },           
+          { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width:80, align: 'left' },
+           { label: '发货量', name: "AMOUNT", index: 'AMOUNT', width: 60, align: 'left'},
+            { label: 'DEF1', name: 'DEF1', hidden: true  },
+             { label: '计量单位', name: 'DEF2', width: 70, sortable: false, align: 'center' },
+            { label: 'TRAFFICCOMPANY', name: 'TRAFFICCOMPANY',    hidden: true },
+             { label: '承运商', name: 'TRAFFICCOMPANYNAME', index: 'TRAFFICCOMPANYNAME', width: 80, align: 'left' },
+            { label: '主键', name: 'DRIVERS',    hidden: true },
+            { label: '司机', name: 'DRIVERSNAME', index: 'DRIVERSNAME', width: 60, align: 'center' },
+             { label: '电话', name: 'TEL', index: 'TEL', width: 130, align: 'left' },
+          { label: '身份证号', name: 'PSDNO', index: 'PSDNO', width: 130, align: 'left' },
+           { label: 'PK_ORG', name: 'PK_ORG', hidden: true  },
+             { label: '工厂', name: 'ORGNAME', index: 'ORGNAME', width: 120, align: 'left' },
+           { label: 'PK_DEPT', name: 'PK_DEPT', hidden: true  },
+            { label: '采购部门', name: 'DEPTNAME', index: 'DEPTNAME', width: 80, align: 'left' },
+                   { label: '制单人', name: 'CREATEUSER', index: 'CREATEUSER', width: 100, align: 'center' } , 
+                {  label: '制单日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 100, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                }    , 
+                 
+             { label: '是否拼单', name: 'ISMULTI', index: 'ISMULTI', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0')
+                            return "<span style='color: green;'>否</span>";
+                        else if (cellvalue == '1')
+                            return "<span style='color: blue;'>是</span>";
+                }
+            }, 
+            { label: 'BILLFROM', name: 'BILLFROM',    hidden: true },
+            { label: '来源', name: 'BILLFROMNAME', index: 'BILLFROMNAME', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                                 if (cellvalue == '0')
+                            return "<span style='color: green;'>客商平台</span>";
+                        else if (cellvalue == '1')
+                            return "<span style='color: blue;'>业务平台</span>";
+                        else if (cellvalue == '2')
+                            return "<span style='color: green;'>客商APP</span>";
+                }
+            },
+                {
+                    label: '操作状态', name: 'BILLSOFTYPE', index: 'BILLSOFTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                   
+                        if (cellvalue == 'BZ')
+                            return "<span style='color: blue;'>补增</span>";
+                        else  
+                            return "<span style='color: green;'>正常</span>";
+                    }
+                } ,
+                      { label: '备注', name: 'MEMO', index: 'MEMO', width: 120, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CreateDate',
+            sortorder: 'desc',
+    
+            shrinkToFit: false,
+            gridview: true 
+ 
+        });
+    }
+
+       
+ 
+        //判定
+  function btn_Check(){
+       var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+               var url = "/ExampleModule/PCBillSOFFZ/PCBillSOFFZ_FORMPD?ModuleId="+ModuleId+ '&KeyValue=' + KeyValue;
+                openDialog(url, "PCBillSOFFZ_FORMPD", "废纸内外地判定", 450, 300, function (iframe) {
+                    top.frames[iframe].AcceptClick()
+                });
+        } 
+    }
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "PK_DP_POCARSORDER");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("PCBillSOFFZDetail", "@Url.Content("~/ExampleModule/PCBillSOFFZ/PCBillSOFFZDetail")?KeyValue=" + KeyValue, "汽运废纸到货单详细", "page_white_edit.png", true, true, true);
+        }
+    }
+     
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+         $("#gridETable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    日期类型：
+                </th>
+                <td>
+                    <select id="DATETYPE" name="DATETYPE" class="select" style="width: 105px;">
+                        <option value="0">单据日期</option>
+                        <option value="1">计量日期</option>
+                    </select>
+                </td>
+                <th>
+                    日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" style="width: 100px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" style="width: 100px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    工厂：
+                </th>
+                <td>
+                    <input id="PK_ORG" type="hidden" />
+                    <input id="ORGNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="Supply" type="hidden" />
+                    <input id="SupplyName" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    状态：
+                </th>
+                <td>
+                    <select id="MISUSE" class="select" style="width: 105px;">
+                        <option value="">---请选择---</option>
+                        <option value="1">未入厂</option>
+                        <option value="7" selected="selected">入厂</option>
+                        <option value="6">出厂</option>
+                        <option value="4">作废</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    内外地：
+                </th>
+                <td>
+                    <select id="DEF5" class="txt select" style="width: 105px">
+                        <option value="">---请选择---</option>
+                        <option value="0">内地</option>
+                        <option value="1">外地</option>
+                    </select>
+                </td>
+                <th>
+                    到货单号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="Cars" type="hidden" />
+                    <input id="CarsName" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    入厂厂区：
+                </th>
+                <td>
+                    <select id="DEF1" class="txt select" style="width: 105px">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        <option value="6000">盛世热电</option>
+                        <option value="7000">新迈纸业</option>
+                        <option value="8000">阳光王子</option>
+                        <option value="9000">华迈纸业</option>
+                        <option value="9010">科迈制浆</option>
+                    </select>
+                </td>
+                <td>
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+        <table id="gridETable">
+        </table>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

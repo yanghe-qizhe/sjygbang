@@ -1,0 +1,295 @@
+﻿@{
+    ViewBag.Title = "编辑物料";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var PK_MARBASCLASS = GetQuery("PK_MARBASCLASS");
+    $(function () {
+        LoadParent();
+        $("#PK_MARBASCLASS").val(PK_MARBASCLASS);
+        $("#NAME").keyup(function () {
+            $("#SHORTNAME").val(this.value);
+        });
+        InitControl();
+    })
+    //加载上级
+    function LoadParent() {
+        $("#PK_MARBASCLASSNAME").focus(function () {
+            var objId = this.id;
+            comboBoxTree(objId, "200px");
+            var itemtree = {
+                onnodeclick: function (item) {
+                    if (PK_MARBASCLASS != item.value) {
+                        PK_MARBASCLASS = item.value;
+                    }
+                    $("#PK_MARBASCLASS").val(item.value);
+                    $('#PK_MARBASCLASSNAME').val(item.text);
+                    $("#PK_GROUP").val(item.parentId);
+                },
+                url: "@Url.Content("~/BaseSet/Material/TreeJson")"
+            };
+            $("#comboBoxTree" + objId).treeview(itemtree);
+        })
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/Material/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    //保存事件
+    function AcceptClick() {
+        debugger
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            var YJDD = postData.DEF3;/* 获取验级地点字段信息并更新至数据库 sxy/myt 220831*/
+            var SourceareaType = postData.DEF4;/* 获取货源地类型字段信息并更新至数据库 sxy/myt 220908*/
+            //alert(SourceareaType);
+            AjaxJson("/BaseSet/Material/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId + "&YJDD=" + YJDD + "&SourceareaType=" + SourceareaType, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+    <div id="message" style="display: none">
+    </div>
+    <table class="form">
+        <tr>
+            <th class="formTitle">
+                编号：
+            </th>
+            <td class="formValue">
+                <input id="ID" type="text" class="txt " datacol="yes" err="编号" checkexpession="NotNull" value="@ViewBag.Code" />
+            </td>
+            <th class="formTitle">
+                内码：
+            </th>
+            <td class="formValue">
+                <input id="CODE" type="text" class="txt " datacol="yes" err="内码" checkexpession="NotNull" value="@ViewBag.Code" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                名称：
+            </th>
+            <td class="formValue">
+                <input id="NAME" type="text" class="txt required" datacol="yes" err="名称" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                简称：
+            </th>
+            <td class="formValue">
+                <input id="SHORTNAME" type="text" class="txt required" datacol="yes" err="简称" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                拼音助记码：
+            </th>
+            <td class="formValue">
+                <input id="SPELLCODE" type="text" class="txt required" datacol="No" err="拼音助记码" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                规格：
+            </th>
+            <td class="formValue">
+                <input id="MATERIALSPEC" type="text" class="txt" datacol="No" err="规格" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                选项：
+            </th>
+            <td class="formValue" colspan="3">
+                <span class="item">
+                    <input type="checkbox" name="checkbox" id="ISOK" />
+                    <label for="ISOK">
+                        废纸手持机验级/化工收货确认
+                    </label>
+                </span><span class="item">
+                    <input type="checkbox" name="checkbox" id="ISBATCH" />
+                    <label for="ISBATCH">
+                        是否质检
+                    </label>
+                </span><span class="item">
+                    <input type="checkbox" name="checkbox" checked="checked" id="ISJL" />
+                    <label for="ISJL">
+                        是否计量
+                    </label>
+                </span>
+                @*<span class="item">
+                    <input type="checkbox" name="checkbox" id="ISWRITE" />
+                    <label for="ISWRITE">
+                        是否计算
+                    </label>
+                </span>*@ <span class="item">
+                    <input type="checkbox" name="checkbox" id="ISKZ" />
+                    <label for="ISKZ">
+                        需要生产技术中心化验
+                    </label>
+                </span><span class="item">
+                    <input type="checkbox" name="checkbox" id="ISJH" />
+                    <label for="ISJH">
+                        叫号才能进厂
+                    </label>
+                </span>
+
+                <span class="item">
+                    <input type="checkbox" name="checkbox" id="ISHYD" />
+                    <label for="ISHYD">
+                        货源地必填
+                    </label>
+                </span>
+
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                业务类型：
+            </th>
+            <td class="formValue">
+                <select id="CTYPE" class="txtselect" datacol="No" err="业务类型" checkexpession="NotNull">
+                    <option value="">---请选择---</option>
+                    <option value="1">采购</option>
+                    <option value="2">销售</option>
+                    <option value="3">共有</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                物料类型：
+            </th>
+            <td class="formValue">
+                <select id="ISTYPE" class="txtselect" datacol="No" err="物料类型" checkexpession="NotNull">
+                    <option value="">---请选择---</option>
+                    <option value="0" selected="selected">实重</option>
+                    <option value="1">理重</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                固含量：
+            </th>
+            <td class="formValue">
+                <span class="item">
+                    <input type="checkbox" name="checkbox" checked="checked" id="ISMC" />
+                    <label for="ISMC">
+                        启用
+                    </label>
+                </span>
+            </td>
+            <th class="formTitle">
+                固含量系数：
+            </th>
+            <td class="formValue">
+                <input id="MCAMOUNT" type="text" class="txt" onfocus="IsMoney(this.id);" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                物料分类：
+            </th>
+            <td class="formValue">
+                <input type="hidden" id="PK_MARBASCLASS" />
+                <input id="PK_MARBASCLASSNAME" type="text" class="txt icontree" datacol="yes" err="物料分类"
+                       checkexpession="NotNull" />
+            </td>
+
+            <th class="formTitle">
+                物料组：
+            </th>
+            <td class="formValue">
+                <input id="PK_GROUP" type="text" class="txt" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                外部物料组：
+            </th>
+            <td class="formValue">
+                <input id="MATERIALBARCODE" type="text" class="txt" />
+            </td>
+            <th class="formTitle">
+                是否有效：
+            </th>
+            <td class="formValue">
+                <span class="item">
+                    <input type="checkbox" name="checkbox" checked="checked" id="ISUSE" />
+                    <label for="ISUSE">
+                        有效
+                    </label>
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                是否在手持机显示：
+            </th>
+            <td class="formValue">
+                <select id="ISDEL" class="txtselect">
+                    <option value="">---请选择---</option>
+                    <option value="0">是</option>
+                    <option value="1">否</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                抽包数：
+            </th>
+            <td class="formValue">
+                <input id="CBAMOUNT" type="text" class="txt" onfocus="IsMoney(this.id);" />
+            </td>
+        </tr>
+       @*编辑页面新增验级地点并在点击确定时更新到数据库 sxy/myt 220831*@
+    <tr>
+        <th class="formTitle">
+            物料验级地点：
+        </th>
+        <td class="formValue">
+            <select id="DEF3" class="txtselect">
+                <option value="">---请选择---</option>
+                <option value="KW0100031">A料场</option>
+                <option value="KW0100032">B料场</option>
+                <option value="KW0100033">四期成品库</option>
+                <option value="KW0100025">五车间废纸验级区</option>
+                <option value="KW0100027">七车间废纸验级区</option>
+                <option value="KW0100029">九车间废纸验级区</option>
+                <option value="KW0100026">六车间化工验级区</option>
+                <option value="KW0100028">八车间化工验级区</option>
+                <option value="KW0100030">十车间化工验级区</option>
+                <option value="KW0100034">新迈辅料场</option>
+                <option value="KW0100035">新迈大料场</option>
+                <option value="KW0100036">新迈木浆2号库</option>
+                <option value="KW0100037">新迈木浆3号库</option>
+                <option value="KW0100049">新迈抄纸化工验级区</option>
+                <option value="KW0100055">科迈制浆验级区</option>
+                <option value="KW0100061">科迈原料1号棚</option>
+                <option value="KW0100062">科迈原料2号棚</option>
+                <option value="KW0100063">科迈原料3号棚</option>
+                <option value="KW0100064">科迈原料4号棚</option>
+                <option value="KW0100065">科迈原料5号棚</option>
+                <option value="KW0100066">科迈原料6号棚</option>
+            </select>
+        </td>
+        @*//sxy/myt 220908 新增货源地类型字段*@
+        <th class="formTitle">
+            货源地类型：
+        </th>
+        <td class="formValue">
+            <input id="DEF4" type="text" class="txt" />
+        </td>
+        @*//sxy/myt 220908 新增货源地类型字段*@
+    </tr>
+</table>
+</form>

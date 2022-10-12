@@ -1,0 +1,208 @@
+﻿@{
+    ViewBag.Title = "汽运提货单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+      var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+    var CAR_NO= $("#CAR_NO").val();
+        var BillNo = $("#BillNo").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/LGQYTASK/GetJHOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&BillNo=' + BillNo+ '&Cars=' + escape(CAR_NO) , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/LGQYTASK/GetJHOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime  ,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '任务单号', name: 'TASK_ID',index: 'TASK_ID', width: 150, align: 'center'},
+                { label: '提货单号', name: 'BL_NO', index: 'BL_NO', width: 180, align: 'center' },
+                { label: '车辆状态', name: 'STATUS', index: 'STATUS', width: 55, align: 'center' },
+                { label: '生成时间', name: 'CREATE_TIME', index: 'CREATE_TIME', width: 120, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                  { label: '单据状态', name: 'BL_STATUS', index: 'BL_STATUS', width: 55, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                //1 已验单4 提单撤销0 未验单
+                       if (cellvalue == '0')
+                                return "未验单";
+                                else      if (cellvalue == '1')
+                                return "已验单";
+                                     else      if (cellvalue == '4')
+                                return "提单撤销";
+                            else 
+                                return "";
+                }
+            },   
+            { label: '是否合单', name: 'DEF2', index: 'DEF2', width: 55, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                       if (cellvalue == '2')
+                                return "是";
+                            else 
+                                return "否";
+                }
+            },
+                { label: '客户', name: 'BUYER_NAME', index: 'BUYER_NAME', width: 200, align: 'left' } ,
+                  { label: '物料', name: 'GOODS_CODENAME', index: 'GOODS_CODENAME', width: 150, align: 'left' },
+                      { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 80, align: 'left' },
+//                { label: '长度', name: 'ASSIST_CODENAME', index: 'ASSIST_CODENAME', width: 55, align: 'left' },
+//                { label: '数量', name: 'ITEM_QUANTITY', index: 'ITEM_QUANTITY', width: 55, align: 'left' },
+//                { label: '件重', name: 'ITEM_WEIGHT', index: 'ITEM_WEIGHT', width: 55, align: 'left' },
+                 { label: '预提量', name: 'ITEM_TOTAL_WEIGHT', index: 'BUYER_NAME', width: 55, align: 'left' },
+                 { label: '车号', name: 'CAR_NO', index: 'CAR_NO', width: 80, align: 'left' },
+                     { label: '车货总重', name: 'GROVEHWEI', index: 'GROVEHWEI', width: 80, align: 'left' },
+                  { label: '司机', name: 'DRIVER_NAME', index: 'DRIVER_NAME', width: 80, align: 'left' },
+                   { label: '身份证', name: 'DRIVER_ID', index: 'DRIVER_ID', width: 130, align: 'left' },
+                     { label: '仓库', name: 'WAREHOUSE_NAME', index: 'WAREHOUSE_NAME', width: 120, align: 'left' } ,
+                    { label: '承运商', name: 'CARRIERS_NAME', index: 'BUYER_NAME', width: 120, align: 'left' },
+                     { label: '发货单位', name: 'SELLER_NAME', index: 'BILLMAKERNAME', width: 120, align: 'left' },
+                  { label: '退货状态', name: 'DEF1', index: 'DEF1', width: 85, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                       if (cellvalue == '2')
+                                return "退货";
+                            else 
+                                return "正常";
+                }
+                }                ,
+               { label: '提单类型', name: 'DEF4', index: 'DEF4', width: 85, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                       if (cellvalue == '1')
+                                return "钢材提单";
+
+                                else if(cellvalue=="2")
+                                return "焦化提单";
+                            else 
+                                return "";
+                }
+            }
+
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CREATE_TIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true 
+ 
+        });
+        
+    }
+     
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BL_NO");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("LGQYTASKDetail", "@Url.Content("~/ExampleModule/LGQYTASK/LGQYTASKDetail")?KeyValue=" + KeyValue, "汽运提货单详细", "page_white_edit.png", true, true, true);
+        }
+    } 
+      //出厂
+    function btn_Out() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BL_NO");
+        if (IsChecked(KeyValue)) {
+            var BL_STATUS = GetJqGridRowValue("#gridTable", "BL_STATUS");
+            if (BL_STATUS == "4") {
+                tipDialog("数据已作废，不能进行出厂操作！", 3, "");
+                return false;
+            }
+           var STATUS = GetJqGridRowValue("#gridTable", "STATUS");
+//             if (STATUS == "完成") {
+//                tipDialog("数据已完成，不能进行出厂操作！", 3,"");
+//                return false;
+//            }
+
+            if (STATUS != "完成") {
+                tipDialog("计量未完成，不能进行出厂操作！", 3,"");
+                return false;
+            }
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/LGQYTASK/OutOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+       //查询
+    function btn_query() {
+        QueryDialog("/ExampleModule/LGQYTASK/LGQYTASKQuery", "LGQYTASKQuery", "查询过滤",350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/LGQYTASK/GetJHOrderList")?Action=query" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CAR_NO" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    提货单号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    订单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

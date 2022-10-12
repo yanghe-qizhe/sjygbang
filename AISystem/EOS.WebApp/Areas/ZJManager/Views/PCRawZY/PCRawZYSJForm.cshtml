@@ -1,0 +1,185 @@
+﻿@{
+    ViewBag.Title = "原料采样新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        SJUSERAutocomplete();
+        SJUSERAutocomplete1();
+    });
+    //送检人
+    function SJUSERAutocomplete() {
+        var txtname = "SENDUSER";
+        var $txtname = $("#SENDUSER");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 2, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+    //送检人
+    function SJUSERAutocomplete1() {
+        var txtname = "SENDUSER1";
+        var $txtname = $("#SENDUSER1");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 2, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJManager/PCRawCY/SetForm", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data.M[0]) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data.M[0][key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    //送检
+    function SendCheck() {
+        if (IsNull(KeyValue)) {
+            var SENDUSER = $("#SENDUSER").val();
+            var SENDUSER1 = $("#SENDUSER1").val();
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + KeyValue + '\",\"SENDUSER\":\"' + SENDUSER + '\",\"SENDUSER1\":\"' + SENDUSER1 + '\"}');
+            AjaxJson("/ZJManager/PCRawZY/CheckCYData1", postData, function (data) {
+                if (IsNull(data) && IsNull(data.Code)) {
+                    tipDialog(data.Message, 3, data.Code);
+                    top.frames[tabiframeId()].windowload();
+                    closeDialog();
+                }
+            });
+        } else {
+            tipDialog('请至少选择一个批次', 4, 'warning');
+        }
+    }
+
+ 
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_SendCheck" title="保存单据" onclick="SendCheck()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    送检</b></span></a><a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn"> <span>
+                        <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开 </b></span></a>
+</div>
+<div id="PCRAWCYADD">
+    <div id="RuleHead">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    送检人甲：
+                </th>
+                <td class="formValue">
+                    <input id="SENDUSER" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    送检人乙：
+                </th>
+                <td class="formValue">
+                    <input id="SENDUSER1" type="text" class="txt" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+</form>

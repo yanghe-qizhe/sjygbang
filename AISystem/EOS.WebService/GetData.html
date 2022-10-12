@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <meta charset="utf-8" />
+    <link href="/Content/Styles/jquery-ui.css" rel="stylesheet" />
+    <link href="/Content/Styles/jquery.ui.base.css" rel="stylesheet" />
+    <link href="/Content/Styles/jquery.ui.button.css" rel="stylesheet" />
+    <script src="/Content/Script/jquery-1.7.1.min.js"></script>
+    <script src="/Content/SCRIPT/jquery.json.js"></script>
+    <script src="/Content/Script/jquery-ui-1.8.20.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("a").button();
+        });
+
+        //供应商同步
+        function SAP_95() {
+            var jsondata = "{id:'',strjson:''}";
+            $.ajax({
+                url: "/SAPWebService.asmx/SAP_95ZS",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: jsondata,
+                success: function (data, status) {
+                    var json = data.d;
+                    if (json.STATUS == "S") {
+                        $("#div_test").html(json.REMSG);
+                    }
+                }
+            });
+        }
+
+        //物料同步
+        function SAP_94() {
+            var jsondata = "{strjson:''}";
+            $.ajax({
+                url: "/SAPWebService.asmx/SAP_94",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: jsondata,
+                success: function (data, status) {
+                    var json = data.d;
+                    if (json.STATUS == "S") {
+                        $("#div_test").html(json.REMSG);
+                    }
+                }
+            });
+        }
+
+        function WRZS_HGBZWFINISTWEIGHT(materialtype) {
+            var jsondata = "{materialtype:'" + materialtype + "'}";
+            $.ajax({
+                url: "/SAPWebService.asmx/WRZS_HGBZWFINISTWEIGHTZS",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: jsondata,
+                success: function (data, status) {
+                    var json = data.d;
+                    if (json.STATUS == "S") {
+                        $("#div_test").html(json.REMSG);
+                    }
+                }
+            });
+        }
+
+        function WRZS_SECONDWEIGHT(materialtype) {
+            var BILLNO = $("#BILLNO").val();
+            var jsondata = "{materialtype:'" + materialtype + "',BILLNO:'" + BILLNO + "'}";
+            $.ajax({
+                url: "/SAPWebService.asmx/WRZS_SECONDWEIGHTZS",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: jsondata,
+                success: function (data, status) {
+                    var json = data.d;
+                    if (json.STATUS == "S") {
+                        $("#div_test").html(json.REMSG);
+                    }
+                }
+            });
+        }
+
+
+        //采购订单同步
+        function SAP_116() {
+            var strzaedat = $("#strzaedat").val();
+            var strzbudat = $("#strzbudat").val();
+            var strwerks = $("#strwerks").val();
+            var jsondata = "{strzaedat:'" + strzaedat + "',strzbudat:'" + strzbudat + "',strwerks:'" + strwerks + "',strjson:''}";
+            $.ajax({
+                url: "/SAPWebService.asmx/SAP_116ZS",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: jsondata,
+                success: function (data, status) {
+                    var json = data.d;
+                    if (json.STATUS == "S") {
+                        $("#div_test").html(json.REMSG);
+                    }
+                }
+            });
+        }
+
+        //SAP收货过账
+        function SAP_POST() {
+            var EOS_GM_CODE = $("#EOS_GM_CODE").val();
+            var DOC_DATE = $("#DOC_DATE").val();
+            var PSTNG_DATE = $("#PSTNG_DATE").val();
+            var PO_NUMBER = $("#PO_NUMBER").val();
+            var PO_ITEM = $("#PO_ITEM").val();
+            var MATERIAL = $("#MATERIAL").val();
+            var BATCH = $("#BATCH").val();
+            var ENTRY_QNT = $("#ENTRY_QNT").val();
+            var STGE_LOC = $("#STGE_LOC").val();
+            var PLANT = $("#PLANT").val();
+            var MOVE_TYPE = $("#MOVE_TYPE").val();
+            var MVT_IND = $("#MVT_IND").val();
+            var jsondata = "{EOS_GM_CODE:'" + EOS_GM_CODE + "',DOC_DATE:'" + DOC_DATE + "',PSTNG_DATE:'" + PSTNG_DATE + "',PO_NUMBER:'" + PO_NUMBER + "',PO_ITEM:'" + PO_ITEM + "',MATERIAL:'" + MATERIAL + "',BATCH:'" + BATCH + "',ENTRY_QNT:'" + ENTRY_QNT + "',STGE_LOC:'" + STGE_LOC + "',PLANT:'" + PLANT + "',MOVE_TYPE:'" + MOVE_TYPE + "',MVT_IND:'" + MVT_IND + "'}";
+            $.ajax({
+                url: "/SAPWebService.asmx/SAP_POSTZS1",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: jsondata,
+                success: function (data, status) {
+                    var json = data.d;
+                    if (json.STATUS == "S") {
+                        $("#div_test").html(json.REMSG);
+                    }
+                }
+            });
+        }
+
+        //上料计量推送
+        function WRZS_SLWEIGHTZS() {
+            var BILLNO = $("#SLBILLNO").val();
+            var jsondata = "{BILLNO:'" + BILLNO + "'}";
+            $.ajax({
+                url: "/SAPWebService.asmx/WRZS_SLWEIGHTZS",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: jsondata,
+                success: function (data, status) {
+                    var json = data.d;
+                    if (json.STATUS == "S") {
+                        $("#div_test").html(json.REMSG);
+                    }
+                }
+            });
+        }
+        
+    </script>
+</head>
+<body>
+    <div id="div_test">
+    </div>
+    <p>
+        <fieldset>
+            <legend>
+                SAP采购订单
+            </legend>
+            <table>
+                <tr>
+                    <td>开始时间：</td>
+                    <td><input id="strzaedat" type="text" value="2021-09-29" /></td>
+                
+                    <td>结束时间：</td>
+                    <td><input id="strzbudat" type="text" /></td>
+                
+                    <td>工厂：</td>
+                    <td><input id="strwerks" type="text" value="1000" /></td>
+                </tr>
+            </table>
+            <a href="#" onclick="SAP_116();">采购订单同步</a>
+        </fieldset>
+    </p>
+
+    <p>
+        <fieldset>
+            <legend>
+                SAP基础数据
+            </legend>
+            <a href="#" onclick="SAP_94();">供应商同步</a><a href="#" onclick="SAP_94();">物料同步</a>
+        </fieldset>
+    </p>
+
+    <p>
+        <fieldset>
+            <legend>
+                SAP采购收货
+            </legend>
+            <table>
+                <tr>
+                    <td>代码：</td>
+                    <td><input id="EOS_GM_CODE" type="text" value="01" /></td>
+              
+                    <td>过账时间：</td>
+                    <td><input id="DOC_DATE" type="text" value="2021-09-29" /></td>
+              
+                    <td>凭证时间：</td>
+                    <td><input id="PSTNG_DATE" type="text" value="2021-09-29" /></td>
+                </tr>
+                <tr>
+                    <td>订单编号：</td>
+                    <td><input id="PO_NUMBER" type="text" value="4700007834" /></td>
+          
+                    <td>订单行号：</td>
+                    <td><input id="PO_ITEM" type="text" value="00010" /></td>
+               
+                    <td>物料编号：</td>
+                    <td><input id="MATERIAL" type="text" value="000000000003010087" /></td>
+                </tr>
+                <tr>
+                    <td>批号：</td>
+                    <td><input id="BATCH" type="text" value="2021092802" /></td>
+              
+                    <td>数量：</td>
+                    <td><input id="ENTRY_QNT" type="text" value="160" /></td>
+              
+                    <td>库存地点：</td>
+                    <td><input id="STGE_LOC" type="text" value="Y089" /></td>
+                </tr>
+                <tr>
+                    <td>工厂：</td>
+                    <td><input id="PLANT" type="text" value="1000" /></td>
+              
+                    <td>移动类型：</td>
+                    <td><input id="MOVE_TYPE" type="text" value="101" /></td>
+              
+                    <td>移动标识：</td>
+                    <td><input id="MVT_IND" type="text" value="B" /></td>
+                </tr>
+            </table>
+            <a href="#" onclick="SAP_POST();">采购收货</a>
+        </fieldset>
+    </p>
+
+    <p>
+        <fieldset>
+            <legend>
+                SAP化工一次收货
+            </legend>
+            <a href="#" onclick="WRZS_HGBZWFINISTWEIGHT('YG40');">化工一次收货检验</a> <a href="#" onclick="WRZS_HGBZWFINISTWEIGHT('YG60');">包装物一次收货检验</a>
+        </fieldset>
+    </p>
+
+    <p>
+        <fieldset>
+            <legend>
+                SAP化工二次过账
+            </legend>
+            <table>
+                <tr>
+                    <td>过磅单号：</td>
+                    <td><input id="BILLNO" type="text" value="" /></td>
+                </tr>
+            </table>
+            <a href="#" onclick="WRZS_SECONDWEIGHT('YG40');">化工二次过账</a>
+            <a href="#" onclick="WRZS_SECONDWEIGHT('YG60');">包装物二次过账</a>
+        </fieldset>
+    </p>
+
+    <p>
+        <fieldset>
+            <legend>
+                MES上料计量推送
+            </legend>
+            <table>
+                <tr>
+                    <td>过磅单号：</td>
+                    <td><input id="SLBILLNO" type="text" value="" /></td>
+                </tr>
+            </table>
+            <a href="#" onclick="WRZS_SLWEIGHTZS();">上料计量推送</a>
+           
+        </fieldset>
+    </p>
+</body>
+</html>

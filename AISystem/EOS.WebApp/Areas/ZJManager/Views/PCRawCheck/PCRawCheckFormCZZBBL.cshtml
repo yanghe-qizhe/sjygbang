@@ -1,0 +1,256 @@
+﻿@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var PCRAWTYPE = GetQuery("PCRAWTYPE");
+    $(function () {
+        BindAutocomplete("ORGNAME", "PK_ORG", "Company1", "200", "150", "");
+        $("#PCRAWTYPE").val(PCRAWTYPE);
+        if (!!KeyValue) {
+            //主表信息
+            InitControl(KeyValue);
+        }
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ZJManager/PCRawCheck/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebMyControls(data);
+            });
+ 
+        }
+    }
+
+
+    //得到一个对象实体
+    function InitControlZY() {
+        KeyValue = $("#PRINTCODE").val();
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJManager/PCRawCheck/GetEntityHY", { KeyValue: KeyValue }, function (data) {
+                if (data.zjtype == "3") {
+                    KeyValue = "";
+                    tipDialog(data.message, 3, "warning");
+                    return false;
+                }
+                else if (data.zjtype == "1") {
+                    KeyValue = data.rowdata.ID;
+                    InitControl(KeyValue);
+                } else {
+                    KeyValue = "";
+                    $("#CARS").val(data.CARS);
+                    $("#CARSNAME").val(data.CARSNAME);
+                    InitGrid(data.rowdata);
+                }
+            });
+        }
+    }
+
+ 
+
+    function SetWebMyControls(data) {
+        try {
+            for (var key in data) {
+
+                var id = $('#' + key);
+                if (id.attr('id')) {
+                    var value = $.trim(data[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                    var type = id.attr('type');
+                    switch (type) {
+                        case "checkbox":
+                            if (value == 1) {
+                                id.attr("checked", 'checked');
+                            } else {
+                                id.removeAttr("checked");
+                            }
+                            break;
+                        default:
+                            id.val(value);
+                            break;
+                    }
+                }
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+     
+    //保存事件
+    function SubmitOrderForm() {
+
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    AjaxJson("/ZJManager/PCRawCheck/SubmitOrderFormBL?dl=" + postData.DEF1 + "&hd=" + postData.DEF2 + "&nz=" + postData.DEF3 + "&np=" + postData.DEF4 + "&kzqd=" + postData.DEF5 + "&id=" + postData.BILLNO, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    }
+                    );
+                }, 1000);
+            }
+        });
+    }
+
+
+
+
+
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+        data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+        classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3"></object>
+<form id="form1" style="margin: 1px">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+               class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    <table id="tb_OrderFrom" class="form">
+        <tr>
+            <th class="formTitle">
+                化验单号：
+            </th>
+            <td class="formValue">
+                <input id="BILLNO" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                       err="化验单号" checkexpession="NotNull" value="@ViewBag.BillNo">
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                采样日期：
+            </th>
+            <td class="formValue">
+                <input id="CYDATE" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" dbfield="true" err="日期" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                接收工厂：
+            </th>
+            <td class="formValue">
+                <input id="PK_ORG" type="hidden" />
+                <input id="ORGNAME" type="text" class="txt" dbfield="true" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="MATERIAL" type="hidden" dbfield="true" />
+                <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                车号：
+            </th>
+            <td class="formValue">
+                <input id="CARS" type="hidden" dbfield="true" />
+                <input id="CARSNAME" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                定量g/m²：
+            </th>
+            <td class="formValue">
+                <input id="DEF1" type="text" class="txt" value="0" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                厚度μm：
+            </th>
+            <td class="formValue">
+                <input id="DEF2" type="text" class="txt" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                耐破强度kPa：
+            </th>
+            <td class="formValue">
+                <input id="DEF3" type="text" class="txt" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                耐折（次）：
+            </th>
+            <td class="formValue">
+                <input id="DEF4" type="text" class="txt" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                抗张强度N/m：
+            </th>
+            <td class="formValue">
+                <input id="DEF5" type="text" class="txt" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                备注：
+            </th>
+            <td class="formValue" colspan="3">
+                <input id="MEMO" type="text" class="txt" />
+            </td>
+        </tr>
+    </table>
+    <div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+        <!--拼单信息-->
+        <div id="order" class="tabPanel">
+            <table id="gridTable"></table>
+        </div>
+    </div>
+</form>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+
+    .ui-jqgrid tr.ui-row-ltr td {
+        padding: 0px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .ui-jqgrid .ui-jqgrid-htable th {
+        line-height: 15px;
+    }
+
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+            background: none;
+        }
+
+    .editable {
+        height: 22px;
+        background-color: #fff;
+    }
+</style>

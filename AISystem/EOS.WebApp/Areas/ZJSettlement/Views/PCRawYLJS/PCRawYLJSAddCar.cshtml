@@ -1,0 +1,190 @@
+﻿@{
+    ViewBag.Title = "移入组批车辆明细";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue');
+    var BILLNO = GetQuery('BILLNO');
+     var VBILLCODE = GetQuery('VBILLCODE');
+ var BEGINDATE = GetQuery('BEGINDATE');
+  var ENDDATE = GetQuery('ENDDATE');
+ 
+    $(function () {
+        $("#BILLNO").val(KeyValue);
+        $("#VBILLCODE").val(VBILLCODE);
+          if (BEGINDATE != "") {
+                    $("#StartTime").val(BEGINDATE);
+                }
+            if (ENDDATE != "") {
+            $("#EndTime").val(ENDDATE);
+        }
+        setTimeout(function () {
+            GetGrid();
+        }, 200);
+    });
+
+    function btn_OK() {
+        var ID = GetJqGridRowValue("#gridTable", "BILLNO");
+        var delparm = 'KeyValue=' + escape(KeyValue)  ;
+        var url = '/ZJManager/PCRawCY/PCRawCYAddCarItem';
+        if (IsNull(KeyValue)) {
+            confirmDialog("提示", "注：您确定要移入当前选中的明细记录吗？请谨慎操作", function (r) {
+                if (r) {
+                    Loading(true, "正在移动数据...");
+                    window.setTimeout(function () {
+                        AjaxJson(url, delparm, function (data) {
+                            tipDialog(data.Message, 3, data.Code);
+                            if (data.Code == 1) {
+                                btn_Search();
+                                 var frameid = tabiframeId();
+                                var $parentobj = top.frames[frameid];
+                                $parentobj.btn_Search();
+                            }
+                        });
+                    }, 200);
+                }
+            });
+        } else {
+            tipDialog('请至少选择一个车号明细', 4, 'warning');
+        }
+    }
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var VBILLCODE = $("#CarsName").val();
+      
+        
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/PCBillSOF/GetOrderWeightList")?StartTime=" + StartTime + '&EndTime=' + EndTime  +"&VBILLCODE="+VBILLCODE , page: 1
+        }).trigger('reloadGrid');
+    }
+
+    //加载表格
+    function GetGrid() {
+         
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var VBILLCODE = GetQuery('VBILLCODE');
+
+  $("#gridTable").jqGrid({
+         url: "@Url.Content("~/ZJSettlement/PCRawYLJS/GetOrderWeightList")?StartTime=" + StartTime + '&EndTime=' + EndTime +"&VBILLCODE="+VBILLCODE ,
+            datatype: "json",
+            height: $(window).height() - 130,
+            autowidth: true,
+            colModel: [
+              { label: '过磅单号', name: 'BILLNO', width: 110, align: 'left' },
+                 { label: '结算状态', name: 'ISJS', index: 'ISJS', width: 60, align: 'center',
+                      formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "0")
+                             return "未结算";
+                        else 
+                             return "已结算";
+                    }
+                 },
+                { label: '车号主键', name: 'PK_CARSID', hidden: true },
+                { label: '车号', name: 'CARS', index: 'CARS', width: 80, align: 'center' },
+        
+                { label: '物料编号', name: 'PK_MATERIAL', width: 100, align: 'left',hidden: true},
+                { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 120, align: 'left' },
+                { label: '规格', name: 'MATERIALKIND', index: 'MATERIALKIND', width: 60, align: 'left' },
+      
+              { label: '应收重量', name: 'YFSUTTLE', index: 'YFSUTTLE', width: 60, align: 'center' },
+                { label: '毛重', name: 'GROSS', index: 'GROSS', width: 60, align: 'center' },
+                 { label: '皮重', name: 'TARE', index: 'TARE', width: 60, align: 'center' },
+                 { label: '净重', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+               { label: '件数', name: 'YFPIECE', index: 'YFPIECE', width: 60, align: 'center' },
+                 { label: '采购部检斤重量', name: 'WGKZ', index: 'WGKZ', width: 100, align: 'center' },
+               {
+                    label: '重车时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                } ,
+                 { label: '订单主表PK', name: 'PK_BILL', hidden: true },
+                  { label: '订单明细PK', name: 'PK_BILL_B', hidden: true },
+                 { label: '订单编号', name: 'PK_CONTRACT_B', index: 'PK_CONTRACT_B',  width: 120, align: 'center' },
+                { label: '供应商PK', name: 'PK_SENDORG', hidden: true },
+                { label: '供应商', name: 'SENDORG', index: 'SENDORG', width: 170, align: 'left' },
+                { label: '承运商PK', name: 'PK_TRAFFICCOMPANY', hidden: true },
+                { label: '承运商', name: 'TRAFFICCOMPANY', index: 'TRAFFICCOMPANY', width: 100, align: 'left' },
+                 { label: '到货单号', name: 'PK_ORDER',  index: 'PK_ORDER', width: 130, align: 'center' },
+                { label: '车型', name: 'BRANDMODEL', index: 'BRANDMODEL', width: 100, align: 'left' } ,
+                { label: '司机', name: 'DRIVERS', index: 'DRIVERS', width: 80, align: 'center' },
+                { label: 'IC卡号', name: 'ICCARD', index: 'ICCARD', width: 100, align: 'center' },
+                { label: '收货单位PK', name: 'PK_RECEIVEORG', hidden: true },
+                { label: '收货单位', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 140, align: 'left' } ,
+                { label: '仓库', name: 'RECEIVESTORE', index: 'RECEIVESTORE', width: 100, align: 'center' },
+                { label: '水分补点', name: 'ISBD', hidden: true }
+            ],
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+             pager: "#gridPager",
+            sortname: 'DEF5',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true
+        });
+        columnModelData("#gridTable");
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    移入到目标单号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt readonly" readonly="readonly" style="width: 120px" />
+                </td>
+                <th>
+                    订单编号：
+                </th>
+                <td>
+                    <input id="SUPPLY" type="hidden" />
+                    <input id="MATERIAL" type="hidden" />
+                    <input id="VBILLCODE" type="text" class="txt readonly" readonly="readonly" style="width: 120px" />
+                </td>
+                <th>
+                    日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-3)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+                <td>
+                    <input id="btnOK" type="button" class="btnSearch" value="移 入" onclick="btn_OK()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,178 @@
+﻿@{
+    ViewBag.Title = "生铁判定公式";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        AddRow();
+        if (IsNull(KeyValue)) {
+            AjaxJson("/BaseSet/ZJPigironFormula/SetForm?KeyValue=" + escape(KeyValue), "", function (data) {
+                if (IsNull(data)) {
+                    SetForm(data);
+                }
+            });
+        }
+    })
+
+    function SetForm(json) {
+        if (IsNull(json)) {
+            var o = json;
+            var maxcode = $("#MaxID").val();
+            $("#FANAME➩" + maxcode).val(IsNull(o.FANAME) ? o.FANAME : "");
+            $("#ZJFA➩" + maxcode).val(IsNull(o.ZJFA) ? o.ZJFA : "");
+            $("#ITEMNAME➩" + maxcode).val(IsNull(o.ITEMNAME) ? o.ITEMNAME : "");
+            $("#ZJITEMNO➩" + maxcode).val(IsNull(o.ZJITEMNO) ? o.ZJITEMNO : "");
+            $("#TYPE➩" + maxcode).val(IsNull(o.TYPE) ? o.TYPE : "");
+            $("#SIGNMIN➩" + maxcode).val(IsNull(o.SIGNMIN) ? o.SIGNMIN : "");
+            $("#MINJS➩" + maxcode).val(IsNull(o.MINJS) ? o.MINJS : "");
+            $("#SIGNMAX➩" + maxcode).val(IsNull(o.SIGNMAX) ? o.SIGNMAX : "");
+            $("#MAXJS➩" + maxcode).val(IsNull(o.MAXJS) ? o.MAXJS : "");
+            $("#PIGVALUE➩" + maxcode).val(IsNull(o.PIGVALUE) ? o.PIGVALUE : "");
+        }
+    }
+
+    function AddRow() {
+        var maxcode = parseInt($("#MaxID").val()) + 1;
+        var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" index=' + maxcode + ' >' + maxcode + '</td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="FANAME➩' + maxcode + '" index="' + maxcode + '" type="text" class="txt iconsearch" readonly="readonly" err="质检方案" datacol="yes" checkexpession="NotNull"/><input type="hidden" id="ZJFA➩' + maxcode + '" index="' + maxcode + '" err="质检方案" datacol="yes" checkexpession="NotNull"></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="ITEMNAME➩' + maxcode + '" index="' + maxcode + '" type="text" class="txt iconsearch" readonly="readonly" err="质检项目" datacol="yes" checkexpession="NotNull"/><input type="hidden" id="ZJITEMNO➩' + maxcode + '" index="' + maxcode + '" err="质检项目" datacol="yes" checkexpession="NotNull"></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="TYPE➩' + maxcode + '" index="' + maxcode + '" class="txtselect required" datacol="yes" err="牌号类别" checkexpession="NotNull"><option value="牌号" selected>牌号</option><option value="类别">类别</option></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="SIGNMIN➩' + maxcode + '" index="' + maxcode + '" class="txtselect required" datacol="no" err="比较符" checkexpession="NotNull"></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="MINJS➩' + maxcode + '" index="' + maxcode + '" type="text" class="txt required" /></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><select id="SIGNMAX➩' + maxcode + '" index="' + maxcode + '" class="txtselect required" datacol="no" err="比较符" checkexpession="NotNull"></select></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="MAXJS➩' + maxcode + '" index="' + maxcode + '" type="text" class="txt required" /></td>';
+        tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="PIGVALUE➩' + maxcode + '" index="' + maxcode + '" type="text" class="txt required" datacol="yes" err="标准值" checkexpession="NotNull"/></td>';
+        tr += '</tr>';
+        $("#add_TableInfo").append(tr);
+        $("#MaxID").val(maxcode);
+        $("#FANAME➩" + maxcode).bind("click", function () {
+            BindZJFA($(this));
+        })
+        $("#ITEMNAME➩" + maxcode).bind("click", function () {
+            BindItemNo($(this));
+        })
+        $("#SIGNMIN➩" + maxcode).append(BindSIGN());
+        $("#SIGNMAX➩" + maxcode).append(BindSIGN());
+    }
+
+    function BindSIGN() {
+        var tr = "<option value='>'>></option>";
+        tr += "<option value='>='>>=</option>";
+        tr += "<option value='='>=</option>";
+        tr += "<option value='<='><=</option>";
+        tr += "<option value='<'><</option>";
+        return tr;
+    }
+
+    function BindZJFA(obj) {
+        var index = obj.attr("index");
+        var Code = "FANO,FANAME";
+        var url = "/SelectValue/Select/SelectZJFA?ZJForType=ALL&Index=" + escape(index) + "&Type=0&FormID=@ViewBag.FormID&Code=" + escape(Code);
+        Dialog(url, "SelectZJFA", "选取质检方案信息", 900, 400);
+    }
+    function CallBackEventFANO(KeyValue, Index) {
+        if (IsNull(KeyValue.FANO) && IsNull(KeyValue.FANAME)) {
+            $("#ZJFA➩" + Index).val(KeyValue.FANO);
+            $("#FANAME➩" + Index).val(KeyValue.FANAME);
+        } else {
+            tipDialog('未找到质检方案请重新选择', 4, 'warning');
+        }
+    }
+    function BindItemNo(obj) {
+        var index = obj.attr("index");
+        var FANO = $("#ZJFA➩" + index).val();
+        var FANAME = $("#FANAME➩" + index).val();
+        if (IsNull(FANAME)) {
+            var Code = "ITEMNO,ITEMNAME";
+            var url = "/SelectValue/Select/SelectZJItemForFANO?Index=" + escape(index) + "&Type=0&FormID=@ViewBag.FormID&Code=" + escape(Code) + "&FANO=" + escape(FANO) + "&FANAME=" + escape(FANAME);
+            Dialog(url, "SelectZJItemForFANO", "选取质检项目信息", 900, 400);
+        } else {
+            //为空 提示
+            tipDialog("请先选择质检方案", 3, "-1");
+        }
+    }
+    function CallBackEventItemNo(KeyValue, Index) {
+        if (IsNull(KeyValue.ITEMNO) && IsNull(KeyValue.ITEMNAME)) {
+            $("#ZJITEMNO➩" + Index).val(KeyValue.ITEMNO);
+            $("#ITEMNAME➩" + Index).val(KeyValue.ITEMNAME);
+        } else {
+            tipDialog('未找到质检项目请重新选择', 4, 'warning');
+        }
+    }
+
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = jQuery.parseJSON('{"LSKZData":""}');
+            postData["LSKZData"] = GetTableDataJson("#Temp_List");
+            AjaxJson("/BaseSet/ZJPigironFormula/PIGIRONSave?KeyValue=" + escape(KeyValue), postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+    <div class="PartialButton">
+        <a title="刷新" class="tools_btn" id="lr-replace" onclick="Replace()" ids="2e93cddb-303b-4584-bbc6-5bfe1fb9c858">
+            <span><b style='background: url("../../Content/Images/Icon16/arrow_refresh.png") no-repeat 50% 4px;'>
+                刷新</b></span></a>
+        <div class="tools_separator">
+        </div>
+    </div>
+</div>
+<div id="ZJKZAdd">
+    <table id="Temp_List" class="grid leftline form" style="width: 100%">
+        <thead>
+            <tr>
+                <td style="width: 30px; text-align: center; border-left: none;">
+                    <div class="table-header">
+                        行号</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        质检方案</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        质检项目</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        牌号/类别</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        比较符</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        开始</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        比较符</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        结束</div>
+                </td>
+                <td style="width: 50px;">
+                    <div class="table-header">
+                        标准值</div>
+                </td>
+            </tr>
+        </thead>
+        <tbody id="add_TableInfo">
+        </tbody>
+    </table>
+</div>
+</form>

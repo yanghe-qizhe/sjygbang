@@ -1,0 +1,131 @@
+﻿@{
+    ViewBag.Title = "选择车皮号";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+
+<script>
+    $(function () {
+        $("#keywords").focus();
+             setTimeout(function () {
+                GetGrid();
+            }, 100);
+        //绑定键盘按下事件  
+        $(document).keypress(function (e) {
+            // 回车键事件  
+            if (e.which == 13) {
+                $("#keywords").focus();
+                $("#keywords").select();
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    function btn_Search() {
+        var keyword = $("#keyword").val();
+           var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+                     url: "@Url.Content("~/BaseSet/Trains/GetTrainsList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&keyword=' +escape(keyword)
+        }).trigger('reloadGrid');
+    }
+    //显示 
+    function GetGrid() {
+       var index = GetQuery('index');
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/Trains/GetTrainsList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height:290,
+            width:890,
+            colModel: [
+                  { label: '主键', name: 'ID', width: 80, align: 'left', hidden: true },  
+                { label: '内码', name: 'CODE', index: 'CODE', width: 100, align: 'center' },
+                { label: '车皮名称', name: 'FULLNAME', index: 'NAME', width: 100, align: 'center' },
+                { label: '车皮简称', name: 'SHORTNAME', index: 'SHORTNAME', width: 100, align: 'left' },
+                { label: '创建人', name: 'CREATEUSER', index: 'CREATEUSER', width: 90, align: 'center' },
+                   {
+                    label: '创建日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }     
+            ],
+            pager: "#gridPager",
+            sortname: 'CREATEDATE',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            //双击事件
+            ondblClickRow: function (RowIndx) {
+             var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var $parentobj = top.frames[tabiframeId()];
+                if (!$parentobj.IsExistCars(index, rowData.FULLNAME)) {
+                    $parentobj.$("#CARS➩" + index).val(rowData.ID);
+                    $parentobj.$("#CARSNAME➩" + index).val(rowData.FULLNAME);
+                    $parentobj.$("#gridTable tbody tr:eq(" + index + ")").find('input').attr("datacol", "yes");
+                    index++;
+                    $parentobj.$("#gridTable tbody tr:eq(" + index + ")").find('input').removeAttr('disabled');
+                    $parentobj.$("#gridTable").find('.disabled').attr("disabled", "disabled");
+                    $parentobj.$("#CARSNAME➩" + index).focus();
+                    closeDialog();
+                } else {
+                    top.TipMsg("车皮号已存在,不能重复添加", 4000, "error");
+                }
+            }
+        });
+
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    关键字：
+                </th>
+                <td>
+                    <input id="keyword" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    订单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

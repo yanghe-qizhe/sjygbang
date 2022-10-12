@@ -1,0 +1,170 @@
+﻿@{
+    ViewBag.Title = "质检方案管理》表单页面";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("FANO");
+    var KeyValueName = GetQuery("FANAME"); 
+    var TYPE = GetQuery("TYPE");
+    var TYPENAME = GetQuery("TYPENAME");
+    $(function () { 
+        GetGrid();  
+        GetGrid2("");  
+    }) 
+    //加载表格
+    function GetGrid() {  
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/ZJBZ/GetZJBZList")?FANO=" + escape(KeyValue),
+            datatype: "json",
+            height: $(window).height() - 280,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, align: 'left',hidden:true },
+                { label: '方案名称', name: 'FANAME', index: 'FANAME', width: 100, align: 'center' },
+                { label: '物料名称', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 150, align: 'center' },
+                 { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 150, align: 'center' },
+                { label: '项目名称', name: 'ZJFAITEMID', index: 'ZJFAITEMID', width: 100 ,hidden:true },
+                { label: '项目名称', name: 'ITEMNAME', index: 'ITEMNAME', width: 100, align: 'center' },
+                { label: '方案类型', name: 'TYPENAME', index: 'TYPENAME', width: 100, align: 'center' },  
+                      { label: '检验标准', name: 'CHECKMEMO', index: 'CHECKMEMO', width: 200, align: 'center' }, 
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            //单击事件
+            onSelectRow: function (RowIndx) {  
+                var MAINID = GetJqGridRowValue("#gridTable", "ID"); 
+                $("#gridTable2").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/BaseSet/ZJBZ/GetZJBZItemList")?MAINID=" + escape(MAINID), page: 1
+                }).trigger('reloadGrid'); 
+            }
+        });
+        ////////
+    } 
+
+    function GetGrid2(MAINID) {   
+        $("#gridTable2").jqGrid({
+            url: "@Url.Content("~/BaseSet/ZJBZ/GetZJBZItemList")?MAINID=" + escape(MAINID),
+            datatype: "json",
+            height: 140,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, align: 'left', hidden: true }, 
+                { label: '比较符', name: 'SIGN1', index: 'SIGN1', width: 100, align: 'center' },
+                { label: '上限', name: 'MAXJS', index: 'MAXJS', width: 100, align: 'center' }, 
+                { label: '比较符', name: 'SIGN2', index: 'SIGN2', width: 90, align: 'center' },
+                { label: '下限', name: 'MINJS', index: 'MINJS', width: 100, align: 'center' },
+                { label: '基准值', name: 'JZZ', index: 'JZZ', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (!IsNull(cellvalue)) return "";
+                        if (cellvalue == '1') return "合格";
+                        if (cellvalue == '2') return "不合格";
+                    }
+                 },
+                { label: '浮动值', name: 'FDZ', index: 'FDZ', width: 100, align: 'center' }, 
+               
+               { label: '判定方式', name: 'TYPE', index: 'TYPE', width: 100, align: 'center', 
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "自动判定";
+                        if (cellvalue == '1') return "人工判定";
+                    }
+                }, 
+                { label: '判定类型', name: 'PDTYPE', index: 'PDTYPE', width: 100, align: 'center', 
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "值区间";
+                        if (cellvalue == '2') return "文本";
+                    }
+                }, 
+                { label: '默认值', name: 'ISDEFAULT', index: 'ISDEFAULT', width: 100, align: 'center', 
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "默认";
+                        if (cellvalue == '0') return "非默认";
+                    }
+                }, 
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 100, align: 'center' }, 
+                {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true, 
+            pager: false,
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+        });
+        columnModelData("#gridTable2");
+    } 
+
+    //设置
+    function btn_set() {   
+        var MAINID = GetJqGridRowValue("#gridTable", "ID");
+        var ITEMNO = GetJqGridRowValue("#gridTable", "ZJFAITEMID");
+        var ITEMNAME = GetJqGridRowValue("#gridTable", "ITEMNAME");
+         var MEMO = GetJqGridRowValue("#gridTable", "MEMO");
+        
+        if(IsNull(MAINID)){
+            var url = '@Url.Content("~/BaseSet/ZJBZ/ZLBZForm")?FANO='+escape(KeyValue)+"&ITEMNO="+escape(ITEMNO)+'&ITEMNAME='+escape(ITEMNAME)+'&MAINID='+escape(MAINID)+'&MEMO='+escape(MEMO);
+            openDialog(url, "ZLBZForm", "质检标准设置", 900,400, function (iframe) {
+                top.frames[iframe].AcceptClick()
+            }); 
+        } else{
+            tipDialog('您没有选中任何质检项目,请您选中后再操作。',3, 'warning');
+        } 
+    } 
+      
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            <a title="刷新" class="tools_btn" id="lr-replace" onclick="Replace()" ids="2e93cddb-303b-4584-bbc6-5bfe1fb9c858">
+                <span><b style='background: url("../../Content/Images/Icon16/arrow_refresh.png") no-repeat 50% 4px;'>
+                    刷新</b></span></a><div class="tools_separator">
+                    </div>
+            <a title="设置" class="tools_btn" id="lr-add" onclick="btn_set()" ids="a92d2281-802a-4c2a-b6d6-eda1ec631a4c">
+                <span><b style='background: url("../../Content/Images/Icon16/edit.gif") no-repeat 50% 4px;'>
+                    设置</b></span></a><a title="离开" class="tools_btn" id="lr-leave" onclick="btn_back()"
+                        ids="0ec4d7b4-b766-4574-8145-88173731413d"><span><b style='background: url("../../Content/Images/Icon16/back.png") no-repeat 50% 4px;'>离开</b></span></a><div
+                            class="tools_separator">
+                        </div>
+        </div>
+    </div>
+    @*<div style="width: 100%; height: 100%">*@
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+        <table id="gridTable2">
+        </table>
+    </div>
+    @*<div>
+           
+        </div>
+    </div>*@
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

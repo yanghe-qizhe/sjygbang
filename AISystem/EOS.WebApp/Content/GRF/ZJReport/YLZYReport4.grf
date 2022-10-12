@@ -1,0 +1,246 @@
+﻿Object Report
+	Version='6.6.2.0'
+	Title='主产品销售逐车明细'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		LeftMargin=1
+		TopMargin=0.5
+		RightMargin=1
+		BottomMargin=0.5
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=eosine123;User ID=c##sgeos;Data Source=192.168.142.198/orcl'
+			QuerySQL='select MATERIALSHORTNAME,PRINTCODE,DEF14,DEF15 from VBD_PCRAWCY'
+			Items Field
+				Item
+					Name='MATERIALSHORTNAME'
+				End
+				Item
+					Name='PRINTCODE'
+				End
+				Item
+					Name='SBILLNO'
+				End
+				Item
+					Name='GBILLNO'
+				End
+				Item
+					Name='YBILLNO'
+				End
+				Item
+					Name='DEF14'
+				End
+				Item
+					Name='DEF15'
+				End
+			End
+		End
+		Items Column
+			Item
+				Name='MATERIALSHORTNAME'
+				Width=3.96875
+			End
+			Item
+				Name='YBILLNO'
+				Width=4.39208
+			End
+			Item
+				Name='DEF14'
+				Width=5.42396
+			End
+			Item
+				Name='DEF15'
+				Width=4.20688
+			End
+		End
+		Object ColumnContent
+			CanGrow=T
+			Height=0.608542
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Items ColumnContentCell
+				Item
+					Column='MATERIALSHORTNAME'
+					DataField='MATERIALSHORTNAME'
+				End
+				Item
+					Column='YBILLNO'
+					DataField='YBILLNO'
+				End
+				Item
+					Column='DEF14'
+					TextAlign=MiddleCenter
+					DataField='DEF14'
+				End
+				Item
+					Column='DEF15'
+					DataField='DEF15'
+				End
+			End
+		End
+		Object ColumnTitle
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Bold=T
+				Charset=134
+			End
+			Items ColumnTitleCell
+				Item
+					GroupTitle=F
+					Column='MATERIALSHORTNAME'
+					TextAlign=MiddleCenter
+					Text='物料名称'
+				End
+				Item
+					GroupTitle=F
+					Column='YBILLNO'
+					TextAlign=MiddleCenter
+					Text='Y码'
+				End
+				Item
+					GroupTitle=F
+					Column='DEF14'
+					TextAlign=MiddleCenter
+					Text='制样人'
+				End
+				Item
+					GroupTitle=F
+					Column='DEF15'
+					TextAlign=MiddleCenter
+					Text='制样时间'
+				End
+			End
+		End
+		Items Group
+			Item
+				Name='Group1'
+				Object GroupHeader
+					Height=0
+				End
+				Object GroupFooter
+					Height=0.608542
+					RepeatOnPage=T
+					Items Control
+						Item
+							Type=SummaryBox
+							Name='SummaryBox1'
+							AlignColumn='DEF15'
+							Left=13.7583
+							Width=4.25979
+							Height=0.608542
+							Object Border
+								Styles=[DrawLeft|DrawBottom]
+							End
+							TextAlign=MiddleCenter
+							SummaryFun=Count
+						End
+						Item
+							Type=MemoBox
+							Name='MemoBox1'
+							AlignColumn='MATERIALSHORTNAME'
+							AlignColumnEx='DEF14'
+							Left=-0.0264583
+							Width=13.8377
+							Height=0.608542
+							Object Border
+								Styles=[DrawLeft|DrawBottom]
+							End
+							Object Font
+								Name='宋体'
+								Size=105000,0
+								Bold=T
+								Charset=134
+							End
+							TextAlign=MiddleCenter
+							Text='合计：'
+						End
+					End
+				End
+			End
+		End
+	End
+	Object PageHeader
+		Height=0
+	End
+	Items Parameter
+		Item
+			Name='title'
+		End
+		Item
+			Name='start_Date'
+		End
+		Item
+			Name='end_Date'
+		End
+		Item
+			Name='Query'
+		End
+	End
+	Items ReportHeader
+		Item
+			Height=1.79917
+			Items Control
+				Item
+					Type=MemoBox
+					Name='至'
+					Left=3.54542
+					Top=1.05833
+					Width=0.582083
+					Height=0.582083
+					Text='至'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox4'
+					Left=-0.0264583
+					Top=1.05833
+					Width=2.35479
+					Height=0.608542
+					Parameter='start_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox5'
+					Left=4.1275
+					Top=1.05833
+					Width=4.39208
+					Height=0.635
+					Parameter='end_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox14'
+					Width=18.3885
+					Height=0.79375
+					Object Font
+						Name='宋体'
+						Size=180000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Text='逐车明细表'
+					Parameter='title'
+				End
+			End
+		End
+	End
+End

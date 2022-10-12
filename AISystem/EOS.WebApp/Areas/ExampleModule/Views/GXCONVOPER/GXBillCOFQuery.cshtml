@@ -1,0 +1,87 @@
+﻿@{
+    ViewBag.Title = "厂内工序查询";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+ 
+        //秤点
+        BindAutocomplete("SCALENAME", "PK_SCALE", "Dictionary", "", "", "");
+        //物料
+        BindAutocomplete("MATERIALNAME", "PK_MATERIAL", "Material", "200", "150", "");
+     
+         //发货单位
+        BindDeptTree("SENDUNITNAME","PK_SENDUNIT","","");
+        //收货单位
+         BindDeptTree("ACCEPTUNITNAME","PK_ACCEPTUNIT","","");
+        
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url ="";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var TaskNo = $("#TaskNo").val();
+        var PK_SCALE = $("#PK_SCALE").val();
+        var Material = $("#PK_MATERIAL").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&TaskNo=" + TaskNo;
+        url +=  "&PK_SCALE=" + PK_SCALE + "&Material=" + Material;
+ 
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                单据编号：
+            </th>
+            <td>
+           
+                <input id="TaskNo" type="text" class="txt" style="width: 200px"  />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                过秤点：
+            </th>
+            <td>
+                <input id="PK_SCALE" type="hidden" />
+                <input id="SCALENAME" type="text" class="txt" style="width: 200px" items="计量称点"/>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="PK_MATERIAL" type="hidden" />
+                <input id="MATERIALNAME" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+ 
+       
+    </table>
+</div>

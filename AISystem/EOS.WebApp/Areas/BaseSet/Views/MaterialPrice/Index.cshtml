@@ -1,0 +1,284 @@
+﻿@{
+    ViewBag.Title = "物料价格管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var MATERIAL = $("#Material").val();
+        var MATSPEC = $("#MatSpec").val();
+ 
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/BaseSet/MaterialPrice/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&MATERIAL=' + escape(MATERIAL) + '&MATSPEC=' + escape(MATSPEC)  , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/MaterialPrice/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 280,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, hidden: true },
+                {
+                    label: '状态', name: 'ENABLESTATE', index: 'ENABLESTATE', width: 40, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1')
+                            return "<span style='color: black; font-weight: bold;'>启用</span>";
+                        else if (cellvalue == '0')
+                            return "<span style='color: red; font-weight: bold;'>停用</span>";
+                    }
+                },
+                { label: '工厂', name: 'SUPPLIERNAME', index: 'SUPPLIERNAME', width: 100, align: "center" },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 100, align: "center" },
+                { label: '物料编号', name: 'PK_MATERIAL', index: 'PK_MATERIAL', width: 150, align: "center" },
+                { label: '物料内码', name: 'MATCODE', index: 'MATCODE', hidden: true },
+                { label: '物料分类', name: 'GRADE', index: 'GRADE', width: 80, align: 'center' },
+                { label: '规格', name: 'MATSPEC', index: 'MATSPEC', width: 80, align: 'center' },
+                { label: '单价', name: 'PRICE', index: 'PRICE', width: 80, align: 'center' },
+                {
+                    label: '执行开始时间', name: 'IMPLEMENTDATE', index: 'IMPLEMENTDATE', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                //新增执行结束时间字段  myt/sxy 220919
+                {
+                    label: '执行结束时间', name: 'ENDDATE', index: 'ENDDATE', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                //新增执行结束时间字段  myt/sxy 220919
+                { label: '创建人', name: 'CREATOR', index: 'CREATOR', width: 90, align: 'center' },
+                {
+                    label: '创建日期', name: 'CREATIONTIME', index: 'CREATIONTIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'VMEMO', index: 'VMEMO', width: 200, align: 'center' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'IMPLEMENTDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var KeyValue = rowData.ID;
+                $("#gridETable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/BaseSet/MaterialPrice/GetOrderEntryList")?KeyValue=" + KeyValue, page: 1
+                }).trigger('reloadGrid');
+            }
+        });
+
+        $("#gridETable").jqGrid({
+            url: "@Url.Content("~/BaseSet/MaterialPrice/GetOrderEntryList")?KeyValue=",
+            datatype: "json",
+            height: 100,
+            width: $(window).width() - 5,
+            autowidth: true,
+            colModel: [
+                    { label: '主键', name: 'ID', index: 'ID', width: 80, hidden: true },
+                    { label: '工厂', name: 'SUPPLIERNAME', index: 'SUPPLIERNAME', width: 100, align: "center" },
+                    { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 100, align: "center" },
+                    { label: '物料PK', name: 'PK_MATERIAL', index: 'PK_MATERIAL', hidden: true },
+                    { label: '物料内码', name: 'MATCODE', index: 'MATCODE', hidden: true },
+                    { label: '物料分类', name: 'GRADE', index: 'GRADE', width: 80, align: 'center' },
+                    { label: '规格', name: 'MATSPEC', index: 'MATSPEC', width: 80, align: 'center' },
+                    { label: '单价', name: 'PRICE', index: 'PRICE', width: 80, align: 'center' },
+                    {
+                        label: '执行开始时间', name: 'IMPLEMENTDATE', index: 'IMPLEMENTDATE', width: 110, align: 'center',
+                        formatter: function (cellvalue, options, rowObject) {
+                            return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                        }
+                    },
+                    //新增执行结束时间字段  myt/sxy 220919
+                    {
+                        label: '执行结束时间', name: 'ENDDATE', index: 'ENDDATE', width: 110, align: 'center',
+                        formatter: function (cellvalue, options, rowObject) {
+                            return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                        }
+                    },
+                    //新增执行结束时间字段  myt/sxy 220919
+                    { label: '创建人', name: 'CREATOR', index: 'CREATOR', width: 90, align: 'center' },
+                    {
+                        label: '创建日期', name: 'CREATIONTIME', index: 'CREATIONTIME', width: 110, align: 'center',
+                        formatter: function (cellvalue, options, rowObject) {
+                            return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                        }
+                    },
+                    { label: '备注', name: 'VMEMO', index: 'VMEMO', width: 200, align: 'center' }
+            ],
+            viewrecords: true,
+            rowNum: 1000,
+            sortname: 'IMPLEMENTDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            autoScroll: true,
+            rownumbers: true,
+            gridview: true
+        });
+    }
+
+    //新增
+    function btn_add() {
+        var url = "/BaseSet/MaterialPrice/Form?ModuleId=" + ModuleId;
+        openDialog(url, "Form11111", "新增物料单价", 650, 380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/MaterialPrice/Form?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId;
+            openDialog(url, "Form11111", "编辑物料单价", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+
+    //复制
+    function btn_copy() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/MaterialPrice/Form?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId + "&op=copy";
+            openDialog(url, "Form11111", "复制物料单价", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+
+    //详情
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/MaterialPrice/Detail?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId;
+            openDialog(url, "Form11111", "查看物料单价", 650, 380, function (iframe) {
+            });
+        }
+    }
+
+    //审核
+    function btn_Check() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+
+            var STATUS = GetJqGridRowValue("#gridTable", "ENABLESTATE");
+            if (STATUS.indexOf("启用") >= 0) {
+                tipDialog("此数据已启用,无法继续启用！", 3, "");
+                return false;
+            }
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/BaseSet/MaterialPrice/CheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+    //反审
+    function btn_UnCheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+
+            var STATUS = GetJqGridRowValue("#gridTable", "ENABLESTATE");
+            if (STATUS.indexOf("停用") >= 0) {
+                tipDialog("此单据未停用,无法继续停用！", 3, "");
+                return false;
+            }
+
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/BaseSet/MaterialPrice/UnCheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/BaseSet/MaterialPrice/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+
+    function btn_import() {
+        AddTabMenu("MaterialPriceImport", "@Url.Content("~/BaseSet/MaterialPrice/Import")?op=import&ModuleId=" + ModuleId, "导入物料价格", "page_white_add.png", true, true, true);
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    规格：
+                </th>
+                <td>
+                    <input id="MatSpec" type="text" class="txt" style="width: 120px" />
+                </td>
+              
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div><table id="gridETable"></table>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

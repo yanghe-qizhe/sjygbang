@@ -1,0 +1,105 @@
+﻿@{
+    ViewBag.Title = "销售计量单";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script>
+    var action = GetQuery('action');
+    $(function () {
+        BindAutocomplete("CarsName", "Cars", "Cars", "200", "150", "");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("CustomerName", "Customer", "Customer", "200", "150", "");
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#BillNo").val();
+        var FHBillNo = $("#FHBillNo").val();
+        var Cars = $("#Cars").val();
+        var RAILWAYCODE = $("#RAILWAYCODE").val();
+        var Material = $("#Material").val();
+        var Customer = $("#CustomerName").val();
+
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&BillNo=" + BillNo;
+        url += "&FHBillNo=" + FHBillNo;
+        url += "&Cars=" + escape(Cars) + "&Material=" + escape(Material);
+        url += "&RAILWAYCODE=" + RAILWAYCODE + "&Customer=" + escape(Customer);
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                车号：
+            </th>
+            <td>
+                <input id="Cars" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                车列号：
+            </th>
+            <td>
+                <input id="RAILWAYCODE" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="Material" type="hidden" />
+                <input id="MaterialName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                客户：
+            </th>
+            <td>
+                <input id="Customer" type="hidden" />
+                <input id="CustomerName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                过磅单号：
+            </th>
+            <td>
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                提货单号：
+            </th>
+            <td>
+                <input id="FHBillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+    </table>
+</div>

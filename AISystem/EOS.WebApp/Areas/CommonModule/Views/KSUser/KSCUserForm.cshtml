@@ -1,0 +1,119 @@
+﻿@{
+    ViewBag.Title = "客户用户";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        InitControl();
+        BindAutocomplete("COMPANYNAME", "COMPANY", "Customer", "200", "150", "");
+    })
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/CommonModule/KSUser/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+                $("#Password").val("******");
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/CommonModule/KSUser/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1">
+<div id="message" style="display: none; padding: 1px; padding-bottom: 0px;">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            编号：
+        </th>
+        <td class="formValue">
+            <input id="CODE" type="text" class="txt required" datacol="yes" err="编号" checkexpession="NotNull" value="@ViewBag.Code" readonly="readonly"/>
+        </td>
+        <th class="formTitle">
+            姓名：
+        </th>
+        <td class="formValue">
+            <input id="REALNAME" type="text" class="txt required" datacol="yes" err="姓名" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            登录账户：
+        </th>
+        <td class="formValue">
+            <input id="ACCOUNT" type="text" class="txt required" datacol="yes" err="登录账户" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            登录密码：
+        </th>
+        <td class="formValue">
+            <input id="PASSWORD" type="Password" class="txt required" datacol="yes" err="登录密码"
+                checkexpession="NotNull" value="123456" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            所属客户：
+        </th>
+        <td class="formValue">
+            <input id="COMPANY" type="hidden" />
+            <input id="COMPANYNAME" type="text" class="txt" datacol="yes" err="所属供应商" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            联系手机：
+        </th>
+        <td class="formValue">
+            <input id="MOBILE" type="text" class="txt" datacol="yes" err="手机" checkexpession="MobileOrNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+        </th>
+        <td class="formValue" colspan="3">
+            <span class="item">
+                <input id="ENABLED" name="ENABLED" type="checkbox" checked="checked" style="vertical-align: middle;" />
+                <label for="ENABLED" style="vertical-align: middle;">
+                    有效</label>
+            </span>
+            <label style="vertical-align: middle; color: red;">
+                注意：禁用该用户后，将不能登录。</label>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            用户类型：
+        </th>
+        <td class="formValue" colspan="3">
+            <select id="TYPE" class="txtselect">
+                <option value="0">全业务用户</option>
+                <option value="3" selected="selected">客户用户</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            说明：
+        </th>
+        <td class="formValue" colspan="3">
+            <textarea id="Remark" class="txtArea" rows="6"></textarea>
+        </td>
+    </tr>
+</table>
+</form>

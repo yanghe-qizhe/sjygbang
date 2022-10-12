@@ -1,0 +1,244 @@
+﻿@{
+    ViewBag.Title = "";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ObjectId = GetQuery('ObjectId');
+    var ObjectName = GetQuery('ObjectName');
+    var Category = GetQuery('Category');
+    var Type = GetQuery('Type');
+    function back() {
+        var url = "/CommonModule/KSUser/DataPermissionIndex1?ObjectId=" + ObjectId + "&ObjectName=" + escape(ObjectName) + "&Category=" + Category + "&Type=" + Type;
+        this.location.href = url;
+    }
+    $(function () {
+        GetGrid();
+    })
+
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = {};
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/CommonModule/KSUser/SubmitDataPermissionForm?action=Save", postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        setTimeout(function () {
+                            back();
+                        }, 100);
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    /*车皮明细begin=======================================*/
+    //销售订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 290,
+            autowidth: true,
+            colModel: [
+                { label: '用户[<font face="宋体">*</font>]', name: "OBJECTNAME", width: 150, sortable: false },
+                { label: '分组名称', name: "RESOURCENAME", width: 200, sortable: false }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+        //默认添加30行 空行
+        for (var i = 1; i < 31; i++) {
+            var rowdata = {
+                OBJECTNAME: '<input readonly id="OBJECTNAME➩' + i + '" class="editable" type="text" style="cursor:pointer" datacol="no" err="用户" checkexpession="NotNull" /><input id="ObjectId➩' + i + '" type="hidden" /><input id="Category➩' + i + '" type="hidden" value="6"/>',
+                RESOURCENAME: '<input id="RESOURCENAME➩' + i + '" class="editable" type="text" items="散户分组" datacol="no" err="分组" checkexpession="NotNull" /><input id="ResourceId➩' + i + '" type="hidden" />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+            GroupAutocomplete(i);
+        }
+        //金额设置居中、设置只能输入金额格式
+
+        $("#gridTable").find('.center').css('text-align', 'center')
+        // $("#gridTable").find('input').attr("disabled", "disabled");
+        // $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "yes");
+        //$("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var index = $(this).text();
+            $("#OBJECTNAME➩" + index).val("");
+            $("#ObjectId➩" + index).val("");
+            $("#Category➩" + index).val("");
+            $("#RESOURCENAME➩" + index).val("");
+            $("#ResourceId➩" + index).val("");
+            if (index == 1) {
+                array = [];
+            }
+
+        });
+        //点击物料编码文本框时间，弹出选择物料信息
+        //        $("#gridTable tbody tr").find('td:eq(2)').find('input').click(function () {
+        //            if ($(this).attr('disabled') == 'disabled') {
+        //                return false;
+        //            }
+        //            var index = $(this).attr('id').split('➩')[1];
+        //            if (Type == "2") {
+        //                var url = "/CommonModule/KSUser/SelectedSupply?index=" + index;
+        //                Dialog(url, "SelectedSupply", "选取供应商信息（双击表格添加）", 900, 450);
+        //            } else {
+        //                var url = "/CommonModule/KSUser/SelectedCustomer?index=" + index;
+        //                Dialog(url, "SelectedSupply", "选取客户信息（双击表格添加）", 900, 450);
+        //            }
+        //        });
+
+        //价格信息文本框点击事件
+        $("#gridTable").find('.decimal').click(function () {
+            $(this).select();
+        });
+    }
+
+    function GroupAutocomplete(i) {
+        var txtname = "RESOURCENAME➩" + i;
+        var $txtid = $("#ResourceId➩" + i);
+        var $txtname = $("#RESOURCENAME➩" + i);
+
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                if (this.value == "") {
+                    $txtid.val("");
+                }
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            if (!IsExist(i, data.id)) {
+                $txtid.val(data.id);
+                $txtname.val(data.name);
+                $("#ObjectId➩" + i).val(ObjectId);
+                $("#OBJECTNAME➩" + i).val(ObjectName);
+                $("#Category➩" + i).val(Category);
+            } else {
+                top.TipMsg("分组已存在,不能重复添加", 4000, "error");
+                return false;
+            }
+
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Dictionary", { keywords: $txtname.val(), items: '散户分组' }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    if (!IsExist(i, data.id)) {
+                        $txtid.val(data.id);
+                        $txtname.val(data.name);
+                        $("#ObjectId➩" + i).val(ObjectId);
+                        $("#OBJECTNAME➩" + i).val(ObjectName);
+                        $("#Category➩" + i).val(Category);
+                    } else {
+                        top.TipMsg("分组已存在,不能重复添加", 4000, "error");
+                        return false;
+                    }
+                });
+            });
+        }
+    }
+    var array = new Array();
+
+    function IsExist(index, code) {
+        if (!ArrayExists(array, code)) {
+            array[index] = code;
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function InitRow(index, rowData) {
+        $("#ObjectId➩" + index).val(ObjectId);
+        $("#OBJECTNAME➩" + index).val(ObjectName);
+        $("#Category➩" + index).val(Category);
+        $("#ResourceId➩" + index).val(rowData.ID);
+        $("#RESOURCENAME➩" + index).val(rowData.NAME);
+        $("#gridTable tbody tr:eq(" + index + ")").find('input').attr("datacol", "yes");
+        index++;
+        $("#gridTable tbody tr:eq(" + index + ")").find('input').removeAttr('disabled');
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $("#RESOURCENAME➩" + index).focus();
+    }
+
+    /*明细end=======================================*/
+</script>
+<form id="form1">
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+            <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                    class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                        保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="back()" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            返回</b></span></a>
+    </div>
+    <div id="grid_List">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

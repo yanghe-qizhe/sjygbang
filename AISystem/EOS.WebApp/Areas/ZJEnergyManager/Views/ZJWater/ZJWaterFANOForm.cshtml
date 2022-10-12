@@ -1,0 +1,205 @@
+﻿@{
+    ViewBag.Title = "新建水分析任务,多选方案";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript"> 
+    var FormID = GetQuery('FormID');
+    var Type = GetQuery('Type');
+    $(function () {  
+        if(Type=="GL"){
+            $("#DEF2").val("锅炉");
+        }else{
+            $("#DEF2").val("动力厂");
+        }
+
+        setTimeout(function(){
+            GetGrid(); 
+        },500);
+        $("#CYDATE").on("blur", function () {
+            btn_Search(); 
+        });
+        Bind();
+        $("#DEF2").bind("change",function(){
+            btn_Search();
+        })
+    }) 
+
+    function Bind(){
+        var html="";
+        if(Type=="SC"){
+            html += "<option value='动力厂'>动力厂</option>";
+            html += "<option value='炼钢厂'>炼钢厂</option>";
+            html += "<option value='炼铁厂'>炼铁厂</option>";
+            html += "<option value='焦化厂'>焦化厂</option>";
+            html += "<option value='轧钢厂'>轧钢厂</option>";
+        } else {
+            html += "<option value='热电1#'>热电1#</option>";
+            html += "<option value='热电2#'>热电2#</option>";
+            html += "<option value='15吨锅炉'>15吨锅炉</option>"; 
+            html += "<option value='35吨锅炉'>35吨锅炉</option>"; 
+            html += "<option value='100吨锅炉'>100吨锅炉</option>"; 
+            html += "<option value='烧结环冷'>烧结环冷</option>"; 
+            html += "<option value='杂项'>杂项</option>";  
+            html += "<option value='干熄焦'>干熄焦</option>";  
+        }
+        $("#DEF2").append(html);
+    }
+
+
+    function DEF2CHANGE(obj){
+        $("#DEF2").val($(obj).text());
+        btn_Search();
+    }
+    function Bind_OLD(){
+        var html = "<tr>"; 
+        if(Type=="SC"){
+            html += '<td id="name" style="width: 100%;" onclick="DEF2CHANGE(this)">动力厂</td>';
+            html += "</tr>";
+            html += "<tr>"; 
+            html += '<td id="name" style="width: 100%;" onclick="DEF2CHANGE(this)">炼钢厂</td>';
+            html += "</tr>";
+            html += "<tr>"; 
+            html += '<td id="name" style="width: 100%;" onclick="DEF2CHANGE(this)">炼铁厂</td>';
+            html += "</tr>";
+            html += "<tr>"; 
+            html += '<td id="name" style="width: 100%;" onclick="DEF2CHANGE(this)">焦化厂</td>';
+            html += "</tr>";
+            html += "<tr>"; 
+            html += '<td id="name" style="width: 100%;" onclick="DEF2CHANGE(this)">轧钢厂</td>';
+            html += "</tr>"; 
+        }else{
+            html += "<tr>"; 
+            html += '<td id="name" style="width: 100%;" onclick="DEF2CHANGE(this)">锅炉</td>';
+            html += "</tr>"; 
+        }
+        autocomplete("DEF2", $("#DEF2").width() + "px", "120px", html, function (data) {
+            $("#DEF2").val(data.name);
+        });
+    }
+
+    function btn_OK(){
+        var DEF2 = $("#DEF2").val();
+        if(!IsNull(DEF2)){
+            tipDialog('请输入厂名称', 4, 'warning');
+            return false;
+        }
+        var FANO = GetJqGridRowValue("#gridTable", "FANO"); 
+        if (IsNull(FANO)) { 
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + FANO + '\",\"CYDATE\":\"'+$("#CYDATE").val()+'\",\"DEF2\":\"'+DEF2+'\"}'); 
+            AjaxJson("/ZJEnergyManager/ZJWater/CREATEWater", postData, function (data) {
+                if (IsNull(data)) {
+                    tipDialog(data.Message, 3, data.Code);
+                    if(data.Code=="1"){
+                        if(IsNull(FormID)){
+                             $parentobj = top.frames[FormID]; 
+                        }else{
+                             $parentobj = top.frames[tabiframeId()];
+                        } 
+                        $parentobj.CallBackEvent(); 
+                        closeDialog(); 
+                    }
+                }
+            });   
+        } else {
+            tipDialog('请至少选择一个方案', 4, 'warning');
+        }
+    }  
+
+    //搜索
+    function btn_Search() { 
+        if(!IsNull($("#DEF2").val())){
+            tipDialog('请输入厂名称', 4, 'warning');
+            return false;
+        }
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJEnergyManager/ZJWater/GetWaterZJFAList")?CYDATE=" + escape($("#CYDATE").val())+"&DEF2="+escape($("#DEF2").val()), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() { 
+        $("#gridTable").jqGrid({ 
+            url: "@Url.Content("~/ZJEnergyManager/ZJWater/GetWaterZJFAList")?CYDATE=" + escape($("#CYDATE").val())+"&DEF2="+escape($("#DEF2").val()),
+            datatype: "json",
+            height: $(window).height() - 110,
+            autowidth: true,
+            colModel: [
+                { label: '方案编号', name: 'FANO', index: 'FANO', width: 180, align: 'left',align:'center',hidden:true },   
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center'  }, 
+                { label: '方案名称', name: 'FANAME', index: 'FANAME', width: 150, align: 'center'  },  
+                {
+                    label: '任务编号', name: 'DEF4', index: 'DEF4', width: 250, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (IsNull(cellvalue)) return "<span style='color:red;font-size:16px'>已创建任务"+cellvalue+"</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:green;font-size:16px'>允许创建任务</span>"; 
+                    }
+                }
+            ],
+            multiselect: true,
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'FANO',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        
+    }
+      
+
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    任务日期：
+                </th>
+                <td>
+                    <input id="CYDATE" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();}})" />
+                </td>
+                <th>
+                    厂：
+                </th>
+                <td>
+                    @*<input id="DEF2" type="text" class="txt required" err="厂" datacol="yes" dbfield="true"
+                        checkexpession="NotNull" value="动力厂" />*@
+                    <select id="DEF2" class="txtselect required" style="width: 100px" datacol="yes" err="厂"
+                        checkexpession="NotNull">
+                        @*<option value="动力厂">动力厂</option>
+                        <option value="炼钢厂">炼钢厂</option>
+                        <option value="炼铁厂">炼铁厂</option>
+                        <option value="焦化厂">焦化厂</option>
+                        <option value="轧钢厂">轧钢厂</option>
+                        <option value="锅炉">锅炉</option>*@
+                    </select>
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                    <input id="btnOK" type="button" class="btnSearch" value="新 建 任 务" onclick="btn_OK()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

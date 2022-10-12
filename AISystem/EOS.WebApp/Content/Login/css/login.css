@@ -1,0 +1,84 @@
+/*登录页面样式文档*/
+*{margin: 0 auto;}
+		
+		/*登录页面样式文档*/
+        *{margin: 0 auto;}
+        body{
+            font-family: "微软雅黑";
+            /*overflow: hidden;*/
+        }
+        .header{
+            width: 100%;
+            height: 70px;
+            position: relative;
+            top: 0;
+            z-index: 2;
+        }
+        .logo{
+            float: left;
+        }
+        .logo img{
+            margin-top: 16px;
+            margin-left: 20px;
+        }
+       .news{            
+            float: right;
+            line-height: 70px;            
+        }
+        .news h4{
+            margin-right: 50px;
+        }
+        .flexslider{
+            width: 100%;
+            height: 525px;
+            border: none !important;
+            margin-bottom: 30px !important;
+            overflow: hidden;
+        }
+        .slides img{
+            max-width: 100%;
+        }
+        .logink{
+            width: 322px;
+            height: 352px;
+            background-image: url(../img/dlbg00.png);
+            position: absolute;
+            top: 150px;
+            right: 100px;
+        }
+        .logink .user{
+            width: 180px;
+            height: 25px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            margin-left: 70px;
+            line-height: 25px;
+        }
+       #error-message{
+            height: 25px;
+            color: red;
+            margin-top: 10px;
+            margin-left: 80px;
+       }
+        #submit{
+            width: 244px;
+            height: 34px;
+            margin-top: 8px;
+            margin-left: 38px;
+            border: none;
+            background: #007eff;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+       
+        .footer{
+		    font-size:12px;
+            width: 100%;
+            height: 30px;
+            line-height: 45px;
+            text-align: center;
+            margin-right: 30px;
+            margin-top: -20px;
+        }

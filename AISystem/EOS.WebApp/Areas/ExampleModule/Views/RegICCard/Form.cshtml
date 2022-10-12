@@ -1,0 +1,521 @@
+﻿@{
+    ViewBag.Title = "卡务管理》IC卡注册";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetScript();
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/RegICCard/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/ExampleModule/RegICCard/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+
+    //==============================Begin:IC卡显示JS==========================
+    //异步加载读卡JS方法
+    function GetScript() {
+        var url = "/ExampleModule/RegICCard/GetScript";
+        $.ajax({
+            url: url,
+            dataType: "script",
+            cache: true
+        }).done(function () {
+
+        });
+    }
+    //写卡
+    function setVal(pie) {
+        var vals = "", bval = '', eval = '', iRet = 1;
+        if (pie == 0) {
+            //异形卡:CUM
+            var type = $('#TYPE').val();
+            if (type == "2") {
+                MWRFATL.MF_Write(2, MWRFATL.MF_hex_a("", 32));
+                MWRFATL.MF_Write(2, MWRFATL.MF_hex_a("CUM", 32));
+                iRet = MWRFATL.LastRet;
+                if (iRet != 0) {
+                    $('#msg').text('写卡数据失败');
+                }
+                else {
+                    $('#msg').text('写卡数据成功');
+                }
+            }
+        }
+    }
+    function WriteCard() {
+        var pie_arr = [0];
+        writeData(pie_arr);
+    }
+    //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            $('#msg').text('打开读卡器失败！');
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            $('#msg').text(version);
+            var CardNumber = MWRFATL.OpenCard(1);
+            if (IsNullOrEmpty(CardNumber)) {
+                SetCardNo(CardNumber);
+            }
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                $('#msg').text('IC卡没有放在读卡器上！');
+            }
+            else {
+                res = 0;
+                $('#msg').text(CardNumber);
+            }
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        return res;
+    }
+
+    function ReadCardNo() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            $('#msg').text('打开读卡器失败！');
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            $('#msg').text(version);
+            var CardNumber = MWRFATL.OpenCard(1);
+            if (IsNullOrEmpty(CardNumber)) {
+                SetCardNo(CardNumber);
+            }
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                $('#msg').text('IC卡没有放在读卡器上！');
+                MWRFATL.CloseReader();
+            }
+            else {
+                res = 0;
+                $('#msg').text(CardNumber);
+                CardClose();
+            }
+
+        }
+        return res;
+    }
+
+    //关头IC卡
+    //res:1-关闭卡片失败,2-断开设备失败,0-成功。
+    function CardClose() {
+        var res = 100;
+        MWRFATL.CloseCard();
+        var iRet = MWRFATL.LastRet;
+        if (iRet != 0) {
+            res = 1
+            $('#msg').text('关闭卡片失败');
+        }
+        MWRFATL.CloseReader();
+        iRet = MWRFATL.LastRet;
+        if (iRet != 0) {
+            res = 2;
+            $('#msg').text('断开设备失败');
+        }
+        return iRet;
+    }
+    //字符串计算长度
+    function len(s) { var l = 0; var a = s.split(""); for (var i = 0; i < a.length; i++) { if (a[i].charCodeAt(0) < 299) { l++; } else { l += 2; } } return l; }
+
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var len = arr.length - 1;
+        for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        var cid = parseInt(num, 16);
+        $("#ICNO").val(cid);
+    }
+    //===================================End=======================================
+
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="读卡" onclick="WriteCard()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    读卡</b></span></a>
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            IC卡序号：
+        </th>
+        <td class="formValue" colspan="3">
+            <input id="ICNO" type="text" class="txt required" datacol="yes" err="IC卡序号" checkexpession="NotNull"
+                style="width: 300px" />
+            <label id="msg" style="color: Red;">
+            </label>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            单据编号：
+        </th>
+        <td class="formValue">
+            <input id="BILLNO" maxlength="50" type="text" class="txt readonly required" datacol="yes" readonly=readonly
+                    err="单据编号" checkexpession="NotNull"  value="@ViewBag.BillNo"/>
+        </td>
+        <th class="formTitle">
+            状态：
+        </th>
+        <td class="formValue">
+            @*    <span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISUSE" />
+                <label for="ISUSE">
+                    有效</label>
+            </span>*@
+            <select id="ISUSE" class="txtselect">
+                <option value="0">无效</option>
+                <option value="1" selected="selected">有效</option>
+                <option value="2">注销</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            卡面编号：
+        </th>
+        <td class="formValue">
+            <input id="ICNUMBER" maxlength="50" type="text" class="txt required" datacol="yes"
+                err="卡面编号" checkexpession="NotNull" maxlength="7" onfocus="IsMoney(this.id);" />
+        </td>
+        <th class="formTitle">
+            卡类型：
+        </th>
+        <td class="formValue">
+            <select id="TYPE" class="txt select">
+                <option value="">===请选择===</option>
+                <option value="1" selected="selected">IC外部计量卡</option>
+                <option value="2">IC采样卡</option>
+                <option value="3">IC内部计量卡</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue" colspan="3">
+            <textarea id="MEMO" name="MEMO" maxlength="200" class="txtArea" rows="4"></textarea>
+        </td>
+    </tr>
+</table>
+</form>
+@*<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>IC卡注册</title>
+    <!--框架必需start-->
+    <link href="~/Content/Styles/EOSui-framework.css" rel="stylesheet" />
+    <script src="~/Content/Scripts/jquery/jquery-1.8.2.min.js"></script>
+    <script src="~/Content/Scripts/EOSui-framework.js"></script>
+    <!--框架必需end-->
+        <script type="text/javascript">
+            var KeyValue = GetQuery('KeyValue'); //主键
+            var ModuleId = GetQuery('ModuleId'); //菜单主键
+            $(function () {
+                GetScript();
+                InitControl();
+            })
+
+            //得到一个对象实体
+            function InitControl() {
+                if (!!KeyValue) {
+                    AjaxJson("/ExampleModule/RegICCard/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                        SetWebControls(data);
+                    });
+                }
+            }
+
+            //保存事件
+            function AcceptClick() {
+                if (!CheckDataValid('#form1')) {
+                    return false;
+                }
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    AjaxJson("/ExampleModule/RegICCard/SubmitForm?KeyValue=" + KeyValue, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        top.frames[tabiframeId()].windowload();
+                        closeDialog();
+                    });
+                }, 200);
+            }
+
+            //==============================Begin:IC卡显示JS==========================
+            //异步加载读卡JS方法
+            function GetScript() {
+                var url = "/ExampleModule/RegICCard/GetScript";
+                $.ajax({
+                    url: url,
+                    dataType: "script",
+                    cache: true
+                }).done(function () {
+
+                });
+            }
+            //写卡
+            function setVal(pie) {
+                var vals = "", bval = '', eval = '', iRet = 1;
+                if (pie == 0) {
+                    //异形卡:CUM
+                    var type = $('#TYPE').val();
+                    if (type == "2") {
+                        MWRFATL.MF_Write(2, MWRFATL.MF_hex_a("", 32));
+                        MWRFATL.MF_Write(2, MWRFATL.MF_hex_a("CUM", 32));
+                        iRet = MWRFATL.LastRet;
+                        if (iRet != 0) {
+                            $('#msg').text('写卡数据失败');
+                        }
+                        else {
+                            $('#msg').text('写卡数据成功');
+                        }
+                    }
+                }
+            }
+            function WriteCard() {
+                var pie_arr = [0];
+                writeData(pie_arr);
+            }
+            //打开读卡器
+            //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+            function CardOpen() {
+                var res = 100;
+                var version = MWRFATL.OpenReader();
+                var iRet = MWRFATL.LastRet;
+                //蜂鸣30
+                MWRFATL.RF_Beep(30);
+                if (iRet != 0) {
+                    res = 1;
+                    $('#msg').text('打开读卡器失败！');
+                    MWRFATL.CloseCard();
+                    iRet = MWRFATL.LastRet;
+                    MWRFATL.CloseReader();
+                    iRet = MWRFATL.LastRet;
+                }
+                else {
+                    $('#msg').text(version);
+                    var CardNumber = MWRFATL.OpenCard(1);
+                    if (IsNullOrEmpty(CardNumber)) {
+                        SetCardNo(CardNumber);
+                    }
+                    iRet = MWRFATL.LastRet;
+                    if (iRet != 0) {
+                        res = 1;
+                        $('#msg').text('IC卡没有放在读卡器上！');
+                        MWRFATL.CloseReader();
+                        iRet = MWRFATL.LastRet;
+                    }
+                    else {
+                        res = 0;
+                        $('#msg').text(CardNumber);
+                    }
+                }
+                return res;
+            }
+
+            function ReadCardNo() {
+                var res = 100;
+                var version = MWRFATL.OpenReader();
+                var iRet = MWRFATL.LastRet;
+                //蜂鸣30
+                MWRFATL.RF_Beep(30);
+                if (iRet != 0) {
+                    res = 1;
+                    $('#msg').text('打开读卡器失败！');
+                    MWRFATL.CloseCard();
+                    iRet = MWRFATL.LastRet;
+                    MWRFATL.CloseReader();
+                    iRet = MWRFATL.LastRet;
+                }
+                else {
+                    $('#msg').text(version);
+                    var CardNumber = MWRFATL.OpenCard(1);
+                    if (IsNullOrEmpty(CardNumber)) {
+                        SetCardNo(CardNumber);
+                    }
+                    iRet = MWRFATL.LastRet;
+                    if (iRet != 0) {
+                        res = 1;
+                        $('#msg').text('IC卡没有放在读卡器上！');
+                        MWRFATL.CloseReader();
+                    }
+                    else {
+                        res = 0;
+                        $('#msg').text(CardNumber);
+                        CardClose();
+                    }
+
+                }
+                return res;
+            }
+
+            //关头IC卡
+            //res:1-关闭卡片失败,2-断开设备失败,0-成功。
+            function CardClose() {
+                var res = 100;
+                MWRFATL.CloseCard();
+                var iRet = MWRFATL.LastRet;
+                if (iRet != 0) {
+                    res = 1
+                    $('#msg').text('关闭卡片失败');
+                }
+                MWRFATL.CloseReader();
+                iRet = MWRFATL.LastRet;
+                if (iRet != 0) {
+                    res = 2;
+                    $('#msg').text('断开设备失败');
+                }
+                return iRet;
+            }
+            //字符串计算长度
+            function len(s) { var l = 0; var a = s.split(""); for (var i = 0; i < a.length; i++) { if (a[i].charCodeAt(0) < 299) { l++; } else { l += 2; } } return l; }
+
+            function SetCardNo(CardNumber) {
+                var arr = CardNumber.split('');
+                var num = "";
+                var len = arr.length - 1;
+                for (i = len; i >= 0; i = i - 2) {
+                    num += arr[i - 1] + arr[i];
+                }
+                var cid = parseInt(num, 16);
+                $("#ICCODE").val(cid);
+            }
+            //===================================End=======================================
+
+    </script>
+</head>
+<body>
+    <object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+        data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+        classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+    </object>
+    <form id="form1" style="margin: 1px">
+    <div id="message" style="display: none">
+    </div>
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+            <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                刷新</b></span></a> <a id="button_Commit_Save" title="读卡" onclick="WriteCard()"
+                    class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                        读卡</b></span></a>
+    </div>
+    <table class="form">
+        <tr>
+            <th class="formTitle">
+                IC卡序号：
+            </th>
+            <td class="formValue" colspan="3">
+                <input id="ICCODE"   type="text" class="txt required" datacol="yes"
+                    err="IC卡序号" checkexpession="NotNull" style="width: 300px"/>
+                <label id="msg" style="color: Red;">
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                单据编号：
+            </th>
+            <td class="formValue">
+                <input id="BILLNO" maxlength="50" type="text" class="txt required" datacol="yes"
+                    err="单据编号" checkexpession="NotNull"  value="@ViewBag.BillNo"/>
+            </td>
+            <th class="formTitle">
+                选项：
+            </th>
+            <td class="formValue">
+                <span class="item">
+                    <input type="checkbox" name="checkbox" checked="checked" id="ISUSE" />
+                    <label for="ISUSE">
+                        有效</label>
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                卡面编号：
+            </th>
+            <td class="formValue">
+                <input id="ICNUMBER" maxlength="50" type="text" class="txt required" datacol="yes"
+                    err="卡面编号" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                卡类型：
+            </th>
+            <td class="formValue">
+                <select id="TYPE" class="txtselect">
+                    <option value="1" selected="selected">IC过磅卡</option>
+                    <option value="2">IC采样卡</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                备注：
+            </th>
+            <td class="formValue" colspan="3">
+                <textarea id="MEMO" name="MEMO" maxlength="200" class="txtArea" rows="4"></textarea>
+            </td>
+        </tr>
+    </table>
+    </form>
+</body>
+</html>*@ 

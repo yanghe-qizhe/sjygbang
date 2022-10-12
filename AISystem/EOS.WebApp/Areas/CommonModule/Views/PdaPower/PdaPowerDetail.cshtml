@@ -1,0 +1,151 @@
+﻿@{
+    ViewBag.Title = "厂内工序任务单》详细";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    $(function () {
+        InitControl();
+        InputToName();
+    })
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/CommonModule/PdaPower/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+ 
+
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开</b></span></a>
+</div>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Tabbasic" class="tab_list bd actived" onclick="Tabchange('basic')">
+                详细信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--录入信息-->
+    <div id="basic" class="tabPanel">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    工号：
+                </th>
+                <td class="formValue">
+                    <input id="ACCOUNT" maxlength="50" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    姓名：
+                </th>
+                <td class="formValue">
+                    <input id="NAME" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    系统设置：
+                </th>
+                <td class="formValue">
+                    <input id="FLIST1" name="FLIST1" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                    <label for="FLIST1" style="vertical-align: middle;"></label>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    采购收货：
+                </th>
+                <td class="formValue">
+                    <input id="FLIST2" name="FLIST1" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                    <label for="FLIST3" style="vertical-align: middle;"></label>
+                </td>
+                <th class="formTitle">
+                    采购发货：
+                </th>
+                <td class="formValue">
+                    <input id="FLIST3" name="FLIST1" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                    <label for="FLIST3" style="vertical-align: middle;"></label>
+                </td>
+                 <th class="formTitle">
+                    转序收货：
+                </th>
+                <td class="formValue">
+                    <input id="FLIST4" name="FLIST1" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                    <label for="FLIST4" style="vertical-align: middle;"></label>
+                </td>
+            </tr>
+                       <tr>
+                <th class="formTitle">
+                    转序发货：
+                </th>
+                <td class="formValue">
+                    <input id="FLIST5" name="FLIST1" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                    <label for="FLIST5" style="vertical-align: middle;"></label>
+                </td>
+                <th class="formTitle">
+                    质检采样：
+                </th>
+                <td class="formValue">
+                    <input id="FLIST6" name="FLIST1" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                    <label for="FLIST6" style="vertical-align: middle;"></label>
+                </td>
+                 <th class="formTitle">
+                    历史查询：
+                </th>
+                <td class="formValue">
+                    <input id="FLIST7" name="FLIST1" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                    <label for="FLIST7" style="vertical-align: middle;"></label>
+                </td>
+            </tr>
+             <tr>
+              <th class="formTitle">
+                    门禁核验：
+                </th>
+                <td class="formValue">
+                    <input id="FLIST8" name="FLIST1" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                    <label for="FLIST8" style="vertical-align: middle;"></label>
+                </td>
+                 <th class="formTitle">
+                    其他权限：
+                </th>
+                <td class="formValue">
+                    <input id="FLIST9" name="FLIST1" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                    <label for="FLIST9" style="vertical-align: middle;"></label>
+                </td>
+                <th class="formTitle">
+                    是否启用：
+                </th>
+                <td class="formValue">
+                    <input id="STATUE" name="STATUE" type="checkbox"  style="vertical-align: middle;"  disabled="disabled"/>
+                </td>
+               
+            </tr>
+             <tr>
+             <th class="formTitle">
+                    关联仓库：
+                </th>
+                <td class="formValue" colspan="5">
+                    <input id="DEF2" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+             <th class="formTitle">
+                    备注：
+                </th>
+                <td class="formValue" colspan="5">
+                    <input id="DEF3" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+</form>

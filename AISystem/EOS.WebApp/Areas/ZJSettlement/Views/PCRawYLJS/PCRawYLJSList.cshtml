@@ -1,0 +1,740 @@
+﻿@{
+    ViewBag.Title = "原材采样管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+ 
+    $(function () {
+       BindAutocomplete("WEIGHTNAME", "WEIGHTNO", "WeightConfig", "200", "150", "");
+       BindAutocomplete("MATERIALNAME", "MATERIAL", "Material", "200", "150", "");
+        BindAutocomplete("SUPPLYNAME", "SUPPLY", "Supply", "200", "150", "");
+         BindAutocomplete("RECEIVESTORE", "PK_RECEIVESTORE", "Store", "200", "150", "");
+    BindAutocomplete("RECEIVEORG", "PK_RECEIVEORG", "Company", "200", "150", "");
+        GetGrid();
+        GetGrid2("");
+    });
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BILLNO = $("#BILLNO").val();
+        var MATERIAL = $("#MATERIAL").val();
+        var WEIGHTNO = $("#WEIGHTNO").val(); 
+        var SUPPLY = $("#SUPPLY").val();
+         var PK_RECEIVESTORE = $("#PK_RECEIVESTORE").val();
+        var CREATEUSER=$("#CREATEUSER").val();
+        var HZUSERNAME=$("#HZUSERNAME").val();
+        var HZUSERNAME=$("#HZUSERNAME").val();
+        var ISTYPE=$("#ISTYPE").val();
+                var UPLOAD=$("#UPLOAD").val();
+          var CARS=$("#CARS").val();
+             var PK_RECEIVEORG = $("#PK_RECEIVEORG").val();
+             var VBILLCODE=$("#VBILLCODE").val();
+                var CQDEF1 = $("#CQDEF1").val(); 
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJSettlement/PCRawYLJS/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&BILLNO=' + escape(BILLNO) + '&MATERIAL=' + MATERIAL+'&SUPPLY='+SUPPLY+"&WEIGHTNO="+WEIGHTNO +"&CREATEUSER="+escape(CREATEUSER)+"&HZUSERNAME="+escape(HZUSERNAME)+"&ISTYPE="+ISTYPE+"&CARS="+escape(CARS)+"&PK_RECEIVESTORE="+PK_RECEIVESTORE+"&UPLOAD="+UPLOAD+"&PK_RECEIVEORG=" + PK_RECEIVEORG+"&VBILLCODE="+VBILLCODE+"&CQDEF1="+CQDEF1, page: 1
+        }).trigger('reloadGrid');
+    }
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+      
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJSettlement/PCRawYLJS/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime  ,
+          datatype: "json",
+            height: $(window).height() - 300,
+            autowidth: true,
+            colModel: [
+                { label: '单据编号', name: 'BILLNO', index: 'BILLNO', width: 110, align: 'left', align: 'center' },
+               { label: 'UPLOAD', name: 'UPLOAD',    hidden: true },
+           {
+                    label: '上传状态', name: 'UPLOADNAME', index: 'UPLOADNAME', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "0")
+                           return "<span style='color: red; font-weight: bold;'>未上传</span>";
+                        else
+                               return "<span style='color:blue;'>已上传</span>";
+                    }
+                }, 
+               {
+                    label: '是否加权平均', name: 'ISAVG', index: 'ISAVG', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                          if (cellvalue == '0') return "<span style='color:red;font-size:18px'>否</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:18px'>是</span>";
+                    }
+                },
+              {  label: '结算日期', name: 'JSDATE', index: 'JSDATE', width: 100, align: 'center'  }, 
+            { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 120, align: 'center' },
+            { label: '物料内码', name: 'MATERIALCODE', index: 'MATERIALCODE', width: 100, align: 'center' }, 
+             { label: 'MATERIAL', name: 'MATERIAL', index: 'MATERIAL',  hidden: true },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center' },
+               { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 120, align: 'center' },
+                { label: 'SUPPLY', name: 'SUPPLY', index: 'SUPPLY',  hidden: true },
+                { label: '供应商', name: 'SUPPLYNAME', index: 'SUPPLYNAME', width: 180, align: 'center' },
+                 { label: '货主姓名', name: 'HZUSERNAME', index: 'HZUSERNAME', width: 100, align: 'center' },
+                 { label: '件数', name: 'YFPIECE', index: 'YFPIECE', width: 60, align: 'center' },
+                { label: '应收重量', name: 'YFSUTTLE', index: 'YFSUTTLE', width: 60, align: 'center' },
+                 { label: '磅单重量', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+                { label: '采购部检斤重量', name: 'JJSUTTLE', index: 'JJSUTTLE', width: 90, align: 'center' },
+                 { label: '采购部检斤后重量', name: 'JJSUTTLE1', index: 'JJSUTTLE1', width: 100, align: 'center' },
+                 { label: '质检扣重', name: 'ZJSUTTLE', index: 'ZJSUTTLE', width: 60, align: 'center' },
+                  { label: '扣后重量', name: 'ZJSUTTLE1', index: 'ZJSUTTLE1', width: 60, align: 'center' },
+                 { label: '调整扣重', name: 'TZSUTTLE', index: 'TZSUTTLE', width: 60, align: 'center' },
+                   { label: '水分补点', name: 'BDSUTTLE', index: 'BDSUTTLE', width: 60, align: 'center' },
+                      { label: '充公重量', name: 'PDAKZ2', index: 'PDAKZ2', width: 60, align: 'center' },
+                   { label: '结算重量', name: 'JSSUTTLE', index: 'JSWEIGHT', width: 60, align: 'center' },
+                     { label: '单价', name: 'PRICE', index: 'PRICE', width: 60, align: 'center' },
+                 { label: '金额', name: 'CHARGE', index: 'CHARGE', width: 60, align: 'center' },
+                 { label: '车数', name: 'CARSNUM', index: 'CARSNUM', width: 60, align: 'center' },
+                 {  label: '开始日期', name: 'BEGINDATE', index: 'BEGINDATE', width: 100, align: 'center'  }, 
+                {  label: '结束日期', name: 'ENDDATE', index: 'ENDDATE', width: 100, align: 'center'  }, 
+                { label: '磅房编号', name: 'WEIGHTNO',    hidden: true },
+                 { label: '磅房', name: 'WEIGHTNAME', index: 'WEIGHTNAME', width: 60, align: 'center' },
+                 { label: '扣减结果展示', name: 'KJRESULTMEMO', index: 'KJRESULTMEMO', width: 150, align: 'center' },
+                 { label: 'ISUSE', name: 'ISUSE',    hidden: true },
+                 { label: '状态', name: 'ISUSENAME', index: 'ISUSENAME', width: 60, align: 'center',
+                      formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "0")
+                             return "<span style='color:blue;'>正常</span>";
+                         else if (cellvalue == "4")
+                             return "<span style='color: red; font-weight: bold;'>作废</span>";
+                         else
+                             return "<span style='color: blue; font-weight: bold;'>其它</span>";
+                    }
+               },
+                   { label: '源订单号', name: 'SOURCEBILLNO', index: 'SOURCEBILLNO', width:80, align: 'center' },
+              { label: 'HK采购单号', name: 'HKCGBILLNO', index: 'HKCGBILLNO', width:80, align: 'center' },
+             { label: '贸易手册', name: 'REGISTERACCOUNT', index: 'REGISTERACCOUNT', width: 80, align: 'center' },
+             { label: '加工仓库', name: 'RECEIVESTORE', index: 'RECEIVESTORE', width: 80, align: 'center' },
+               { label: '单位', name: 'DEF2', index: 'DEF2', width: 80, align: 'center' },
+             
+                  { label: '接收公司', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 120, align: 'center' },
+                   { label: '入厂厂区', name: "CQDEF1", width: 100, sortable: false, align: 'center' ,
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1000')
+                        return "阳光纸业";
+                    else if (cellvalue == '6000')
+                        return "盛世热电";
+                    else if (cellvalue == '7000')
+                        return "新迈纸业";
+                    else if (cellvalue == '8000')
+                        return "阳光王子";
+                    else if (cellvalue == '9000')
+                        return "华迈纸业";
+                    else if (cellvalue == '9010')
+                        return "科迈制浆";
+                             else
+                             return "";
+                }
+                },
+                  { label: '打印次数', name: 'PRINTCOUNT', index: 'PRINTCOUNT', width: 80, align: 'center' },
+               {  label: '创建日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 120, align: 'center'  }, 
+                { label: '创建人', name: 'CREATEUSER', index: 'CREATEUSER', width: 80, align: 'center' },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 150, align: 'left' }
+            ],
+             viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CREATEDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            multiselect: true ,
+            multiboxonly: true,  
+             
+            //单击事件
+             onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var BILLNO=rowData.BILLNO;
+                  $("#gridTable2").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ZJSettlement/PCRawYLJS/GetOrderEntryList")?KeyValue="+BILLNO, page: 1
+                 }).trigger('reloadGrid');
+            }
+          
+        });
+        columnModelData("#gridTable");
+    }
+
+    function GetGrid2() {
+        $("#gridTable2").jqGrid({
+            url: "@Url.Content("~/ZJSettlement/PCRawYLJS/GetOrderEntryList")?KeyValue=",
+            datatype: "json",
+            height: 100,
+           autowidth: true,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID',  hidden: true },
+                   { label: '磅单编号', name: 'PK_TASK', index: 'PK_TASK', width: 120, align: 'center'   },
+                { label: '磅单编号', name: 'BILLNO', index: 'BILLNO', width: 120, align: 'center' ,  hidden: true },
+                {
+                    label: '上传状态', name: 'UPLOAD', index: 'UPLOAD', width: 60, align: 'center',
+                     formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "0")
+                           return "<span style='color: red; font-weight: bold;'>未上传</span>";
+                        else
+                               return "<span style='color:blue;'>已上传</span>";
+                    }
+                },
+                { label: '订单编号', name: 'PK_CONTRACT_B', index: 'PK_BILL', width: 150, align: 'center' },
+                { label: '车号', name: 'CARS', index: 'CARS', width: 120, align: 'center' },
+                 { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 120, align: 'center' },
+               { label: '规格', name: 'MATERIALKIND', index: 'MATERIALKIND', width: 120, align: 'center' },
+                 { label: '应收重重', name: 'YFSUTTLE', index: 'YFSUTTLE', width: 60, align: 'center' },
+                 { label: '毛重', name: 'GROSS', index: 'GROSS', width: 60, align: 'center' },
+                { label: '皮重', name: 'TARE', index: 'TARE', width: 60, align: 'center' },
+                 { label: '净料', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+                  { label: '件数', name: 'DEF3', index: 'DEF3', width: 60, align: 'center' },
+                { label: '采购部检斤重量', name: 'JJSUTTLE', index: 'JJSUTTLE', width: 90, align: 'center' },
+                 { label: '质检扣重', name: 'ZJSUTTLE', index: 'ZJSUTTLE', width: 60, align: 'center' },
+                 { label: '调整扣重', name: 'TZSUTTLE', index: 'TZSUTTLE', width: 60, align: 'center' },
+                   { label: '水分补点', name: 'BDSUTTLE', index: 'BDSUTTLE', width: 60, align: 'center' },
+                     { label: '充公重量', name: 'PDAKZ2', index: 'PDAKZ2', width: 60, align: 'center' },
+                   { label: '结算重量', name: 'JSSUTTLE', index: 'JSWEIGHT', width: 60, align: 'center' },
+                        { label: '单价', name: 'PRICE', index: 'PRICE', width: 60, align: 'center' },
+                 { label: '金额', name: 'CHARGE', index: 'CHARGE', width: 60, align: 'center' },
+                //{ label: '供应商', name: 'SENDORG', index: 'SENDORG', width: 180, align: 'center' },
+              { label: '接收公司', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 180, align: 'center' },
+               
+         { label: '入厂厂区', name: "CQDEF1", width: 100, sortable: false, align: 'center' ,
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1000')
+                        return "阳光纸业";
+                    else if (cellvalue == '6000')
+                        return "盛世热电";
+                    else if (cellvalue == '7000')
+                        return "新迈纸业";
+                    else if (cellvalue == '8000')
+                        return "阳光王子";
+                    else if (cellvalue == '9000')
+                        return "华迈纸业";
+                    else if (cellvalue == '9010')
+                        return "科迈制浆";
+                            else
+                             return "";
+                }
+                },
+               { label: '卸货地点', name: 'RECEIVESTORE', index: 'RECEIVESTORE', width: 180, align: 'center' },
+               { label: '车型', name: 'BRANDMODEL', index: 'BRANDMODEL', width: 60, align: 'center' },
+                 { label: '货主', name: 'HZUSERNAME', index: 'HZUSERNAME', width: 60, align: 'center' },
+                    { label: '主计量', name: 'DEF1', index: 'DEF1', width: 60, align: 'center' },
+                          { label: '辅计量', name: 'DEF2', index: 'DEF2', width: 60, align: 'center' },
+             { label: '扣减结果展示', name: 'KJRESULTMEMO', index: 'KJRESULTMEMO', width: 150, align: 'center' },
+           { label: '检验结果', name: 'ZJRESULTMEMO', index: 'ZJRESULTMEMO', width: 180, align: 'center' }, 
+                 { label: '备注', name: 'MEMO', index: 'MEMO', width: 150, align: 'center' }
+
+            ],
+            viewrecords: true,
+            rowNum: 100,
+            rownumbers: true,
+            pager: false,
+            sortname: 'BILLNO',
+            sortorder: 'asc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+        });
+        columnModelData("#gridTable2");
+    }
+
+
+    //新增
+    function btn_add() {
+        AddTabMenu("PCRawYLJSForm", "@Url.Content("~/ZJSettlement/PCRawYLJS/PCRawYLJSForm")?ModuleId=" + ModuleId, "新增原料结算单", "page_white_add.png", true, true, true);
+    }
+    
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            var UPLOAD = GetJqGridRowValue("#gridTable", "UPLOAD");
+             // if (UPLOAD=="1" ) {
+//                tipDialog("此数据已上传,无法继续编辑！", 3, "");
+//                return false;
+//           
+//            } else {
+                    AddTabMenu("PCRawYLJSForm", "@Url.Content("~/ZJSettlement/PCRawYLJS/PCRawYLJSForm")?ModuleId=" + ModuleId + "&KeyValue=" + escape(KeyValue) , "编辑原料结算单", "page_white_add.png", true, true, true);
+           // }
+        }
+    }
+ 
+    //审核
+    function btn_Check(){
+       var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+
+         var AUDITSTATUS = GetJqGridRowValue("#gridTable", "AUDITSTATUS");
+          if (AUDITSTATUS =="1" ) {
+                     tipDialog("此数据已审批,无法继续审批！", 3, ""); 
+                    return false;
+                }
+          var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+
+          if (isuse == "4") {
+                  tipDialog("此数据已作废,无法审批操作！", 3, "");  
+                               return false;
+                }
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ZJSettlement/PCRawYLJS/CheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+    //反审核
+    function btn_UnCheck(){
+      var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+         var AUDITSTATUS = GetJqGridRowValue("#gridTable", "AUDITSTATUS");
+          if (AUDITSTATUS=="0") {
+                     tipDialog("此单据未审批,无法继续反审！", 3, ""); 
+                    return false;
+                }
+                var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+                if (isuse == "4") {
+                  tipDialog("此数据已作废,无法反审操作！", 3, "");  
+                               return false;
+                }
+               
+           
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ZJSettlement/PCRawYLJS/UnCheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+     //作废
+    function btn_Invalid(){
+      var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+         
+            var upload = GetJqGridRowValue("#gridTable", "UPLOAD");
+           var bol= CheckShowMsg(upload,"1");
+            if (bol==true) {
+                  tipDialog( "当前结算单有已上传数据,无法继续作废的操作！", 3, "");  
+                   return false;
+            }
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            bol= CheckShowMsg(isuse,"4");
+            if (bol==true) {
+                  tipDialog( "当前结算单有作废数据,无法继续作废的操作！", 3, "");  
+                   return false;
+            }
+
+
+           confirmDialog('提示', '注：您确认要作废此操作吗？', function (r) {
+            if (r) {
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ZJSettlement/PCRawYLJS/InvalidOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+                 }
+          });
+
+        }
+    }
+
+    function CheckShowMsg(key,val){
+    var bol=false;
+    var arrval= key.split(",");
+    var arr=$.grep(arrval,
+         function(n,i){
+            return n==val
+        }); 
+     if(arr.length>0){
+         bol= true;
+        } 
+        return bol;
+    }
+
+    //删除
+    function btn_delete() {
+       var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+          if (IsCheckeds(KeyValue)) {
+            var upload = GetJqGridRowValue("#gridTable", "UPLOAD");
+           var bol= CheckShowMsg(upload,"1");
+            if (bol==true) {
+                  tipDialog( "当前结算单有已上传数据,无法继续删除的操作！", 3, "");  
+                   return false;
+            }
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            bol= CheckShowMsg(isuse,"0");
+            if (bol==true) {
+                  tipDialog( "当前结算单有未作废数据,无法继续删除的操作！", 3, "");  
+                   return false;
+            }
+           
+            var delparm = 'KeyValue=' + KeyValue;
+           delConfig('/ZJSettlement/PCRawYLJS/DeleteItem', delparm, KeyValue.split(",").length, KeyValue);
+        }
+
+
+    }
+
+    function delConfig(url, parm, count, BILLNO) {
+        if (count == undefined) {
+            count = 1;
+        }
+        confirmDialog("提示", "注：您确定要删除【" + BILLNO + "】当前记录吗？将会导致数据丢失,请谨慎操作", function (r) {
+            if (r) {
+                Loading(true, "正在删除数据...");
+                window.setTimeout(function () {
+                    AjaxJson(url, parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }, 200);
+            }
+        });
+    }
+       
+        //上传
+      function btn_HandOrder(){
+      var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+             var upload = GetJqGridRowValue("#gridTable", "UPLOAD");
+           var bol= CheckShowMsg(upload,"1");
+            if (bol==true) {
+                  tipDialog( "当前结算单有已上传数据,无法继续上传的操作！", 3, "");  
+                   return false;
+            }
+    confirmDialog('提示', '注：您确认要上传操作吗？', function (r) {
+            if (r) {
+            var  parm = 'KeyValue=' + KeyValue ;
+            AjaxJson('/ZJSettlement/PCRawYLJS/HandOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+           }
+          });
+            }
+    }
+
+
+            function btn_UnHandOrder(){
+
+               var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+  var upload = GetJqGridRowValue("#gridTable", "UPLOAD");
+//           var bol= CheckShowMsg(upload,"0");
+//            if (bol==true) {
+//                  tipDialog( "当前结算单有未上传数据,无法继续取消上传的操作！", 3, "");  
+//                   return false;
+//            }
+    confirmDialog('提示', '注：您确认要取消上传操作吗？', function (r) {
+            if (r) {
+    
+            var  parm = 'KeyValue=' + KeyValue ;
+            AjaxJson('/ZJSettlement/PCRawYLJS/UNHandOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+     
+           }
+          });
+             }
+    }
+
+
+         function btn_UnHandOrder1(){
+            var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+ 
+    confirmDialog('提示', '注：您确认要取消上传操作吗？', function (r) {
+            if (r) {
+     var upload = GetJqGridRowValue("#gridTable", "UPLOAD");
+           var bol= CheckShowMsg(upload,"0");
+            if (bol==true) {
+                  tipDialog( "当前结算单有未上传数据,无法继续取消上传的操作！", 3, "");  
+                   return false;
+            }
+            var  parm = 'KeyValue=' + KeyValue ;
+            AjaxJson('/ZJSettlement/PCRawYLJS/UNHandOrder1', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+       
+           }
+          }); }
+    }
+
+    //强制取消
+        function btn_UnHandOrder2(){
+
+               var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+  var upload = GetJqGridRowValue("#gridTable", "UPLOAD");
+ 
+    confirmDialog('提示', '注：您确认要取消上传操作吗？', function (r) {
+            if (r) {
+            var  parm = 'KeyValue=' + KeyValue ;
+            AjaxJson('/ZJSettlement/PCRawYLJS/UNHandOrder2', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+           }
+          });
+             }
+    }
+     //打印 
+   function Print(){
+           var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+        var Parm_Key_Value = escape("reporttype☻☻true≌KeyValue☻" + KeyValue + "☻true≌");
+         AddTabMenu("JSReportIndex", "@Url.Content("~/ZJSettlement/PCRawYLJS/JSReportIndex")?Parm_Key_Value=" + Parm_Key_Value+"&ModuleId="+ModuleId, "打印检斤单", "page_white_edit.png", true, true, true);
+        }
+    }
+     //打印 
+    function Print1() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+         var Parm_Key_Value = escape("reporttype☻☻true≌KeyValue☻" + KeyValue + "☻true≌");
+         AddTabMenu("JSReportIndex1", "@Url.Content("~/ZJSettlement/PCRawYLJS/JSReportIndex1")?Parm_Key_Value=" + Parm_Key_Value+"&ModuleId="+ModuleId, "打印检斤单", "page_white_edit.png", true, true, true);
+        }
+    }
+     //打印 
+   function Print3(){
+           var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+        var Parm_Key_Value = escape("reporttype☻☻true≌KeyValue☻" + KeyValue + "☻true≌");
+         AddTabMenu("JSReportIndex", "@Url.Content("~/ZJSettlement/PCRawYLJS/JSReportIndex3")?Parm_Key_Value=" + Parm_Key_Value+"&ModuleId="+ModuleId, "打印检斤单", "page_white_edit.png", true, true, true);
+        }
+    }
+
+
+
+     //打印 
+    function Print4() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+         var Parm_Key_Value = escape("reporttype☻☻true≌KeyValue☻" + KeyValue + "☻true≌");
+         AddTabMenu("JSReportIndex1", "@Url.Content("~/ZJSettlement/PCRawYLJS/JSReportIndex4")?Parm_Key_Value=" + Parm_Key_Value+"&ModuleId="+ModuleId, "打印检斤单", "page_white_edit.png", true, true, true);
+        }
+    }
+  
+  function CheckPrint() {
+      var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+           var title = "管理员验证";
+        var url = "/ZJSettlement/PCRawYLJS/SELECTCHECKUSER?op=1";
+        var bol=false ;
+         var PRINTCOUNT = GetJqGridRowValue("#gridTable", "PRINTCOUNT");
+            if( PRINTCOUNT>0){
+                bol=true;
+            }else{
+                Print();
+            }
+            if(bol==true) 
+             {
+                 OpenWindows(url,title);
+             }
+        }
+    }
+
+    function CheckPrint1() {
+      var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsCheckeds(KeyValue)) {
+           var title = "管理员验证";
+        var url = "/ZJSettlement/PCRawYLJS/SELECTCHECKUSER?op=2";
+        var bol=false ;
+         var PRINTCOUNT = GetJqGridRowValue("#gridTable", "PRINTCOUNT");
+            if( PRINTCOUNT>0){
+                bol=true;
+            }else{
+                Print3();
+            }
+            if(bol==true) 
+             {
+                 OpenWindows(url,title);
+             }
+        }
+    }
+
+     function OpenWindows(url,title){
+        openMyDialog(url, "SELECTCHECKUSER", title, 300, 100,
+             function (iframe) {
+                 top.frames[iframe].SelectText();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText();
+             });
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+        $("#gridTable2").trigger("reloadGrid"); //重新载入
+    }
+
+     
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 100px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 100px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    磅号：
+                </th>
+                <td>
+                    <input id="WEIGHTNO" type="hidden" />
+                    <input id="WEIGHTNAME" type="text" class="txt" dbfield="true" style="width: 80px" />
+                </td>
+                <th>
+                    卸货地点：
+                </th>
+                <td>
+                    <input id="PK_RECEIVESTORE" type="hidden" />
+                    <input id="RECEIVESTORE" type="text" class="txt" style="width: 80px" />
+                </td>
+                <th>
+                    物料类型：
+                </th>
+                <td>
+                    <select id="ISTYPE" class="select" style="width: 85px">
+                        <option value="">请选择</option>
+                        <option value="0">其它</option>
+                        <option value="1">化工</option>
+                        <option value="2">木片</option>
+                        <option value="3">木浆</option>
+                        <option value="4">废纸</option>
+                        <option value="5">包材</option>
+                    </select>
+                </td>
+                <th>
+                    接收公司：
+                </th>
+                <td>
+                    <input id="PK_RECEIVEORG" type="hidden" />
+                    <input id="RECEIVEORG" type="text" class="txt" style="width: 80px" />
+                </td>
+                <th>
+                    结算单号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 80px" />
+                </td>
+                <th>
+                    入厂厂区：
+                </th>
+                <td>
+                    <select id="CQDEF1" class="txt select" style="width: 85px">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        <option value="6000">盛世热电</option>
+                        <option value="7000">新迈纸业</option>
+                        <option value="8000">阳光王子</option>
+                        <option value="9000">华迈纸业</option>
+                        <option value="9010">科迈制浆</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="SUPPLY" type="hidden" />
+                    <input id="SUPPLYNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIAL" type="hidden" />
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    制单人：
+                </th>
+                <td>
+                    <input id="CREATEUSER" type="text" class="txt" style="width: 80px" />
+                </td>
+                <th>
+                    货主：
+                </th>
+                <td>
+                    <input id="HZUSERNAME" type="text" class="txt" style="width: 80px" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="CARS" type="text" class="txt" style="width: 80px" />
+                </td>
+                <th>
+                    上传状态：
+                </th>
+                <td>
+                    <select id="UPLOAD" class="select" style="width: 85px">
+                        <option value="">请选择</option>
+                        <option value="0">未上传</option>
+                        <option value="1">已上传</option>
+                    </select>
+                </td>
+                <th>
+                    订单编号：
+                </th>
+                <td>
+                    <input id="VBILLCODE" type="text" class="txt" style="width: 80px" />
+                </td>
+                <td>
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+        <table id="gridTable2">
+        </table>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

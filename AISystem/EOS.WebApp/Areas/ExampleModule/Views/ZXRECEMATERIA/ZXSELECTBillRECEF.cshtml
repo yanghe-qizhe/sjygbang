@@ -1,0 +1,216 @@
+﻿@{
+    ViewBag.Title = "选择采购订单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    $(function () {
+       BindAutocomplete("MATERIAL", "PK_MATERIAL", "Material", "200", "150", "");
+       BindAutocomplete("CARS", "PK_CARS", "Cars", "200", "150", "");
+       BindAutocomplete("STORESEND", "PK_STORESEND", "Store", "", "", "");
+        $("#keywords").focus();
+             setTimeout(function () {
+                GetGrid();
+            }, 300);
+        //绑定键盘按下事件  
+        $(document).keypress(function (e) {
+            // 回车键事件  
+            if (e.which == 13) {
+                $("#keywords").focus();
+                $("#keywords").select();
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    function btn_Search() {
+        //开始时间
+        var StartTime = $("#StartTime").val();
+        //结束时间
+        var EndTime = $("#EndTime").val();
+        //单号
+        var TaskNo = $("#BILLNO").val();
+      
+        //车号
+        var Cars = $("#CARS").val();
+        //物料
+        var Material = $("#PK_MATERIAL").val();
+        //仓库
+        var StoreSend = $("#PK_STORESEND").val();
+   
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/ZXSENDMATERIA/GetSeOrderList")?Status=0&StartTime=" + StartTime + '&EndTime=' + EndTime + '&Material=' +   Material+
+             "&StoreSend=" + StoreSend +'&Cars='+ escape(Cars)+'&TaskNo='+ TaskNo 
+        }).trigger('reloadGrid');
+    }
+    //显示 
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/ZXSENDMATERIA/GetSeOrderList")?Status=0&StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+     height:270,
+            width:890,
+            colModel: [
+             { label: 'ID', name: 'ID',hidden: true},
+             { label: '单号', name: 'BILLNO', index: 'BILLNO', width: 120, align: 'left' },
+              { label: 'PK_CARS', name: 'PK_CARS',hidden: true},
+            { label: '车号', name: 'CARS', index: 'CARS', width: 60, align: 'center' },
+           { label: 'PK_MATERIAL', name: 'PK_MATERIAL',hidden: true},
+            { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 120, align: 'center' },
+             { label: '物料规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width:60, align: 'center' },
+
+            { label: '业务状态', name: 'STATUS', index: 'STATUS', width: 60, align: 'center',
+             formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '0') 
+                    return "<span style='color:red;'>已发货</span>";
+                    if (cellvalue == '1')
+                    return "<span style='color: blue; font-weight: bold;'>已收货</span>";
+                } },
+            { label: '发货数据来源', name: 'BILLFROM',index: 'BILLFROM', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1') 
+                    return "<span style='color:red;'>业务平台</span>";
+                    if (cellvalue == '2')
+                    return "<span style='color: blue; font-weight: bold;'>PDA设备</span>";
+                }
+             },
+            { label: '发货PDA编号', name: 'PDANOSEND',index: 'PDANOSEND', width: 60, align: 'center'},
+                  { label: 'DEF1', name: 'DEF1',hidden: true},
+            { label: '发货单位', name: "DEF2", index: 'DEF2', width: 120, align: 'center'},
+            { label: 'PK_STORESEND', name: 'PK_STORESEND',hidden: true},
+            { label: '发货仓库', name: "STORESEND", index: 'STORESEND', width: 120, align: 'center'},
+            { label: '发货人员', name: 'OPERUSERSEND', index: 'OPERUSERSEND', width:80, align: 'center' },
+            {  label: '发货时间', name: 'OPERTIMESEND', index: 'OPERTIMESEND', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+
+            { label: '毛重(吨)', name: 'GROSS', index: 'GROSS', width:60, align: 'center' },
+            { label: '皮重(吨)', name: 'TARE', index: 'TARE', width:60, align: 'center' },
+            { label: '净重(吨)', name: 'SUTTLE', index: 'SUTTLE', width:60, align: 'center' },
+             {label: '重车时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 110, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                {label: '轻车时间', name: 'LIGHTDATE', index: 'LIGHTDATE', width: 110, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                } 
+            ],
+            pager: "#gridPager",
+            sortname: 'BillNo',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            //双击事件
+            ondblClickRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var $parentobj = top.frames[tabiframeId()];
+                $parentobj.$("#ID").val(rowData.ID); 
+                $parentobj.$("#BILLNO").val(rowData.BILLNO);//磅单号
+        
+                  $parentobj.$("#PK_CARS").val(rowData.PK_CARS);//车号
+                $parentobj.$("#CARS").val(rowData.CARS);//车号
+               
+                
+                $parentobj.$("#PK_STORESEND").val(rowData.PK_STORESEND);
+                $parentobj.$("#STORESEND").val(rowData.STORESEND);//仓库PK
+                    $parentobj.$("#DEF1").val(rowData.DEF1);
+                $parentobj.$("#DEF2").val(rowData.DEF2);//单位 
+
+                $parentobj.$("#MATERIAL").val(rowData.MATERIAL);
+                $parentobj.$("#PK_MATERIAL").val(rowData.PK_MATERIAL);
+                      $parentobj.$("#MATERIALSPEC").val(rowData.MATERIALSPEC); 
+                $parentobj.$("#GROSS").val(rowData.GROSS);//毛重
+                $parentobj.$("#TARE").val(rowData.TARE);//皮重
+                $parentobj.$("#SUTTLE").val(rowData.SUTTLE);//净重
+                $parentobj.$("#WEIGHTDATE").val(rowData.WEIGHTDATE);//毛重时间
+                $parentobj.$("#LIGHTDATE").val(rowData.LIGHTDATE);//皮重时间
+          
+                 closeDialog();
+            }
+        });
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea" style="width: 1150;">
+        <table border="0" class="form-find" style="height: 45px; width: 1150;">
+            <tr>
+                <th>
+                    单号:
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    发货仓库：
+                </th>
+                <td>
+                    <input id="PK_STORESEND" type="hidden" />
+                    <input id="STORESEND" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="PK_MATERIAL" type="hidden" />
+                    <input id="MATERIAL" type="text" class="txt" style="width: 120px" />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="PK_CARS" type="hidden" />
+                    <input id="CARS" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    过磅日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <th>
+                    -
+                </th>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+                <th>
+                </th>
+                <td>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content
+        {
+            border-left: none;
+        }
+        
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+        {
+            background: none;
+        }
+    </style>
+</div>

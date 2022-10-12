@@ -1,0 +1,295 @@
+﻿@{
+    ViewBag.Title = "采购磅单>>补增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var op = GetQuery('op'); //操作类型
+    $(function () {
+        GetGrid();
+    })
+
+    /*车皮明细begin=======================================*/
+    //销售订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 290,
+            autowidth: true,
+            colModel: [
+                { label: '计划单号', name: "PK_EID", width: 130, sortable: false, align: 'center' },
+                 { label: '发货单位[<font face="宋体">*</font>]', name: "SENDUNITNAME", width: 150, sortable: false, align: 'center' },
+                { label: '收货单位[<font face="宋体">*</font>]', name: "ACCEPTUNITNAME", width: 150, sortable: false, align: 'center' },
+                  { label: '物料[<font face="宋体">*</font>]', name: "STANDNAME", width: 120, sortable: false, align: 'center' },
+                { label: '炉号', name: "STOVENUM", width: 80, sortable: false, align: 'center' },
+                { label: '罐号[<font face="宋体">*</font>]', name: "CARNUM", width: 80, sortable: false, align: 'center' },
+                  { label: '扣减[<font face="宋体">*</font>]', name: 'KOUAMOUNT', width: 80, sortable: false, align: 'center' },
+                { label: '毛重[<font face="宋体">*</font>]', name: 'MAOAMOUNT', width: 80, sortable: false, align: 'center' },
+               { label: '皮重[<font face="宋体">*</font>]', name: 'PIAMOUNT', width: 80, sortable: false, align: 'center' },
+                { label: '净重[<font face="宋体">*</font>]', name: 'FACTAMOUNT', width: 80, sortable: false, align: 'center' },
+                { label: '皮重时间[<font face="宋体">*</font>]', name: 'PITIME', width: 120, sortable: false, align: 'center' },
+             { label: '毛重时间[<font face="宋体">*</font>]', name: 'MAOTIME', width: 120, sortable: false, align: 'center' },
+            { label: '称重站点[<font face="宋体">*</font>]', name: 'WEIGHTSTATION', width: 80, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计显示
+                $(this).footerData("set", {
+                    "PK_EID": "合计",
+                    "MAOAMOUNT": "<span id='TotalMAOAMOUNT'>0.00</span>",
+                    "PIAMOUNT": "<span id='TotalPIAMOUNT'>0.00</span>",
+                    "FACTAMOUNT": "<span id='TotalFACTAMOUNT'>0.00</span>"
+                });
+            }
+        });
+
+        var ii = 10000;
+        //默认添加20行 空行
+        for (var i = 1; i < 11; i++) {
+            ++ii;
+            var rowdata = {
+                PK_EID: '<input readonly id="PK_EID➩' + i + '" class="editable" type="text" style="cursor:pointer" datacol="no" err="计划单号" checkexpession="NotNull" />',
+                SENDUNITNAME: '<input readonly id="SENDUNITNAME➩' + i + '"  class="editable" type="text" style="cursor:pointer"  /><input id="SENDUNITCODE➩' + i + '" type="hidden" />',
+                ACCEPTUNITNAME: '<input readonly id="ACCEPTUNITNAME➩' + i + '"  class="editable" type="text" style="cursor:pointer"  /><input id="ACCEPTUNITCODE➩' + i + '" type="hidden" />',
+                STANDNAME: '<input readonly id="STANDNAME➩' + i + '"  class="editable" type="text" style="cursor:pointer"  /><input id="MTCODE➩' + i + '" type="hidden" />',
+                STOVENUM: '<input readonly id="STOVENUM➩' + i + '" class="editable" type="text" style="cursor:pointer" datacol="no" err="炉号" checkexpession="NotNull" />',
+                CARNUM: '<input id="CARNUM➩' + i + '"  maxlength="20" class="editable" type="text" style="cursor:pointer"  datacol="no" err="罐号" checkexpession="NotNull"  />',
+
+                KOUAMOUNT: '<input id="KOUAMOUNT➩' + i + '" maxlength="8" class="editable decimal center" type="text" onkeyup="Conversion(' + i + ')" datacol="No" err="毛重"  checkexpession="DoubleOrZero" value="0.00"/>',
+
+                MAOAMOUNT: '<input id="MAOAMOUNT➩' + i + '" maxlength="8" class="editable decimal center" type="text" onkeyup="Conversion(' + i + ')" datacol="No" err="毛重"  checkexpession="DoubleOrZero" value="0.00"/>',
+                PIAMOUNT: '<input id="PIAMOUNT➩' + i + '" maxlength="8" class="editable decimal center" type="text" onkeyup="Conversion(' + i + ')" datacol="No" err="皮重" checkexpession="DoubleOrZero" value="0.00"/>',
+                FACTAMOUNT: '<input readonly id="FACTAMOUNT➩' + i + '" maxlength="8" class="editable decimal center" type="text" datacol="No" err="净重" checkexpession="Double" value="0.00"/>',
+                PITIME: '<input id="PITIME➩' + i + '"  maxlength="20" class="editable" type="text" style="cursor:pointer" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"  onfocus="WdatePicker({startDate:' + "'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;}" + ')" />',
+                MAOTIME: '<input id="MAOTIME➩' + i + '"  maxlength="20" class="editable" type="text" style="cursor:pointer" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" onfocus="WdatePicker({startDate:' + "'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;}" + ')"  />',
+                WEIGHTSTATION: '<input id="WEIGHTSTATION➩' + i + '"  maxlength="20" class="editable" type="text" style="cursor:pointer"  value="H13"  />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        }
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+
+        $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "yes");
+
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').click(function () {
+            var index = $(this).text();
+            $("#PK_EID➩" + index).val("");
+            $("#SENDUNITNAME➩" + index).val("");
+            $("#SENDUNITCODE➩" + index).val();
+            $("#ACCEPTUNITNAME➩" + index).val("");
+            $("#ACCEPTUNITCODE➩" + index).val("");
+            $("#STANDNAME➩" + index).val("");
+            $("#MTCODE➩" + index).val("");
+            $("#STOVENUM➩" + index).val("");
+            $("#CARNUM➩" + index).val("");
+            $("#MAOAMOUNT➩" + index).val("");
+            $("#PIAMOUNT➩" + index).val("");
+            $("#FACTAMOUNT➩" + index).val("");
+            $("#PITIME➩" + index).val("");
+            $("#MAOTIME➩" + index).val("");
+            $("#WEIGHTSTATION➩" + index).val("");
+        });
+
+        //价格信息文本框点击事件
+        $("#gridTable").find('.decimal').click(function () {
+            $(this).select();
+        });
+    }
+
+    //任务单明细换算+合计
+    function Conversion(index) {
+        var Gross = $("#MAOAMOUNT➩" + index).val();
+        var Tare = $("#PIAMOUNT➩" + index).val();
+        var KNom = $("#KOUAMOUNT➩" + index).val();
+        if (Tare * 1 > Gross * 1) {
+            top.TipMsg("皮重不能大于毛重！", 4000, "error");
+            $("#PIAMOUNT➩" + index).val('0');
+            return false;
+        }
+
+        if (Gross != 0 && Gross != undefined && Tare != 0 && Tare != undefined) {
+            var Suttle = FloatSub(Gross, Tare);
+            Suttle = FloatSub(Suttle, KNom);
+            if (Suttle * 1 < 0) {
+                top.TipMsg("净重不能小于零！", 4000, "error");
+                $("#PIAMOUNT➩" + index).val('0');
+                $("#FACTAMOUNT➩" + index).val('0');
+                return false;
+            } else {
+                $("#FACTAMOUNT➩" + index).val(FormatCurrency(Suttle));
+            }
+        } else {
+            $("#FACTAMOUNT➩" + index).val('0.000');
+        }
+
+        //统计合计
+        var TotalMAOAMOUNT = 0.00;
+        var TotalPIAMOUNT = 0.00;
+        var TotalFACTAMOUNT = 0.00;
+        $("#gridTable tbody tr").each(function (i) {
+            var MAOAMOUNT = $(this).find('td:eq(7)').find('input').val();
+            if (MAOAMOUNT != "" && MAOAMOUNT != undefined) {
+                TotalMAOAMOUNT += Number(MAOAMOUNT);
+            }
+            var PIAMOUNT = $(this).find('td:eq(8)').find('input').val();
+            if (PIAMOUNT != "" && PIAMOUNT != undefined) {
+                TotalPIAMOUNT += Number(PIAMOUNT);
+            }
+            var FACTAMOUNT = $(this).find('td:eq(9)').find('input').val();
+            if (FACTAMOUNT != "" && FACTAMOUNT != undefined) {
+                TotalFACTAMOUNT += Number(FACTAMOUNT);
+            }
+        });
+        $("#TotalMAOAMOUNT").text(FormatCurrency(TotalMAOAMOUNT));
+        $("#TotalPIAMOUNT").text(FormatCurrency(TotalPIAMOUNT));
+        $("#TotalFACTAMOUNT").text(FormatCurrency(TotalFACTAMOUNT));
+    }
+    /*明细end=======================================*/
+
+
+    ///添加明细
+    function AppendRowsNew(JsonData) {
+        var rowindex = 1;
+        //明细信息
+        $.each(JsonData, function (i) {
+            var rowData = JsonData[i];
+
+            $("#PK_EID➩" + rowindex).val(rowData.TASKNOID);
+            $("#ACCEPTUNITCODE➩" + rowindex).val(rowData.PK_ACCEPTUNIT);
+            $("#ACCEPTUNITNAME➩" + rowindex).val(rowData.ACCEPTUNITNAME);
+            $("#SENDUNITCODE➩" + rowindex).val(rowData.PK_SENDUNIT);
+            $("#SENDUNITNAME➩" + rowindex).val(rowData.SENDUNITNAME);
+            $("#MTCODE➩" + rowindex).val(rowData.PK_MATERIAL);
+            $("#STANDNAME➩" + rowindex).val(rowData.MATERIALNAME);
+            $("#MATERIALKIND➩" + rowindex).val(rowData.MATERIALSPEC);
+            $("#STOVENUM➩" + rowindex).val(rowData.STOVENUM);
+
+            $("#CALCAMOUNT➩" + rowindex).val(rowData.YFNUM);
+
+            //Conversion(rowindex);
+            rowindex++;
+        });
+    }
+
+
+    function SELECTHYCONVOPER() {
+        var title = "选取铁水转序计划单信息";
+        var url = "/WeightManager/TSWeight/SELECTHYCONVOPERS";
+        Dialog(url, "SELECTHYCONVOPERS", title, 900, 400);
+    }
+    //计算
+    function GetSuttle(id) {
+        var Gross = $("#MAOAMOUNT").val();
+        var Tare = $("#PIAMOUNT").val();
+        var KNom = $("#KOUAMOUNT").val();
+        if (Tare * 1 > Gross * 1) {
+            top.TipMsg("皮重不能大于毛重！", 4000, "error");
+            $("#PIAMOUNT").val('0');
+            return false;
+        }
+
+        if (Gross != 0 && Gross != undefined && Tare != 0 && Tare != undefined) {
+            var Suttle = FloatSub(Gross, Tare);
+            Suttle = FloatSub(Suttle, KNom);
+            if (Suttle * 1 < 0) {
+                top.TipMsg("净重不能小于零！", 4000, "error");
+                $("#PIAMOUNT").val('0');
+                $("#FACTAMOUNT").val('0');
+                return false;
+            } else {
+                $("#FACTAMOUNT").val(FormatCurrency(Suttle));
+            }
+        } else {
+            $("#FACTAMOUNT").val('0.000');
+        }
+
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/WeightManager/TSWeight/SubmitOrderBForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+</script>
+<form id="form1" style="margin: 1px">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a><a title="选单" onclick="SELECTHYCONVOPER()"
+               class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/application_view_list.png")) 50% 4px no-repeat;">
+                    选计划单
+                </b>
+            </span>
+        </a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+
+    <div id="grid_List">
+        <table id="gridTable"></table>
+        <style>
+            .ui-widget-content {
+                border-left: none;
+            }
+
+            .ui-jqgrid tr.ui-row-ltr td {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+
+            .ui-jqgrid .ui-jqgrid-htable th {
+                line-height: 15px;
+            }
+
+                .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+                    background: none;
+                }
+
+            .editable {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</form>

@@ -1,0 +1,273 @@
+﻿@{
+    ViewBag.Title = "转序收货》新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        /*JQuery 限制文本框只能输入数字和小数点*/
+        $(".NumDecText").keyup(function () {
+            $(this).val($(this).val().replace(/[^0-9.]/g, ''));
+        }).bind("paste", function () {  //CTR+V事件处理    
+            $(this).val($(this).val().replace(/[^0-9.]/g, ''));
+        });
+        //发货单位
+        BindAutocomplete("DEF2", "DEF1", "Company", "", "", "");
+        //收货单位
+        BindAutocomplete("DEF4", "DEF3", "Company", "", "", "");
+        //车号
+        BindAutocomplete("CARS", "PK_CARS", "DCars", "", "", "");
+        //收货仓库
+        BindAutocomplete("STORETAKE", "PK_STORETAKE", "Store", "", "", "");
+        //物料
+        MaterialAutocomplete();
+
+        InitControl();
+    })
+    ///获取物料信息-----------
+    function MaterialAutocomplete() {
+        var txtname = "MATERIAL";
+        var $txtid = $("#PK_MATERIAL");
+        var $txtname = $("#MATERIAL");
+        var $txtspec = $("#MATERIALSPEC");
+
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtspec.val(data.materialspec);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 70%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="materialspec" style="width:30%;">' + DataJson[i].materialspec + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtspec.val(data.materialspec);
+                });
+            });
+        }
+    }
+
+
+    function SelectOrder() {
+        var url = "/ExampleModule/ZXRECEMATERIA/ZXSELECTBillRECEF";
+        Dialog(url, "ZXSELECTBillRECEF", "选取发货单（双击表格添加）", 900, 400);
+    }
+    //卡面号搜索
+    function btn_Search() {
+        var CARS = $("#CARS").val();
+        if (CARS != "") {
+
+            AjaxJson("/ExampleModule/ZXRECEMATERIA/GetEntity", { KeyValue: escape(CARS) }, function (data) {
+                SetWebControls(data);
+            });
+        }
+        else {
+            top.TipMsg("请先选择车号！", 4000, "error");
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/ZXRECEMATERIA/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //确认收货事件
+    function QuenRenOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要收货确认操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    AjaxJson("/ExampleModule/ZXRECEMATERIA/QuerenOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        //ThisCloseTab();//关闭本页
+                        //Replace();刷新本页
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="lr-query" title="查询(Ctrl+F)" onclick="btn_Search();" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/page_white_magnify.png")) 50% 4px no-repeat;">
+                    查询</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="QuenRenOrderForm()"
+                        class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/database_save.png")) 50% 4px no-repeat;">
+                            确认收货</b></span></a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                    离开</b></span></a>
+</div>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Tabbasic" class="tab_list bd actived" onclick="Tabchange('basic')">
+                收料信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--录入信息-->
+    <div id="basic" class="tabPanel">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    单号:
+                </th>
+                <td class="formValue">
+                    <input id="ID" type="hidden" datacol="yes" err="ID" checkexpession="NotNull" />
+                    <input id="BILLNO" type="text" class="txt " datacol="yes" err="单号" checkexpession="NotNull"
+                        onclick="SelectOrder();" />
+                </td>
+                <th class="formTitle">
+                    发货单位：
+                </th>
+                <td class="formValue">
+                    <input id="DEF1" type="hidden" />
+                    <input id="DEF2" type="text" class="txt icontree" />
+                </td>
+                <th class="formTitle">
+                    收货单位：
+                </th>
+                <td class="formValue">
+                    <input id="DEF3" type="hidden" />
+                    <input id="DEF4" type="text" class="txt icontree" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    车号：
+                </th>
+                <td class="formValue">
+                    <input id="PK_CARS" type="hidden" datacol="no" err="车号,勿手动输入" checkexpession="NotNull" />
+                    <input id="CARS" type="text" class="txt  " datacol="no" err="请选择车号" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    发货仓库：
+                </th>
+                <td class="formValue">
+                    <input id="PK_STORESEND" type="hidden" datacol="yes" err="发货仓库,勿手动输入" checkexpession="NotNull" />
+                    <input id="STORESEND" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                        err="请选择发货仓库" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    收货仓库：
+                </th>
+                <td class="formValue">
+                    <input id="PK_STORETAKE" type="hidden" datacol="yes" err="收货仓库,勿手动输入" checkexpession="NotNull" />
+                    <input id="STORETAKE" type="text" class="txt icontree" datacol="yes" err="请选择收货仓库"
+                        checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    毛重:
+                </th>
+                <td class="formValue">
+                    <input id="GROSS" type="text" class="txt readonly" readonly="readonly" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    皮重:
+                </th>
+                <td class="formValue">
+                    <input id="TARE" type="text" class="txt readonly" readonly="readonly" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    净重:
+                </th>
+                <td class="formValue">
+                    <input id="SUTTLE" type="text" class="txt readonly" readonly="readonly" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    毛重时间：
+                </th>
+                <td class="formValue">
+                    <input id="WEIGHTDATE" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    物料:
+                </th>
+                <td class="formValue">
+                    <input id="PK_MATERIAL" type="hidden" datacol="yes" err="物料,勿手动输入" checkexpession="NotNull" />
+                    <input id="MATERIAL" type="text" class="txt iconsearch" datacol="yes" err="请选择物料"
+                        checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    物料规格:
+                </th>
+                <td class="formValue">
+                    <input id="MATERIALSPEC" type="text" class="txt readonly" readonly="readonly" datacol="no"
+                        err="物料规格" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    皮重时间：
+                </th>
+                <td class="formValue">
+                    <input id="LIGHTDATE" type="text" class="txt readonly" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    备注：
+                </th>
+                <td class="formValue" colspan="3">
+                    <input id="MEMO" type="text" class="txt" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    <span class="ck_span">提醒：</span>
+                </th>
+                <td class="formValue" colspan="5">
+                    <span class="ck_span">
+                        <label id="lbl_msg">
+                            无
+                        </label>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+</form>

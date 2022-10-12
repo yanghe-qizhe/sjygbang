@@ -1,0 +1,221 @@
+﻿@{
+    ViewBag.Title = "采购磅单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+            BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+            BindAutocomplete("CarsName", "Cars", "Cars", "150", "150", "");
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+            var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var cars = $("#Cars").val();
+         var Material = $("#MaterialName").val();
+        var BillNo=$("#BillNo").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/WeightManager/OtherWeightIn/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&Cars=' +escape(cars)+"&BillNo="+BillNo+"&Material=" + escape(Material), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/WeightManager/OtherWeightIn/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime  ,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '过磅单号', name: 'BILLNO', width: 130, align: 'left' },
+                { label: '车号', name: 'CARS', index: 'CARS', width: 100, align: 'center' },
+                { label: '司机', name: 'DRIVERS', index: 'DRIVERS', width: 100, align: 'center' },
+               { label: '供应商', name: 'SENDORG', index: 'SENDORG', width: 150, align: 'left' },
+                { label: '收货单位', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 120, align: 'left' },
+               { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 150, align: 'left' },
+               { label: '规格', name: 'MATERIALKIND', index: 'MATERIALKIND', width: 150, align: 'left' },
+                { label: '毛重', name: 'GROSS', index: 'GROSS', width: 60, align: 'center' },
+               { label: '皮重', name: 'TARE', index: 'TARE', width: 60, align: 'center' },
+                { label: '净重', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+                { label: '通知单号', name: 'PK_ORDER', width: 120, align: 'center' },
+                {
+                    label: '重车时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                {
+                    label: '轻车时间', name: 'LIGHTDATE', index: 'LIGHTDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                }, 
+                 { label: '仓库', name: 'RECEIVESTORE', index: 'RECEIVESTORE', width: 120, align: 'left' },
+                 { label: 'IC卡号', name: 'ICCARD', index: 'ICCARD', width: 100, align: 'center' } ,
+               
+                { label: '修改状态', name: 'ISEDIT', index: 'ISEDIT', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == "0")
+                             return "正常";
+                        else 
+                             return "参照";
+                    }
+                 }
+                 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'BillNo',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+ 
+        });
+        
+    }
+      
+     //新增
+    function btn_add() {
+        AddTabMenu("WeightInForm", "@Url.Content("~/WeightManager/OtherWeightIn/OtherWeightInForm")?op=add&ModuleId="+ModuleId, "新增汽运采购计量单", "page_white_add.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+           var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            var UPLOAD = GetJqGridRowValue("#gridTable", "UPLOAD");
+            if (UPLOAD == "已推单") {
+                tipDialog("此单据已推单,无法继续编辑！", 3, "");
+                return false;
+            }
+                AddTabMenu("WeightInForm", "@Url.Content("~/WeightManager/OtherWeightIn/OtherWeightInForm")?op=edit&KeyValue=" + KeyValue+"&ModuleId="+ModuleId, "编辑汽运采购计量单", "page_white_edit.png", true, true, true);
+        }
+    }
+   
+      //作废
+    function btn_Invalid(){
+         var UPLOAD = GetJqGridRowValue("#gridTable", "UPLOAD");
+            if (UPLOAD == "已推单") {
+                tipDialog("此单据已推单,无法继续作废！", 3, "");
+                return false;
+            }
+     confirmDialog('提示', '注：您确认要作废此操作吗？', function (r) {
+            if (r) {
+               var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/WeightManager/OtherWeightIn/InvalidOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+            }
+          });
+    }
+         //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            AddTabMenu("OtherWeightInDetail", "@Url.Content("~/WeightManager/OtherWeightIn/OtherWeightInDetail")?KeyValue=" + KeyValue, "其它采购计量单详细", "page_white_edit.png", true, true, true);
+        }
+    }
+
+  function btn_query() {
+        QueryDialog("/WeightManager/OtherWeightIn/OtherWeightInQuery", "OtherWeightInQuery", "查询过滤",350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/WeightManager/OtherWeightIn/GetOrderList")?action=query" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+    
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    @*<div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>*@
+    <div style="margin-top: 1px; margin-bottom: 0px" class="tools_bar">
+        <div class="PartialButton">
+            <a id="lr-query" class="tools_btn" title="查找" onclick="btn_query()"><span><b style="background: url(../../Content/Images/Icon16/page_white_magnify.png) no-repeat 50% 4px">
+                查找</b></span></a> <a id="ai-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+                    <span><b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                        刷新</b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="lr-add" class="tools_btn" title="补增(Ctrl+Z)" onclick="btn_add()"><span><b
+                style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">补增</b></span></a>
+            <a id="lr-delete" class="tools_btn" title="作废(Ctrl+S)" onclick="btn_Invalid()"><span>
+                <b style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">
+                    作废</b></span></a><a id="lr-detail" class="tools_btn" title="详细信息(Ctrl+X)" onclick="btn_detail()"><span><b
+                                style="background: url(../../Content/Images/Icon16/application_view_detail.png) no-repeat 50% 4px">详细</b></span></a> <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()">
+                        <span><b style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                            离开</b></span></a></div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    过磅单号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="Material" type="hidden" />
+                    <input id="MaterialName" type="text" class="txt" style="width: 120px" istype="7" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="Cars" type="hidden" />
+                    <input id="CarsName" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    创建日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-2)" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

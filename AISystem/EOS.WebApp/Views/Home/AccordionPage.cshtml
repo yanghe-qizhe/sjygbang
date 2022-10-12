@@ -1,0 +1,509 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>欢迎使用</title>
+    <!--框架必需start-->
+    <link href="~/Content/Styles/EOSui-framework.css" rel="stylesheet" />
+    <link href="~/Content/Styles/EOSui-accordion.css" rel="stylesheet" />
+    <script src="~/Content/Scripts/jquery/jquery-1.8.2.min.js"></script>
+    <script src="~/Content/Scripts/EOSui-framework.js"></script>
+    <!--框架必需end-->
+    <!--第三方统计图start-->
+    <script src="~/Content/Scripts/highcharts/highcharts.js"></script>
+    <script src="~/Content/Scripts/highcharts/highcharts-more.js"></script>
+    <script src="~/Content/Scripts/highcharts/modules/exporting.js"></script>
+    <!--第三方统计图end-->
+    <script>
+        $(function () {
+            LodaChartData();
+            LodaChartDataB();
+        })
+        function LodaChartDataB() {
+            var chart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'piecontainer',
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    defaultSeriesType: 'pie'
+                },
+                title: {
+                    text: ''
+                },
+                exporting: {
+                    enabled: false
+                },
+                credits: {
+                    enabled: false
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.point.name + '</b>: ' + this.percentage + ' %';
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true, //点击切换
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            formatter: function () {
+                                return '<b>' + this.point.name + '</b>: ' + this.percentage + ' %';
+                            }
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    data: [
+                        ['枢纽楼', 10],
+                        ['IDC中心', 10],
+                        ['端局', 10],
+                        ['模块局', 10],
+                        ['营业厅', 10],
+                        ['办公大楼', 10],
+                        ['C网基站', 40],
+                    ]
+                }]
+            });
+        }
+        function LodaChartData() {
+            $('#container').highcharts({
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: '预算与实际用电量对比'
+                },
+                xAxis: {
+                    categories: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+                },
+                yAxis: {
+                    title: {
+                        text: '电量（度）'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value + '度'
+                        }
+                    }
+                },
+                exporting: {
+                    enabled: false
+                },
+                credits: {
+                    enabled: false
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [{
+                    name: '预算',
+                    marker: {
+                        symbol: 'square'
+                    },
+                    data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 23.3, 18.3, 13.9, 9.6, 1]
+
+                }, {
+                    name: '实际',
+                    marker: {
+                        symbol: 'diamond'
+                    },
+                    data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
+                }]
+            });
+        };
+        function NewTabchange(e) {
+            $(e).parent().find('div').removeClass("actived");
+            $(e).addClass("actived");
+        }
+    </script>
+</head>
+<body>
+    <div style="margin: 0px;">
+        <table style="width: 100%;">
+            <tr>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div style="float: left">
+                                    <img src="~/Content/Images/Icon32/address_block.png" alt="" width="20" height="20" style="padding-bottom: 3px; vertical-align: middle;" />
+                                    清单
+                                </div>
+                                <div class="tab_list_top" style="float: right;">
+                                    <div id="Tabtab1" class="tab_list bd actived" onclick="NewTabchange(this)">待处理事件</div>
+                                    <div id="Tabtab2" class="tab_list bd " onclick="NewTabchange(this)">已处理事件</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-content" style="overflow: auto; height: 300px;width:100%;">
+                            <div class="Task" style="background-color: #E7191B; float: left; margin: 12px;">
+                                <i></i>
+                                <div class="centre">
+                                    <div class="icon">
+                                        <img src="~/Content/Images/task-1.png" />
+                                    </div>
+                                    <div class="Number">10</div>
+                                </div>
+                                <div class="text">
+                                    审核待处理任务
+                                </div>
+                            </div>
+                            <div class="Task" style="background-color: #EEAE44; float: left; margin: 12px;">
+                                <i></i>
+                                <div class="centre">
+                                    <div class="icon">
+                                        <img src="~/Content/Images/task-2.png" />
+                                    </div>
+                                    <div class="Number">11</div>
+                                </div>
+                                <div class="text">
+                                    消息待处理任务
+                                </div>
+                            </div>
+                            <div class="Task" style="background-color: #28B779; float: left; margin: 12px;">
+                                <i></i>
+                                <div class="centre">
+                                    <div class="icon">
+                                        <img src="~/Content/Images/task-3.png" />
+                                    </div>
+                                    <div class="Number">20</div>
+                                </div>
+                                <div class="text">
+                                    对私待处理任务
+                                </div>
+                            </div>
+                            <div class="Task" style="background-color: #2BA9E3; float: left; margin: 12px;">
+                                <i></i>
+                                <div class="centre">
+                                    <div class="icon">
+                                        <img src="~/Content/Images/task-4.png" />
+                                    </div>
+                                    <div class="Number">78</div>
+                                </div>
+                                <div class="text">
+                                    订单变更待处理任务
+                                </div>
+                            </div>
+                            <div class="Task" style="background-color: #C07FE7; float: left; margin: 12px;">
+                                <div class="centre">
+                                    <div class="icon">
+                                        <img src="~/Content/Images/task-5.png" />
+                                    </div>
+                                    <div class="Number">18</div>
+                                </div>
+                                <div class="text">
+                                    本周销售订单
+                                </div>
+                            </div>
+                            <div class="Task" style="background-color: #808080; float: left; margin: 12px;">
+                                <div class="centre">
+                                    <div class="icon">
+                                        <img src="~/Content/Images/task-6.png" />
+                                    </div>
+                                    <div class="Number">60</div>
+                                </div>
+                                <div class="text">
+                                    本周待付款订单
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div style="float: left">
+                                    <img src="~/Content/Images/Icon32/bell.png" alt="" width="20" height="20" style="padding-bottom: 3px; vertical-align: middle;" />
+                                    警告
+                                </div>
+                                <div class="tab_list_top" style="float: right;">
+                                    <div id="Tabtab3" class="tab_list bd actived" onclick="NewTabchange(this)">电量</div>
+                                    <div id="Tabtab4" class="tab_list bd " onclick="NewTabchange(this)">硬件</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-content" style="overflow: auto; height: 300px;width:98%;">
+                            <table class="grid" style="width: 100%; margin-top: 1px;">
+                                <thead>
+                                    <tr>
+                                        <td style="width: 40%;">
+                                            <div class="table-header">局站名称</div>
+                                        </td>
+                                        <td style="width: 15%;">
+                                            <div class="table-header">局站类型</div>
+                                        </td>
+                                        <td style="width: 15%; text-align: right;">
+                                            <div class="table-header">预算电量（度）</div>
+                                        </td>
+                                        <td style="width: 15%; text-align: right;">
+                                            <div class="table-header">实际电量（度）</div>
+                                        </td>
+                                        <td style="width: 15%; text-align: right;">
+                                            <div class="table-header">超标电量（度）</div>
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>江苏南京河西ID数据</td>
+                                        <td>IDC中心</td>
+                                        <td>15776604.11</td>
+                                        <td>19181604</td>
+                                        <td>3404999.892</td>
+                                    </tr>
+                                    <tr>
+                                        <td>游府西街数据中心</td>
+                                        <td>端局</td>
+                                        <td>8237299.246</td>
+                                        <td>11364348</td>
+                                        <td>3127048.754</td>
+                                    </tr>
+                                    <tr>
+                                        <td>江苏南京游府西街IDC</td>
+                                        <td>IDC中心</td>
+                                        <td>2345646.965</td>
+                                        <td>3038937.892</td>
+                                        <td>693290.927</td>
+                                    </tr>
+                                    <tr>
+                                        <td>吉祥庵</td>
+                                        <td>端局</td>
+                                        <td>355559.43</td>
+                                        <td>674531.201</td>
+                                        <td>318971.771</td>
+                                    </tr>
+                                    <tr>
+                                        <td>江苏南京新港IDC数据</td>
+                                        <td>IDC中心</td>
+                                        <td>195284.011</td>
+                                        <td>428446.003</td>
+                                        <td>233161.992</td>
+                                    </tr>
+                                    <tr>
+                                        <td>江苏南京苜蓿园IDC数据</td>
+                                        <td>IDC中心</td>
+                                        <td>1552781.565</td>
+                                        <td>1694270.803</td>
+                                        <td>141489.238</td>
+                                    </tr>
+                                    <tr>
+                                        <td>新港</td>
+                                        <td>端局</td>
+                                        <td>542736.488</td>
+                                        <td>675960</td>
+                                        <td>133223.512</td>
+                                    </tr>
+                                    <tr>
+                                        <td>苏信鼓楼营业厅</td>
+                                        <td>营业厅</td>
+                                        <td>280878.323</td>
+                                        <td>372326</td>
+                                        <td>91447.677</td>
+                                    </tr>
+                                    <tr>
+                                        <td>鼓楼</td>
+                                        <td>枢纽楼</td>
+                                        <td>7596653.318</td>
+                                        <td>7684704</td>
+                                        <td>88050.682</td>
+                                    </tr>
+                                    <tr>
+                                        <td>红花村</td>
+                                        <td>端局</td>
+                                        <td>316437.65</td>
+                                        <td>381580.801</td>
+                                        <td>65143.151</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div style="float: left">
+                                    <img src="~/Content/Images/Icon32/chart_pie(2).png" alt="" width="20" height="20" style="padding-bottom: 3px; vertical-align: middle;" />
+                                    局站分类型总用电占比
+                                </div>
+                            </div>
+                        </div>
+                        <div id="piecontainer" class="box-content" style="overflow: auto; height: 300px;">
+                        </div>
+                    </div>
+                </td>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div style="float: left">
+                                    <img src="~/Content/Images/Icon32/chart_bar.png" alt="" width="20" height="20" style="padding-bottom: 3px; vertical-align: middle;" />
+                                    预算与实际用电量对比
+                                </div>
+                            </div>
+                        </div>
+                        <div id="container" class="box-content" style="overflow: auto; height: 300px;">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div style="float: left">
+                                    <img src="~/Content/Images/Icon32/address_block.png" alt="" width="20" height="20" style="padding-bottom: 3px; vertical-align: middle;" />
+                                    PUE(TOP 10)
+                                </div>
+                                <div class="tab_list_top" style="float: right;">
+                                    <div class="tab_list bd actived" onclick="NewTabchange(this)">IDC</div>
+                                    <div class="tab_list bd " onclick="NewTabchange(this)">端局</div>
+                                    <div class="tab_list bd " onclick="NewTabchange(this)">模块局</div>
+                                    <div class="tab_list bd " onclick="NewTabchange(this)">C网基站</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-content" style="overflow: auto; height: 300px;width:98%;">
+                            <table class="grid" style="width: 100%; margin-top: 1px;">
+                                <thead>
+                                    <tr>
+                                        <td style="width: 30%;">
+                                            <div class="table-header">区域名称</div>
+                                        </td>
+                                        <td style="width: 40%;">
+                                            <div class="table-header">局站名称</div>
+                                        </td>
+                                        <td style="width: 30%; text-align: right;">
+                                            <div class="table-header">PUE</div>
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>江北区</td>
+                                        <td>高新</td>
+                                        <td>0.720</td>
+                                    </tr>
+                                    <tr>
+                                        <td>溧水</td>
+                                        <td>白马</td>
+                                        <td>1.108</td>
+                                    </tr>
+                                    <tr>
+                                        <td>玄武区</td>
+                                        <td>樱驼村</td>
+                                        <td>1.115</td>
+                                    </tr>
+                                    <tr>
+                                        <td>建邺区</td>
+                                        <td>沙洲</td>
+                                        <td>1.156</td>
+                                    </tr>
+                                    <tr>
+                                        <td>栖霞区</td>
+                                        <td>龙潭</td>
+                                        <td>1.165</td>
+                                    </tr>
+                                    <tr>
+                                        <td>雨花区</td>
+                                        <td>西善桥</td>
+                                        <td>1.194</td>
+                                    </tr>
+                                    <tr>
+                                        <td>鼓楼区</td>
+                                        <td>云南路</td>
+                                        <td>1.210</td>
+                                    </tr>
+                                    <tr>
+                                        <td>白下区</td>
+                                        <td>苜蓿园数据中心</td>
+                                        <td>1.233</td>
+                                    </tr>
+                                    <tr>
+                                        <td>下关区</td>
+                                        <td>金陵小区</td>
+                                        <td>1.247</td>
+                                    </tr>
+                                    <tr>
+                                        <td>雨花区</td>
+                                        <td>铁心桥</td>
+                                        <td>1.285</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </td>
+                <td valign="top" style="width: 50%;">
+                    <div class="box">
+                        <div class="bd" style="border: none;">
+                            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                                <div style="float: left">
+                                    <img src="~/Content/Images/Icon32/flower.png" alt="" width="20" height="20" style="padding-bottom: 3px; vertical-align: middle;" />
+                                    PUE排行榜
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-content" style="overflow: auto; height: 300px;width:98%;">
+                            <div style="padding-left: 5px; cursor: pointer; line-height: 25px; background-color: #eee; color: #e66d15">
+                                1、力软信息签约武钢旗下武新建材<img src="~/Content/Images/hot.gif" style="padding-bottom: 3px; vertical-align: middle; margin-left: 10px;" /><div style="float: right">2015-11-11</div>
+                            </div>
+                            <div style="padding-left: 5px; cursor: pointer; line-height: 25px; color: #e66d15">
+                                2、力软信息签约春风物流<img src="~/Content/Images/hot.gif" style="padding-bottom: 3px; vertical-align: middle; margin-left: 10px;" /><div style="float: right">2015-11-11</div>
+                            </div>
+                            <div style="padding-left: 5px; cursor: pointer; line-height: 25px; background-color: #eee; color: #e66d15">
+                                3、韵达渝北分公司转单项目顺利上线<img src="~/Content/Images/hot.gif" style="padding-bottom: 3px; vertical-align: middle; margin-left: 10px;" /><div style="float: right">2015-11-11</div>
+                            </div>
+                            <div style="padding-left: 5px; cursor: pointer; line-height: 25px;">
+                                4、力软信息签约重庆誉威<div style="float: right">2015-11-11</div>
+                            </div>
+                            <div style="padding-left: 5px; cursor: pointer; line-height: 25px; background-color: #eee;">
+                                5、力软誉威物联网项目二期正式启动<div style="float: right">2015-11-11</div>
+                            </div>
+                            <div style="padding-left: 5px; cursor: pointer; line-height: 25px;">
+                                6、微软宣布.NET开发环境开源 支持三大操作系统 <div style="float: right">2015-11-11</div>
+                            </div>
+                            <div style="padding-left: 5px; cursor: pointer; line-height: 25px; background-color: #eee;">
+                                7、力软信息化快速开发框架正式上线<div style="float: right">2015-11-11</div>
+                            </div>
+                            <div style="padding-left: 5px; cursor: pointer; line-height: 25px;">
+                                8、广州分公司选址意见征集<div style="float: right">2015-11-11</div>
+                            </div>
+                            <div style="padding-left: 5px; cursor: pointer; line-height: 25px; background-color: #eee;">
+                                9、如何应对信息化产业巨头垄断<div style="float: right">2015-11-11</div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <style>
+        .grid tbody td {
+            padding-left: 3px;
+        }
+    </style>
+</body>
+</html>

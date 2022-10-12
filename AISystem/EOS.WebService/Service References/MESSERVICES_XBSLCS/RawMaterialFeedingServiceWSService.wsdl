@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:tns="http://cost.soap.ws.sunshine.com/" targetNamespace="http://cost.soap.ws.sunshine.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xs:schema targetNamespace="http://cost.soap.ws.sunshine.com/" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="BaseResponse" type="tns:baseResponse" />
+      <xs:element name="CommonRequest" type="tns:baseRequest" />
+      <xs:element name="doRawMaterialFeeding" type="tns:doRawMaterialFeeding" />
+      <xs:element name="doRawMaterialFeedingResponse" type="tns:doRawMaterialFeedingResponse" />
+      <xs:complexType name="doRawMaterialFeeding">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="rawMaterialFeedingRequest" type="tns:rawMaterialFeedingRequest" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="rawMaterialFeedingRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:baseRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="rowRequestList" nillable="true" type="tns:rawMaterialFeedingRowRequest" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:complexType name="baseRequest">
+        <xs:sequence>
+          <xs:element name="site" type="xs:string" />
+          <xs:element name="userId" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="rawMaterialFeedingRowRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="batch" type="xs:string" />
+          <xs:element minOccurs="0" name="dateTime" type="xs:string" />
+          <xs:element minOccurs="0" name="item" type="xs:string" />
+          <xs:element minOccurs="0" name="itemMark" type="xs:string" />
+          <xs:element minOccurs="0" name="pulpType" type="xs:string" />
+          <xs:element minOccurs="0" name="qty" type="xs:string" />
+          <xs:element minOccurs="0" name="shift" type="xs:string" />
+          <xs:element minOccurs="0" name="shiftDate" type="xs:string" />
+          <xs:element minOccurs="0" name="storageLocation" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="doRawMaterialFeedingResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="tns:baseResponse" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="baseResponse">
+        <xs:sequence>
+          <xs:element name="code" type="xs:long" />
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="doRawMaterialFeedingIn">
+    <wsdl:part name="parameters" element="tns:doRawMaterialFeeding" />
+  </wsdl:message>
+  <wsdl:message name="doRawMaterialFeedingOut">
+    <wsdl:part name="doRawMaterialFeedingResponse" element="tns:doRawMaterialFeedingResponse" />
+  </wsdl:message>
+  <wsdl:portType name="RawMaterialFeedingServiceWS">
+    <wsdl:operation name="doRawMaterialFeeding" parameterOrder="parameters">
+      <wsdl:input message="tns:doRawMaterialFeedingIn" />
+      <wsdl:output message="tns:doRawMaterialFeedingOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="RawMaterialFeedingServiceWSBinding" type="tns:RawMaterialFeedingServiceWS">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="doRawMaterialFeeding">
+      <soap:operation soapAction="" />
+      <wsdl:input>
+        <soap:body use="literal" parts="parameters" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="RawMaterialFeedingServiceWSService">
+    <wsdl:port name="RawMaterialFeedingServiceWSPort" binding="tns:RawMaterialFeedingServiceWSBinding">
+      <address location="http://SJYGMEDEV08.sunshinepaper.com.cn:50000/webservicewar/RawMaterialFeedingServiceWSService" xmlns="http://schemas.xmlsoap.org/wsdl/soap/" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

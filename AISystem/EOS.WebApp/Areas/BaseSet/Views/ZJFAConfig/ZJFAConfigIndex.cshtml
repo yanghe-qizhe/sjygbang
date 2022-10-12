@@ -1,0 +1,191 @@
+﻿@{
+    ViewBag.Title = "承运商管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+            var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var SUPPLYNAME = $("#SUPPLYNAME").val();
+        var MATERIALNAME = $("#MATERIALNAME").val();
+        var FANAME = $("#FANAME").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/BaseSet/ZJFAConfig/GetPageListJson")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&FANAME=' +escape(FANAME) + '&SUPPLYNAME=' +escape(SUPPLYNAME) + '&MATERIALNAME=' +escape(MATERIALNAME), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/ZJFAConfig/GetPageListJson")?StartTime=" + StartTime + '&EndTime=' + EndTime  ,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '单据编号', name: 'ID', width: 120, align: 'center'  }, 
+                { label: '供应商', name: 'SUPPLYNAME', index: 'SUPPLYNAME', width: 300, align: 'center' },
+                  { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 150, align: 'center' },
+                   { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 150, align: 'center' },
+                          { label: '方案编号', name: 'FANO', index: 'FANO', width: 150, align: 'center' },
+                                 { label: '方案名称', name: 'FANAME', index: 'FANAME', width: 150, align: 'center' },
+                   
+                 {
+                    label: '有效', name: 'ISUSE', index: 'ISUSE', width: 45, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        else if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                        else return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                },
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 90, align: 'center' },
+                   {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '说明', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+ 
+        });
+        ////////////
+    }
+     //新增
+    function btn_add() {
+        var url = "/BaseSet/ZJFAConfig/ZJFAConfigForm?ModuleId="+ModuleId;
+        openDialog(url, "ZJFAConfigForm", "新增供应商方案绑定", 650, 380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/ZJFAConfig/ZJFAConfigForm?KeyValue=" + KeyValue+"&ModuleId="+ModuleId;
+            openDialog(url, "ZJFAConfigForm", "编辑供应商方案绑定", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+
+
+         //新增
+    function btn_add() {
+         AddTabMenu("ZJFAConfigBatchForm", "@Url.Content("~/BaseSet/ZJFAConfig/ZJFAConfigBatchForm")?ModuleId="+ModuleId, "新增供应商方案绑定", "page_white_add.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/ZJFAConfig/ZJFAConfigForm?KeyValue=" + KeyValue+"&ModuleId="+ModuleId;
+            openDialog(url, "ZJFAConfigForm", "编辑供应商方案绑定", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue ;
+            delConfig('/BaseSet/ZJFAConfig/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+ 
+    
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    @* <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>*@
+    <div style="margin-top: 1px; margin-bottom: 0px" class="tools_bar">
+        <div class="PartialButton">
+            <a id="ai-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+                <b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                    刷新</b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="ai-add" class="tools_btn" title="新增(Ctrl+Z)" onclick="btn_add()"><span><b
+                style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">新增</b></span></a>
+            <a id="ai-edit" class="tools_btn" title="编辑(Ctrl+W)" onclick="btn_edit()"><span><b
+                style="background: url(../../Content/Images/Icon16/edit.gif) no-repeat 50% 4px">
+                编辑</b></span></a> <a id="lr-delete" class="tools_btn" title="删除(Ctrl+S)" onclick="btn_delete()">
+                    <span><b style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">
+                        删除</b></span></a> <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()">
+                            <span><b style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                                离开</b></span></a></div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    方案名称：
+                </th>
+                <td>
+                    <input id="FANAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="SUPPLYNAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

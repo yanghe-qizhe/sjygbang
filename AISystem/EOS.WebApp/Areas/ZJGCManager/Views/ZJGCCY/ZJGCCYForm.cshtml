@@ -1,0 +1,527 @@
+﻿@{
+    ViewBag.Title = "原料采样新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+    CreateReport("Report");
+    $(function () {
+        $("#Report").css("display", "none");
+        MateerialAutocomplete();
+        BindAutocomplete("SUPPLYNAME", "SUPPLY", "Supply", "200", "150", "");
+        SUSERAutocomplete();
+        RUSERAutocomplete();
+        SUSERAutocomplete1();
+        RUSERAutocomplete1();
+
+
+        InitControl();
+        setTimeout(function () {
+            Report.LoadFromURL(RootPath() + "/ReportView/grf/PrintCode1.grf");
+
+        }, 500);
+    });
+
+    function MateerialAutocomplete() {
+        var txtname = "MATERIALNAME";
+        var $txtid = $("#MATERIAL");
+        var $txtname = $("#MATERIALNAME");
+        var $txtspec = $("#MATERIALSPEC");
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtspec.val(data.materialspec);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    var datatypename = "自建";
+                    if (DataJson[i].datatype == "1") {
+                        datatypename = "GS";
+                    }
+                    if (DataJson[i].datatype == "2") {
+                        datatypename = "U9";
+                    }
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 60%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="materialspec" style="width: 30%;">' + DataJson[i].materialspec + '</td>';
+                    html += '<td id="datatype" style="width: 10%;">' + datatypename + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtspec.val(data.materialspec);
+                });
+            });
+        }
+    }
+
+
+    //交样
+    function SUSERAutocomplete() {
+        var txtname = "JYUSER";
+        var $txtname = $("#JYUSER");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 1, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+    //交样
+    function SUSERAutocomplete1() {
+        var txtname = "JYUSER1";
+        var $txtname = $("#JYUSER1");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 1, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+    //接样
+    function RUSERAutocomplete() {
+        var txtname = "SYUSER";
+        var $txtname = $("#SYUSER");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 2, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+    //接样
+    function RUSERAutocomplete1() {
+        var txtname = "SYUSER1";
+        var $txtname = $("#SYUSER1");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 2, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJGCManager/ZJGCCY/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+
+            }
+
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    //采样人 
+    function CYUSERAutocomplete() {
+        var txtname = "CYUSER";
+        var $txtname = $("#CYUSER");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 1, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+
+    //采样人1
+    function CYUSERAutocomplete1() {
+        var txtname = "CYUSER1";
+        var $txtname = $("#CYUSER1");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                DataSource();
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtname.val(data.realname);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/ZJUser", { type: 1, keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="account" style="display: none;">' + DataJson[i].account + '</td>';
+                    html += '<td id="realname" style="width: 100%;">' + DataJson[i].realname + '</td>';
+                    html += '<td id="userid" style="display: none;">' + DataJson[i].userid + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtname.val(data.realname);
+                });
+            });
+        }
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControlsForTrue("#tb_OrderFrom");
+            AjaxJson("/ZJGCManager/ZJGCCY/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog("操作成功！", 3, data.Code);
+                if (data.Code == "1") {
+                    top.frames["tabs_iframe_" + ModuleId].windowload();
+                    Print(data.Message);
+                    ThisCloseTab();
+                }
+            });
+        }, 200);
+    }
+    //打印条码
+    function Print(KeyValue) {
+        if (IsChecked(KeyValue)) {
+            Report.LoadDataFromURL("/ZJGCManager/ZJGCZY/ZYPrintCode?KeyValue=" + KeyValue);
+            //Report.Print(true);
+            Report.PrintPreview(true);
+        }
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存 </b></span></a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开 </b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            采样单号：
+        </th>
+        <td class="formValue">
+            <input id="BILLNO" maxlength="50" type="text" dbfield="true" class="txt readonly"  readonly="readonly" datacol="yes" err="采样单号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+        </td>
+        <th class="formTitle">
+            手工样号：
+        </th>
+        <td class="formValue">
+            <input id="HANDBILLNO" maxlength="50" type="text" dbfield="true" class="txt required"
+                datacol="yes" err="手工样号" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            采样日期：
+        </th>
+        <td class="formValue">
+            <input id="CYDATE" maxlength="50" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" dbfield="true"
+                               onfocus="var CYDATE=$dp.$('CYDATE');WdatePicker({onpicked:function(){CYDATE.focus();},maxDate:'#F{$dp.$D(\'CYDATE\')}'})"
+                               datacol="yes" err="日期" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input id="SUPPLY" type="hidden" dbfield="true" datacol="yes" err="供应商" checkexpession="NotNull" />
+            <input id="SUPPLYNAME" type="text" class="txt required" datacol="yes" err="供应商" checkexpession="NotNull"
+                dbfield="true" />
+        </td>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" dbfield="true" datacol="yes" err="物料" checkexpession="NotNull" />
+            <input id="MATERIALNAME" type="text" class="txt required" datacol="yes" err="物料"
+                checkexpession="NotNull" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPEC" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            交样人甲：
+        </th>
+        <td class="formValue">
+            <input id="JYUSER" type="text" class="txt" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            交样人乙：
+        </th>
+        <td class="formValue">
+            <input id="JYUSER1" type="text" class="txt" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            交接日期：
+        </th>
+        <td class="formValue">
+            <input id="JYDATE" maxlength="50" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" dbfield="true"
+                               onfocus="var CYDATE=$dp.$('JYDATE');WdatePicker({onpicked:function(){JYDATE.focus();},maxDate:'#F{$dp.$D(\'JYDATE\')}'})"
+                               datacol="yes" err="日期" checkexpession="NotNull" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREUSER" type="text" class="txt readonly" readonly="readonly"
+                               err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" dbfield="true"/>
+        </td>
+        <th class="formTitle">
+            接样人甲：
+        </th>
+        <td class="formValue">
+            <input id="SYUSER" type="text" class="txt" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            接样人乙：
+        </th>
+        <td class="formValue">
+            <input id="SYUSER1" type="text" class="txt" dbfield="true" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CRETIME" type="text" class="txt readonly" readonly="readonly"
+                               err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            描述：
+        </th>
+        <td class="formValue" colspan="3">
+            <input id="MEMO" type="text" class="txt" err="描述" dbfield="true" />
+        </td>
+    </tr>
+</table>
+</form>

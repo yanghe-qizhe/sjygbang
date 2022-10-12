@@ -1,0 +1,149 @@
+﻿@{
+    ViewBag.Title = "采购收货查询";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    $(function () {
+        //BindComBoxTree("matclassname", "matclass", "150", "/BaseSet/Material/TreeJson");
+        BindAutocomplete("CARS", "PK_CARS", "Cars", "200", "150", "");
+        BindAutocomplete("STORE", "PK_STORE", "Store", "", "", "");
+        BindAutocomplete("MATERIAL", "PK_MATERIAL", "Material", "200", "150", "");
+        BindAutocomplete("RECEIVEORG", "PK_RECEIVEORG", "Company1", "200", "150", "");
+        BindAutocomplete("SENDORG", "PK_SENDORG", "Supply", "200", "150", "");
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        //开始时间
+        var StartTime = $("#StartTime").val();
+        //结束时间
+        var EndTime = $("#EndTime").val();
+        //单号
+        var TaskNo = $("#BillNo").val();
+        //供应商
+        var Supply = $("#PK_SENDORG").val();
+        //车号
+        var Cars = $("#PK_CARS").val();
+   
+        //物料
+        var Material = $("#PK_MATERIAL").val();
+        //仓库
+        var Store = $("#PK_STORE").val();
+        //用户
+        var CREUSER = $("#CREUSER").val();
+        //厂区
+        var CQDEF1 = $("#CQDEF1").val();
+        var PK_ORG = $("#PK_RECEIVEORG").val();
+ 
+        var ISJL = $("#ISJL").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&TaskNo=" + TaskNo;
+        url += "&Cars=" + Cars + "&Material=" + Material + "&Supply=" + Supply;
+        url += "&Store=" + Store + "&User=" + escape(CREUSER) ;
+        url += "&CQDEF1=" + CQDEF1 + "&PK_ORG=" + PK_ORG;
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+             <td colspan="3">
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+             <td colspan="3">
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                单 号：
+            </th>
+            <td colspan="3">
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                工厂：
+            </th>
+             <td colspan="3">
+                <input id="PK_RECEIVEORG" type="hidden" />
+                <input id="RECEIVEORG" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                发货单位：
+            </th>
+            <td colspan="3">
+                <input id="PK_SENDORG" type="hidden" />
+                <input id="SENDORG" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                车 号：
+            </th>
+            <td colspan="3">
+                <input id="PK_CARS" type="hidden" />
+                <input id="CARS" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+
+        <tr>
+            <th>
+                物 料：
+            </th>
+            <td colspan="3">
+                <input id="PK_MATERIAL" type="hidden" />
+                <input id="MATERIAL" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                仓 库：
+            </th>
+             <td colspan="3">
+                <input id="PK_STORE" type="hidden" />
+                <input id="STORE" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                入厂厂区：
+            </th>
+             <td colspan="3">
+                <select id="CQDEF1" class="txt select" style="width: 205px">
+                    <option value="">---请选择---</option>
+                    <option value="1000">阳光纸业</option>
+                    @*<option value="6000">盛世热电</option>
+                    <option value="7000">新迈纸业</option>
+                    <option value="8000">阳光王子</option>
+                    <option value="9000">华迈纸业</option>
+                    <option value="9010">科迈制浆</option>*@
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                收料用户：
+            </th>
+            <td colspan="3">
+                <input id="CREUSER" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+ 
+    </table>
+</div>

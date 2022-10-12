@@ -1,0 +1,901 @@
+﻿@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var PCRAWTYPE = GetQuery("PCRAWTYPE");
+    var BillNo = GetQuery("BillNo");
+    $(function () {
+        BindAutocomplete("ORGNAME", "PK_ORG", "Company1", "200", "150", "");
+        GetGrid();
+        $("#PCRAWTYPE").val(PCRAWTYPE);
+        $("#PRINTCODE").keyup(function (event) {
+            if (event.keyCode == 13) {
+                InitControlZY();
+            }
+        });
+        if (!!KeyValue) {
+            //主表信息
+            InitControl(KeyValue);
+        }
+    })
+
+
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ZJManager/PCRawCheck/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebMyControls(data);
+            });
+            InitDetailsControl();
+        }
+    }
+    function InitDetailsControl() {
+        if (!!KeyValue) {
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ZJManager/PCRawCheck/GetOrderEntryList2", { KeyValue: KeyValue, BillNo: BillNo }, function (data) {
+                var JsonData = data.rows;
+                var bol = false;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var CHECKMEMO = rowData.CHECKMEMO == null ? "" : rowData.CHECKMEMO;
+                    var ZJBZRESULTNAME = rowData.ZJBZRESULTNAME == null ? "" : rowData.ZJBZRESULTNAME;
+                    var ZJVALUE1 = rowData.ZJVALUE1 == null ? "" : rowData.ZJVALUE1;
+                    var ZJVALUE2 = rowData.ZJVALUE2 == null ? "" : rowData.ZJVALUE2;
+                    var ZJVALUE3 = rowData.ZJVALUE3 == null ? "" : rowData.ZJVALUE3;
+                    var ZJVALUE4 = rowData.ZJVALUE4 == null ? "" : rowData.ZJVALUE4;
+                    var ZJVALUE5 = rowData.ZJVALUE5 == null ? "" : rowData.ZJVALUE5;
+                    var ZJVALUE6 = rowData.ZJVALUE6 == null ? "" : rowData.ZJVALUE6;
+                    var ZJVALUE7 = rowData.ZJVALUE7 == null ? "" : rowData.ZJVALUE7;
+                    var ZJVALUE8 = rowData.ZJVALUE8 == null ? "" : rowData.ZJVALUE8;
+                    var ZJVALUE9 = rowData.ZJVALUE9 == null ? "" : rowData.ZJVALUE9;
+                    var ZJVALUE10 = rowData.ZJVALUE10 == null ? "" : rowData.ZJVALUE10;
+                    var ZJVALUE11 = rowData.ZJVALUE11 == null ? "" : rowData.ZJVALUE11;
+                    var ZJVALUE12 = rowData.ZJVALUE12 == null ? "" : rowData.ZJVALUE12;
+                    var ZJVALUE13 = rowData.ZJVALUE13 == null ? "" : rowData.ZJVALUE13;
+                    var ZJVALUE14 = rowData.ZJVALUE14 == null ? "" : rowData.ZJVALUE14;
+                    var ZJVALUE15 = rowData.ZJVALUE15 == null ? "" : rowData.ZJVALUE15;
+                    var ZJVALUE16 = rowData.ZJVALUE16 == null ? "" : rowData.ZJVALUE16;
+                    var ZJVALUE17 = rowData.ZJVALUE17 == null ? "" : rowData.ZJVALUE17;
+                    var ZJVALUE18 = rowData.ZJVALUE18 == null ? "" : rowData.ZJVALUE18;
+                    var ZJVALUE19 = rowData.ZJVALUE19 == null ? "" : rowData.ZJVALUE19;
+                    var ZJVALUE20 = rowData.ZJVALUE20 == null ? "" : rowData.ZJVALUE20;
+                    var ZJVALUE21 = rowData.ZJVALUE21 == null ? "" : rowData.ZJVALUE21;
+                    var ZJVALUE22 = rowData.ZJVALUE22 == null ? "" : rowData.ZJVALUE22;
+                    var ZJVALUE23 = rowData.ZJVALUE23 == null ? "" : rowData.ZJVALUE23;
+                    var ZJVALUE24 = rowData.ZJVALUE24 == null ? "" : rowData.ZJVALUE24;
+                    var ZJVALUE25 = rowData.ZJVALUE25 == null ? "" : rowData.ZJVALUE25;
+                    var ZJVALUETYPE = rowData.ZJVALUETYPE;
+
+                    var ZJVALUETD = '';
+                    var ZJVALUETD1 = '';
+                    ZJVALUETD = '<select id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="txtselect items" style="width: 75px;"><option value="0" ' + (rowData.ZJVALUE == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJVALUE == "1" ? 'selected="selected"' : "") + '>不合格</option></select><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                    ZJVALUETD1 = '<input id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center " type="text" style="cursor:pointer"  value="' + rowData.ZJVALUE + '" onblur="CheckBZPD(' + rowindex + ')"/><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+
+                    var DEF1 = rowData.DEF1 == null ? "" : rowData.DEF1;
+                    var rowdata = {
+                        ZJITEMNAME: '<input readonly id="ZJITEMNAME➩' + rowindex + '" index=' + rowindex + ' class="editable center" type="text" value="' + rowData.ITEMNAME + '" zjvaltype="' + ZJVALUETYPE + '"/><input id="ZJITEM➩' + rowindex + '" type="hidden" value="' + rowData.ZJITEM + '" />',
+                        ZJVALUE: ZJVALUETYPE == "1" ? ZJVALUETD1 : ZJVALUETD,
+                        ZJBZRESULT: '<select disabled id="ZJBZRESULT➩' + rowindex + '" index=' + rowindex + ' class="txtselect" style="width: 115px;"><option value="2" ' + (rowData.ZJBZRESULT == "2" ? 'selected="selected"' : "") + '>未检验</option><option value="0" ' + (rowData.ZJBZRESULT == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJBZRESULT == "1" ? 'selected="selected"' : "") + '>不合格</option></select>',
+                        TYPELR: '<select id="TYPELR➩' + rowindex + '" index=' + rowindex + ' class="txtselect" style="width: 150px;"><option value="0" ' + (rowData.TYPELR == "0" ? 'selected="selected"' : "") + '>平均值</option><option value="1" ' + (rowData.TYPELR == "1" ? 'selected="selected"' : "") + '>最大值</option><option value="2" ' + (rowData.TYPELR == "2" ? 'selected="selected"' : "") + '>最小值</option><option value="3" ' + (rowData.TYPELR == "3" ? 'selected="selected"' : "") + '>最大的两个值的平均值</option><option value="4" ' + (rowData.TYPELR == "4" ? 'selected="selected"' : "") + '>最小的两个值的平均值</option><option value="5" ' + (rowData.TYPELR == "5" ? 'selected="selected"' : "") + '>最大的三个值的平均值</option><option value="6" ' + (rowData.TYPELR == "6" ? 'selected="selected"' : "") + '>最小的三个值的平均值</option></select>',
+                        CHECKMEMO: '<input readonly id="CHECKMEMO➩' + rowindex + '" index=' + rowindex + ' class="editable center" type="text" style="cursor:pointer"  value="' + CHECKMEMO + '"/>',
+                        ZJBZRESULTNAME: '<input id="ZJBZRESULTNAME➩' + rowindex + '" index=' + rowindex + ' class="editable center" type="text" style="cursor:pointer"  value="' + ZJBZRESULTNAME + '"/>',
+                        DEF1: '<input id="DEF1➩' + rowindex + '" index=' + rowindex + ' class="editable center" type="text" style="cursor:pointer"  value="' + DEF1.replace("null", "") + '"/><input id="DEF10➩' + rowindex + '" type="hidden" value="' + rowData.DEF10 + '" />',
+                        ZJVALUE1: '<input id="ZJVALUE1➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE1 + '"/>',
+                        ZJVALUE2: '<input id="ZJVALUE2➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE2 + '"/>',
+                        ZJVALUE3: '<input id="ZJVALUE3➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE3 + '"/>',
+                        ZJVALUE4: '<input id="ZJVALUE4➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE4 + '"/>',
+                        ZJVALUE5: '<input id="ZJVALUE5➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE5 + '"/>',
+                        ZJVALUE6: '<input id="ZJVALUE6➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE6 + '"/>',
+                        ZJVALUE7: '<input id="ZJVALUE7➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE7 + '"/>',
+                        ZJVALUE8: '<input id="ZJVALUE8➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE8 + '"/>',
+                        ZJVALUE9: '<input id="ZJVALUE9➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE9 + '"/>',
+                        ZJVALUE10: '<input id="ZJVALUE10➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE10 + '"/>',
+                        ZJVALUE11: '<input id="ZJVALUE11➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE11 + '"/>',
+                        ZJVALUE12: '<input id="ZJVALUE12➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE12 + '"/>',
+                        ZJVALUE13: '<input id="ZJVALUE13➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE13 + '"/>',
+                        ZJVALUE14: '<input id="ZJVALUE14➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE14 + '"/>',
+                        ZJVALUE15: '<input id="ZJVALUE15➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE15 + '"/>',
+                        ZJVALUE16: '<input id="ZJVALUE16➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE16 + '"/>',
+                        ZJVALUE17: '<input id="ZJVALUE17➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE17 + '"/>',
+                        ZJVALUE18: '<input id="ZJVALUE18➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE18 + '"/>',
+                        ZJVALUE19: '<input id="ZJVALUE19➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE19 + '"/>',
+                        ZJVALUE20: '<input id="ZJVALUE20➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE20 + '"/>',
+                        ZJVALUE21: '<input id="ZJVALUE21➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE21 + '"/>',
+                        ZJVALUE22: '<input id="ZJVALUE22➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE22 + '"/>',
+                        ZJVALUE23: '<input id="ZJVALUE23➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE23 + '"/>',
+                        ZJVALUE24: '<input id="ZJVALUE24➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE24 + '"/>',
+                        ZJVALUE25: '<input id="ZJVALUE25➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE25 + '"/>'
+                    }
+                    $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                    rowindex++;
+                    $("#gridTable").find('.items').change(function () {
+                        var index = $(this).attr('id').split('➩')[1];
+                        if (this.value == "0") {
+                            $("#ZJBZRESULT➩" + index).val("0");
+                        } else {
+                            $("#ZJBZRESULT➩" + index).val("1");
+                        }
+                    });
+                    $("#gridTable").find('.center').css('text-align', 'center');
+                    $("#gridTable").find('.decimal').focus(function () {
+                        IsMoneySubtract(this.id);
+                        var val = this.value;
+                        if (val == "0" || val == "0.000" || val == "0.00") {
+                            this.value = "";
+                        } else {
+                            $(this).select();
+                        }
+                    });
+                    $("#gridTable").find('.decimal').blur(function () {
+                        var val = this.value;
+                        if (val == "") {
+                            this.value = "0";
+                        }
+                        if (this.value != "0") {
+                            var index = $(this).attr('id').split('➩')[1];
+                            CheckBZPD(index);
+                        }
+                    });
+
+                });
+            });
+        }
+    }
+
+
+    //得到一个对象实体
+    function InitControlZY() {
+        KeyValue = $("#PRINTCODE").val();
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJManager/PCRawCheck/GetEntityHY", { KeyValue: KeyValue }, function (data) {
+                if (data.zjtype == "3") {
+                    KeyValue = "";
+                    tipDialog(data.message, 3, "warning");
+                    return false;
+                }
+                else if (data.zjtype == "1") {
+                    KeyValue = data.rowdata.ID;
+                    InitControl(KeyValue);
+                } else {
+                    KeyValue = "";
+                    $("#CARS").val(data.CARS);
+                    $("#CARSNAME").val(data.CARSNAME);
+                    InitGrid(data.rowdata);
+                }
+            });
+        }
+    }
+
+    function InitGrid(data) {
+        $("#CYID").val(data.ID);
+        $("#PRINTCODE").val(data.PRINTCODE);
+        $("#MATERIAL").val(data.MATERIAL);
+        $("#MATERIALNAME").val(data.MATERIALNAME);
+        $("#MATERIALSPEC").val(data.MATERIALSPEC);
+        $("#CYDATE").val(data.CYDATE);
+        $("#PCRAWTYPE").val(data.PCRAWTYPE);
+        $("#PK_ORG").val(data.DEF19);
+        $("#ORGNAME").val(data.DEF20);
+        $("#DEF6").val(data.DEF6);
+        $("#gridTable").jqGrid('clearGridData');
+        var rowindex = 1;
+        var index = 1;
+        if (IsNull(data.MATERIAL)) {
+            AjaxJson("/ZJManager/PCRawCheck/GetOrderEntryListHY1", { Supply: data.SUPPLY, Material: data.MATERIAL, MaterialSpec: data.MATERIALSPEC }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var CHECKMEMO = rowData.CHECKMEMO == null ? "" : rowData.CHECKMEMO;
+                    var MEMO = rowData.MEMO == null ? "" : rowData.MEMO;
+                    var UNIT = rowData.UNIT == null ? "" : rowData.UNIT;
+                    var ZJVALUETYPE = rowData.ZJVALUETYPE;
+                    var ITEMNAME = rowData.ITEMNAME;
+
+                    var ZJVALUE1 = rowData.ZJVALUE1 == null ? "0" : rowData.ZJVALUE1;
+                    var ZJVALUE2 = rowData.ZJVALUE2 == null ? "0" : rowData.ZJVALUE2;
+                    var ZJVALUE3 = rowData.ZJVALUE3 == null ? "0" : rowData.ZJVALUE3;
+                    var ZJVALUE4 = rowData.ZJVALUE4 == null ? "0" : rowData.ZJVALUE4;
+                    var ZJVALUE5 = rowData.ZJVALUE5 == null ? "0" : rowData.ZJVALUE5;
+                    var ZJVALUE6 = rowData.ZJVALUE6 == null ? "0" : rowData.ZJVALUE6;
+                    var ZJVALUE7 = rowData.ZJVALUE7 == null ? "0" : rowData.ZJVALUE7;
+                    var ZJVALUE8 = rowData.ZJVALUE8 == null ? "0" : rowData.ZJVALUE8;
+                    var ZJVALUE9 = rowData.ZJVALUE9 == null ? "0" : rowData.ZJVALUE9;
+                    var ZJVALUE10 = rowData.ZJVALUE10 == null ? "0" : rowData.ZJVALUE10;
+                    var ZJVALUE11 = rowData.ZJVALUE11 == null ? "0" : rowData.ZJVALUE11;
+                    var ZJVALUE12 = rowData.ZJVALUE12 == null ? "0" : rowData.ZJVALUE12;
+                    var ZJVALUE13 = rowData.ZJVALUE13 == null ? "0" : rowData.ZJVALUE13;
+                    var ZJVALUE14 = rowData.ZJVALUE14 == null ? "0" : rowData.ZJVALUE14;
+                    var ZJVALUE15 = rowData.ZJVALUE15 == null ? "0" : rowData.ZJVALUE15;
+                    var ZJVALUE16 = rowData.ZJVALUE16 == null ? "0" : rowData.ZJVALUE16;
+                    var ZJVALUE17 = rowData.ZJVALUE17 == null ? "0" : rowData.ZJVALUE17;
+                    var ZJVALUE18 = rowData.ZJVALUE18 == null ? "0" : rowData.ZJVALUE18;
+                    var ZJVALUE19 = rowData.ZJVALUE19 == null ? "0" : rowData.ZJVALUE19;
+                    var ZJVALUE20 = rowData.ZJVALUE20 == null ? "0" : rowData.ZJVALUE20;
+                    var ZJVALUE21 = rowData.ZJVALUE21 == null ? "0" : rowData.ZJVALUE21;
+                    var ZJVALUE22 = rowData.ZJVALUE22 == null ? "0" : rowData.ZJVALUE22;
+                    var ZJVALUE23 = rowData.ZJVALUE23 == null ? "0" : rowData.ZJVALUE23;
+                    var ZJVALUE24 = rowData.ZJVALUE24 == null ? "0" : rowData.ZJVALUE24;
+                    var ZJVALUE25 = rowData.ZJVALUE25 == null ? "0" : rowData.ZJVALUE25;
+
+                    //赋值扣杂
+                    var ZJVAL = "0";
+                    var ZJVALUETD = '';
+                    var ZJVALUETD1 = '';
+                    ZJVALUETD = '<select id="ZJVALUE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="0">合格</option><option value="1">不合格</option></select><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.FANO + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                    ZJVALUETD1 = '<input enter="1" id="ZJVALUE➩' + rowindex + '" index=' + index + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVAL + '" onkeydown="SetUpDown(' + rowindex + ')"/><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.FANO + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                    var rowdata = {
+                        ZJITEMNAME: '<input readonly id="ZJITEMNAME➩' + rowindex + '" maxlength="10"  class="editable center" type="text" value="' + rowData.ITEMNAME + '" zjvaltype="' + ZJVALUETYPE + '"/><input id="ZJITEM➩' + rowindex + '" type="hidden" value="' + rowData.ITEMNO + '" />',
+                        ZJVALUE: ZJVALUETYPE == "1" ? ZJVALUETD1 : ZJVALUETD,
+                        ZJBZRESULT: '<select disabled id="ZJBZRESULT➩' + rowindex + '" class="txtselect" style="width: 115px;"><option value="2">未检验</option><option value="0">合格</option><option value="1">不合格</option></select>',
+                        TYPELR: '<select id="TYPELR➩' + rowindex + '" index=' + rowindex + ' class="txtselect" style="width: 150px;"><option value="0" ' + (rowData.TYPELR == "0" ? 'selected="selected"' : "") + '>平均值</option><option value="1" ' + (rowData.TYPELR == "1" ? 'selected="selected"' : "") + '>最大值</option><option value="2" ' + (rowData.TYPELR == "2" ? 'selected="selected"' : "") + '>最小值</option><option value="3" ' + (rowData.TYPELR == "3" ? 'selected="selected"' : "") + '>最大的两个值的平均值</option><option value="4" ' + (rowData.TYPELR == "4" ? 'selected="selected"' : "") + '>最小的两个值的平均值</option><option value="5" ' + (rowData.TYPELR == "5" ? 'selected="selected"' : "") + '>最大的三个值的平均值</option><option value="6" ' + (rowData.TYPELR == "6" ? 'selected="selected"' : "") + '>最小的三个值的平均值</option></select>',
+                        CHECKMEMO: '<input readonly id="CHECKMEMO➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + CHECKMEMO + '"  />',
+                        ZJBZRESULTNAME: '<input id="ZJBZRESULTNAME➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (ZJVALUETYPE == "1" ? "" : MEMO) + '" title="' + MEMO + '"/>',
+                        DEF1: '<input readonly id="DEF1➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + UNIT + '"/><input id="DEF10➩' + rowindex + '" type="hidden" value="' + rowData.ZJVALUETYPE + '" />',
+                        ZJVALUE1: '<input id="ZJVALUE1➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE1 + '"/>',
+                        ZJVALUE2: '<input id="ZJVALUE2➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE2 + '"/>',
+                        ZJVALUE3: '<input id="ZJVALUE3➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE3 + '"/>',
+                        ZJVALUE4: '<input id="ZJVALUE4➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE4 + '"/>',
+                        ZJVALUE5: '<input id="ZJVALUE5➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE5 + '"/>',
+                        ZJVALUE6: '<input id="ZJVALUE6➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE6 + '"/>',
+                        ZJVALUE7: '<input id="ZJVALUE7➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE7 + '"/>',
+                        ZJVALUE8: '<input id="ZJVALUE8➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE8 + '"/>',
+                        ZJVALUE9: '<input id="ZJVALUE9➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE9 + '"/>',
+                        ZJVALUE10: '<input id="ZJVALUE10➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE10 + '"/>',
+                        ZJVALUE11: '<input id="ZJVALUE11➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE11 + '"/>',
+                        ZJVALUE12: '<input id="ZJVALUE12➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE12 + '"/>',
+                        ZJVALUE13: '<input id="ZJVALUE13➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE13 + '"/>',
+                        ZJVALUE14: '<input id="ZJVALUE14➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE14 + '"/>',
+                        ZJVALUE15: '<input id="ZJVALUE15➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE15 + '"/>',
+                        ZJVALUE16: '<input id="ZJVALUE16➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE16 + '"/>',
+                        ZJVALUE17: '<input id="ZJVALUE17➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE17 + '"/>',
+                        ZJVALUE18: '<input id="ZJVALUE18➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE18 + '"/>',
+                        ZJVALUE19: '<input id="ZJVALUE19➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE19 + '"/>',
+                        ZJVALUE20: '<input id="ZJVALUE20➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE20 + '"/>',
+                        ZJVALUE21: '<input id="ZJVALUE21➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE21 + '"/>',
+                        ZJVALUE22: '<input id="ZJVALUE22➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE22 + '"/>',
+                        ZJVALUE23: '<input id="ZJVALUE23➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE23 + '"/>',
+                        ZJVALUE24: '<input id="ZJVALUE24➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE24 + '"/>',
+                        ZJVALUE25: '<input id="ZJVALUE25➩' + rowindex + '" index=' + rowindex + ' class="editable decimal center" type="text" style="cursor:pointer"  value="' + ZJVALUE25 + '"/>'
+                    }
+
+                    if (rowindex == 1) {
+                        $("#ZJFA").val(rowData.FANO);
+                    }
+                    $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                    $("#gridTable").find('.items').change(function () {
+                        var index = $(this).attr('id').split('➩')[1];
+                        if (this.value == "0") {
+                            var title = $("#ZJBZRESULTNAME➩" + index).attr("title");
+                            $("#ZJBZRESULTNAME➩" + index).val(title);
+                            $("#ZJBZRESULT➩" + index).val("0");
+                        } else {
+                            $("#ZJBZRESULTNAME➩" + index).val("");
+                            $("#ZJBZRESULT➩" + index).val("1");
+                        }
+                    });
+
+                    $("#gridTable").find('.center').css('text-align', 'center');
+
+                    $("#gridTable").find('.decimal').focus(function () {
+                        IsMoneySubtract(this.id);
+                        var val = this.value;
+                        if (val == "0" || val == "0.000" || val == "0.00") {
+                            this.value = "";
+                        } else {
+                            $(this).select();
+                        }
+                    });
+                    $("#gridTable").find('.decimal').blur(function () {
+                        var val = this.value;
+                        if (val == "") {
+                            this.value = "0";
+                        }
+                        if (this.value != "0") {
+                            var index = $(this).attr('id').split('➩')[1];
+                            CheckBZPD(index);
+                        }
+                    });
+
+                    if (ZJVALUETYPE == "1") {
+                        index++;
+                    }
+                    rowindex++;
+                });
+            });
+        }
+    }
+
+    function InitSFY(KeyValue) {
+        if (KeyValue == "") {
+            KeyValue = $("#DEF1").val();
+        }
+        if (PCRAWTYPE == "5") {
+            var rowindex = 1;
+            AjaxJson("/ZJManager/PCRawCheck/GetEntitySFY", { KeyValue: KeyValue }, function (data) {
+                var rows = $("#gridTable").jqGrid("getRowData");
+                var len = rows.length;
+                for (var index = 0; index < len; index++) {
+                    var ITEMNAME = $("#ZJITEMNAME➩" + rowindex).val();
+                    //赋值
+                    var ZJVAL = "0";
+                    if (ITEMNAME.indexOf('水分') >= 0) {
+                        ZJVAL = data.MOISTURE;
+                        if (ZJVAL > 0) {
+                            $("#ZJVALUE➩" + rowindex).val(ZJVAL).attr("readonly", "readonly");
+                        }
+                    }
+                    rowindex++;
+                }
+            });
+        }
+    }
+
+    function SetUpDown(rowindex) {
+        var key = event.keyCode;
+        if (key == 38 || key == 40) {
+            var a = $(document.activeElement);
+            if ($(a).attr("enter") == "1") {
+                var maxcode = $(a).attr("index");
+                var maxcodenext = key == 38 ? FloatSub(maxcode, 1) : FloatAdd(maxcode, 1);
+                $("#gridTable").find("input[index='" + maxcodenext + "'][enter='1']").focus();
+                $("#gridTable").find("input[index='" + maxcodenext + "'][enter='1']").select();
+            }
+        }
+    }
+
+    function SetWebMyControls(data) {
+        try {
+            for (var key in data) {
+
+                var id = $('#' + key);
+                if (id.attr('id')) {
+                    var value = $.trim(data[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                    var type = id.attr('type');
+                    switch (type) {
+                        case "checkbox":
+                            if (value == 1) {
+                                id.attr("checked", 'checked');
+                            } else {
+                                id.removeAttr("checked");
+                            }
+                            break;
+                        default:
+                            id.val(value);
+                            break;
+                    }
+                }
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 315,
+            autowidth: true,
+            colModel: [
+                { label: '化验项[<font face="宋体">*</font>]', name: 'ZJITEMNAME', width: 120, sortable: false, align: 'center' },
+                { label: '结算值', name: "ZJVALUE", width: 80, sortable: false, align: 'center' },
+                { label: '合格判定', name: "ZJBZRESULT", width: 120, sortable: false, align: 'center' },
+                { label: '检验标准', name: "CHECKMEMO", width: 200, sortable: false, align: 'center' },
+                { label: '计算方式', name: "TYPELR", width: 150, sortable: false, align: 'center', editable:true },
+                { label: '检验值1', name: "ZJVALUE1", width: 80, sortable: false, align: 'center' },
+                { label: '检验值2', name: "ZJVALUE2", width: 80, sortable: false, align: 'center' },
+                { label: '检验值3', name: "ZJVALUE3", width: 80, sortable: false, align: 'center' },
+                { label: '检验值4', name: "ZJVALUE4", width: 80, sortable: false, align: 'center' },
+                { label: '检验值5', name: "ZJVALUE5", width: 80, sortable: false, align: 'center' },
+                { label: '检验值6', name: "ZJVALUE6", width: 80, sortable: false, align: 'center' },
+                { label: '检验值7', name: "ZJVALUE7", width: 80, sortable: false, align: 'center' },
+                { label: '检验值8', name: "ZJVALUE8", width: 80, sortable: false, align: 'center' },
+                { label: '检验值9', name: "ZJVALUE9", width: 80, sortable: false, align: 'center' },
+                { label: '检验值10', name: "ZJVALUE10", width: 80, sortable: false, align: 'center' },
+                { label: '检验值11', name: "ZJVALUE11", width: 80, sortable: false, align: 'center' },
+                { label: '检验值12', name: "ZJVALUE12", width: 80, sortable: false, align: 'center' },
+                { label: '检验值13', name: "ZJVALUE13", width: 80, sortable: false, align: 'center' },
+                { label: '检验值14', name: "ZJVALUE14", width: 80, sortable: false, align: 'center' },
+                { label: '检验值15', name: "ZJVALUE15", width: 80, sortable: false, align: 'center' },
+                { label: '检验值16', name: "ZJVALUE16", width: 80, sortable: false, align: 'center' },
+                { label: '检验值17', name: "ZJVALUE17", width: 80, sortable: false, align: 'center' },
+                { label: '检验值18', name: "ZJVALUE18", width: 80, sortable: false, align: 'center' },
+                { label: '检验值19', name: "ZJVALUE19", width: 80, sortable: false, align: 'center' },
+                { label: '检验值20', name: "ZJVALUE20", width: 80, sortable: false, align: 'center' },
+                { label: '检验值21', name: "ZJVALUE21", width: 80, sortable: false, align: 'center' },
+                { label: '检验值22', name: "ZJVALUE22", width: 80, sortable: false, align: 'center' },
+                { label: '检验值23', name: "ZJVALUE23", width: 80, sortable: false, align: 'center' },
+                { label: '检验值24', name: "ZJVALUE24", width: 80, sortable: false, align: 'center' },
+                { label: '检验值25', name: "ZJVALUE25", width: 80, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+        //默认添加6行 空行
+        //        for (var i = 1; i < 51; i++) {
+        //            var rowdata = {
+        //                ZJITEMNAME: '<input readonly id="ZJITEMNAME➩' + i + '" maxlength="10"  class="editable center readonly" type="text" /><input id="ZJITEM➩' + i + '" type="hidden" />',
+        //                ZJVALUE: '<input  id="ZJVALUE➩' + i + '" class="editable center items" type="text" style="cursor:pointer" />',
+        //                ZJBZRESULT: '<select disabled id="ZJBZRESULT➩' + i + '" class="txtselect" style="width: 120px;"><option value="">=请选择=</option><option value="0">合格</option><option value="1">不合格</option></select>',
+        //                ZJBZRESULTNAME: '<input id="ZJBZRESULTNAME➩' + i + '" class="editable center items" type="text" style="cursor:pointer" />'
+        //            }
+        //            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        //        }
+        //金额设置居中、设置只能输入金额格式
+        //        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        //        $("#gridTable").find('.center').css('text-align', 'center')
+        //        $("#gridTable tbody tr:eq(1)").find('input').attr("datacol", "yes");
+        //        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        //        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+        //            var index = $(this).text();
+        //            $("#gridTable tbody tr:eq(" + index + ")").find('input').attr("datacol", "no");
+        //            $("#ITEMNAME➩" + index).val("");
+        //            $("#ITEMNO➩" + index).val("");
+        //            $("#ZJVALUE➩" + index).val("");
+        //            $("#ZJBZRESULT➩" + index).val("");
+        //            $("#ZJBZRESULTNAME➩" + index).val("");
+        //        });
+        //        $("#gridTable").find('.items').click(function () {
+        //            $(this).select();
+        //        });
+    }
+
+    function AVGZJRESULT(JsonData) {
+        var keys = [];
+        $.each(JsonData, function (i) {
+            var rowData = JsonData[i];
+            keys.push(rowData.ID);
+        });
+        var KeyValue = keys.join(',');
+        var postData = { KeyValue: KeyValue };
+        AjaxJson("/ZJManager/PCRawCheck/CheckData", postData, function (data) {
+            var JsonData = data.rows;
+            var rowindex = 1;
+            $.each(JsonData, function (i) {
+                var rowData = JsonData[i];
+                var index = 1;
+                $("#gridTable tbody tr").each(function (i) {
+                    var ZJITEM = $("#ZJITEM➩" + index).val();
+                    if (ZJITEM == rowData.ZJITEM) {
+                        $("#ZJVALUE➩" + index).val(rowData.ZJVALUE);
+                    }
+                    index++;
+                });
+                rowindex++;
+            });
+            CheckData();
+
+        });
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        var rows = $("#gridTable").jqGrid("getRowData");
+        var len = rows.length;
+        if (len == 0) {
+            tipDialog("明细信息不能为空!", 3, "warning");
+            return false;
+        }
+        var bol = CheckData();
+        if (bol == false) {
+            tipDialog("判定不合格，是否复检！", 3, "warning");
+            //return false;
+        }
+        if (issave == true) {
+            tipDialog("判定进行中，请稍后保存！", 3, "warning");
+            return false;
+        }
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    postData["PCRAWTYPE"] = PCRAWTYPE;
+                    AjaxJson("/ZJManager/PCRawCheck/ZjResultLrSave?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 1000);
+            }
+        });
+    }
+
+    //判定
+    function CheckData() {
+        var rowindex = 1;
+        var checkindex = 0;
+        var rows = $("#gridTable").jqGrid("getRowData");
+        var len = rows.length;
+        for (var index = 0; index < len; index++) {
+            var bol = CheckBZPD(rowindex);
+            if (bol) {
+                checkindex++;
+            }
+            rowindex++;
+        }
+        if (checkindex == len) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    var issave = false;
+    function CheckBZPD(index) {
+        var checkstatus = 0;
+        var checkstatus1 = 0;
+        var checkstatus2 = 0;
+        var bol = true;
+        var zjvaltype = $("#ZJITEMNAME➩" + index).attr("zjvaltype");
+        if (zjvaltype == "1") {
+            var ZJITEM = $("#ZJITEM➩" + index).val();                                //订单数量
+            var ZJFA = $("#ZJFA➩" + index).val();                            //余量
+            var ZJVALUE = $("#ZJVALUE➩" + index).val();                //预提
+            var ZJITEMNAME = $("#ZJITEMNAME➩" + index).val();
+            window.setTimeout(function () {
+                var url = "/ZJManager/PCRawCheck/PCRawCHECheckZJBZ?ZJITEMNO=" + escape(ZJITEM) + "&ZJFA=" + escape(ZJFA) + "&ZJValue=" + escape(ZJVALUE) + "&TYPELR=" + escape(TYPELR) + "&ARR=" + escape(ARR) + "&token=" + new Date().getTime();
+                getAjax(url, "", function (data) {
+                    issave = true;
+                    var json = jQuery.parseJSON(data);
+                    $("#ZJBZRESULT➩" + index).val(json.Code);
+                });
+                var rowindex = 1;
+                var rows = $("#gridTable").jqGrid("getRowData");
+                var len = rows.length;
+                for (var i = 0; i < len; i++) {
+                    var ZJBZRESULT = $("#ZJBZRESULT➩" + rowindex).val();
+                    if (ZJBZRESULT == "1") {
+                        checkstatus++;
+                    }
+                    if (ZJBZRESULT == "2") {
+                        checkstatus2++;
+                    }
+                    rowindex++;
+                }
+                if (checkstatus2 > 0 && checkstatus == 0) {
+                    $("#ZJRESULT").val("2");
+                    bol = false;
+                }
+                else if (checkstatus == 0) {
+                    $("#ZJRESULT").val("0");
+                }
+                else {
+                    $("#ZJRESULT").val("1");
+                    bol = false;
+                }
+                issave = false;
+            }, 600);
+        }
+
+        return bol;
+    }
+
+    //强制合格
+    function QZCheckData() {
+        var rowindex = 1;
+        var rows = $("#gridTable").jqGrid("getRowData");
+        var len = rows.length;
+        if (len == 0) {
+            tipDialog("明细信息不能为空!", 3, "");
+            return false;
+        }
+        for (var index = 0; index < len; index++) {
+            $("#ZJBZRESULT➩" + rowindex).val("0");
+            rowindex++;
+        }
+        $("#ZJRESULT").val("0");
+    }
+
+    //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    var CardNumber = "";
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            tipDialog("打开读卡器失败！", 3, "");
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            CardNumber = MWRFATL.OpenCard(1);
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                tipDialog("IC卡没有放在读卡器上！", 3, "");
+            }
+            else {
+                res = 0;
+            }
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        return res;
+    }
+
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var len = arr.length - 1;
+        for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        var cid = parseInt(num, 16);
+        return cid;
+    }
+
+    function ReadCard() {
+        CardOpen();
+        var ICCard = "";
+
+        if (IsNullOrEmpty(CardNumber)) {
+            ICCard = SetCardNo(CardNumber);
+            $("#DEF6").val(ICCard);
+            InitControlICCardZY(ICCard);
+        }
+        if (ICCard == "") {
+            tipDialog("读IC卡失败，IC卡序号为空！", 3, "");
+            return false;
+        }
+    }
+
+    //得到一个制样对象实体
+    function InitControlICCardZY(KeyValue) {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJManager/PCRawCheck/GetICCardEntity", { KeyValue: KeyValue }, function (data) {
+                if (data.zjtype == "3") {
+                    KeyValue = "";
+                    tipDialog(data.message, 3, "warning");
+                    return false;
+                }
+                else if (data.zjtype == "1") {
+                    KeyValue = data.rowdata.ID;
+                    InitControl();
+                } else {
+                    KeyValue = "";
+                    $("#CARS").val(data.CARS);
+                    $("#CARSNAME").val(data.CARSNAME);
+                    InitGrid(data.rowdata);
+                }
+            });
+        }
+    }
+
+    function SelectCheckOrder() {
+        var CYTYPE = $("#CYTYPE").val();
+        if (CYTYPE == "0") {
+            top.TipMsg("平均化验才能选择平均计算数据！", 4000, "error");
+            return false;
+        }
+        var PRINTCODE = $("#PRINTCODE").val();
+        var title = "选取平均化验信息";
+        var url = "/ZJManager/PCRawCheck/SELECZJRESULT?PRINTCODE=" + PRINTCODE + "&PCRAWTYPE=" + PCRAWTYPE;
+        openMyDialog(url, "SELECTWEIGHTS", title, 900, 400,
+             function (iframe) {
+                 top.frames[iframe].SelectText();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText();
+             });
+    }
+
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+        data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+        classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3"></object>
+<form id="form1" style="margin: 1px">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a><a id="btn_ReadCard" title="读卡" onclick="ReadCard()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    读卡
+                </b>
+            </span>
+        </a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+               class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a><a title="判定" onclick="CheckData()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/ok.png")) 50% 4px no-repeat;">
+                    判定
+                </b>
+            </span>
+        </a>@*<a title="强制合格" onclick="QZCheckData()" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/ok.png")) 50% 4px no-repeat;">
+                       强制合格</b></span></a><a id="SelZJOrder" title="加权计算" onclick="SelectCheckOrder()"
+                           class="tools_btn"> <span><b
+            style="background: url(@Url.Content("~/Content/Images/Icon16/application_view_list.png")) 50% 4px no-repeat;">
+                               平均结果</b></span></a>*@ <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    <table id="tb_OrderFrom" class="form">
+        <tr>
+            <th class="formTitle">
+                化验单号：
+            </th>
+            <td class="formValue">
+                <input id="BILLNO" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                       err="化验单号" checkexpession="NotNull" value="@ViewBag.BillNo">
+            </td>
+            <th class="formTitle">
+                制单人：
+            </th>
+            <td class="formValue">
+                <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                       err="制单人" checkexpession="NotNull" value="@ViewBag.CreateUserName" />
+            </td>
+            <th class="formTitle">
+                制单日期：
+            </th>
+            <td class="formValue">
+                <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                       err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                制样扫码：
+            </th>
+            <td class="formValue">
+                <input id="ZJFA" type="hidden" />
+                <input id="CYID" type="hidden" />
+                <input id="PCRAWTYPE" type="hidden" value="0" />
+                <input id="PRINTCODE" type="text" class="txt required" datacol="yes" err="制样扫码" checkexpession="NotNull">
+            </td>
+            <th class="formTitle">
+                采样日期：
+            </th>
+            <td class="formValue">
+                <input id="CYDATE" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" dbfield="true" err="日期" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                处置方式：
+            </th>
+            <td class="formValue">
+                <select id="CZTYPE" class="txtselect">
+                    <option value="">---请选择---</option>
+                    <option value="0" selected="selected">合格</option>
+                    <option value="1">让步接收</option>
+                    <option value="2">退货</option>
+                    <option value="3">合格扣减</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                接收工厂：
+            </th>
+            <td class="formValue">
+                <input id="PK_ORG" type="hidden" />
+                <input id="ORGNAME" type="text" class="txt" dbfield="true" />
+            </td>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="MATERIAL" type="hidden" dbfield="true" />
+                <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                规格：
+            </th>
+            <td class="formValue">
+                <input id="MATERIALSPEC" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                车号：
+            </th>
+            <td class="formValue">
+                <input id="CARS" type="hidden" dbfield="true" />
+                <input id="CARSNAME" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                IC卡序号：
+            </th>
+            <td class="formValue">
+                <input id="DEF6" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                化验人：
+            </th>
+            <td class="formValue">
+                <input id="DEF10" type="text" class="txt " datacol="yes" dbfield="true" err="化验人"
+                       checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                合格判定：
+            </th>
+            <td class="formValue">
+                <select id="ZJRESULT" class="txtselect" datacol="yes" err="合格判定" checkexpession="NotNull"
+                        disabled="disabled">
+                    <option value="">---请选择---</option>
+                    <option value="0">检验合格</option>
+                    <option value="1">检验不合格</option>
+                    <option value="2" selected="selected">未检验</option>
+                </select>
+            </td>
+            <th class="formTitle">
+                备注：
+            </th>
+            <td class="formValue" colspan="3">
+                <input id="MEMO" type="text" class="txt" />
+            </td>
+        </tr>
+    </table>
+    <div class="bd" style="border-bottom: none; margin: 2px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                    质检信息
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+        <!--拼单信息-->
+        <div id="order" class="tabPanel">
+            <table id="gridTable"></table>
+        </div>
+    </div>
+</form>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+
+    .ui-jqgrid tr.ui-row-ltr td {
+        padding: 0px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .ui-jqgrid .ui-jqgrid-htable th {
+        line-height: 15px;
+    }
+
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+            background: none;
+        }
+
+    .editable {
+        height: 22px;
+        background-color: #fff;
+    }
+</style>

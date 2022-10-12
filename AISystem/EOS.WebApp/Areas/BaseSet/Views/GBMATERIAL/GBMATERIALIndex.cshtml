@@ -1,0 +1,207 @@
+﻿@{
+    ViewBag.Title = "物料管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+ var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+        GetTree();
+    })
+    var matclass = "";
+    //加载左边树
+    function GetTree() {
+        var itemtree = {
+            onnodeclick: function (item) {
+                matclass = item.id;
+                $("#CenterTitle").html(" - " + item.text + "(" + item.value + ")");
+                btn_Search();
+            },
+            url: "@Url.Content("~/BaseSet/Material/TreeJson?type=6")"
+        };
+        $("#ItemsTree").treeview(itemtree);
+    }
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/Material/GetMaterialListForGBMATERIAL")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() -300,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, hidden: true },
+                { label: '内码', name: 'CODE', index: 'CODE', width: 100, align: 'center' },
+                { label: '名称', name: 'NAME', index: 'NAME', width: 130, align: 'center' },
+                { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 130, align: 'center' },
+                { label: '判定标准', name: 'pd', index: 'pd', width: 130, align: 'center' },
+                { label: '包装标准', name: 'bz', index: 'bz', width: 130, align: 'center' },
+                { label: '产品标准', name: 'cp', index: 'cp', width: 130, align: 'center' },
+                { label: '检测标准', name: 'jc', index: 'jc', width: 130, align: 'center' },
+                { label: '内控标准', name: 'nk', index: 'nk', width: 130, align: 'center' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var ID=rowData.ID;
+                  $("#gridETable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/BaseSet/GBMATERIAL/GetOrderEntryList")?KeyValue="+ID, page: 1
+                 }).trigger('reloadGrid');
+            }
+
+        });
+        //////////////////////////
+
+           $("#gridETable").jqGrid({
+            url: "@Url.Content("~/BaseSet/GBMATERIAL/GetOrderEntryList")?KeyValue=",
+            datatype: "json",
+             height:100 ,
+            width:$(window).width()-5,
+                        autowidth: true,
+            colModel: [ 
+               { label: '主键', name: 'ID', index: 'ID', width: 80, hidden: true },
+               { label: '标准类型', name: 'GBTYPENAME', index: 'GBTYPENAME', width: 120, align: 'center' },
+               { label: '标准性质', name: 'GBCHECKTYPENAME', index: 'GBCHECKTYPENAME', width: 120, align: 'center' },
+               { label: '标准编号', name: 'GBEXEC', index: 'GBEXEC', width: 120, align: 'center' },
+               {
+                    label: '有效性', name: 'ISUSE', index: 'ISUSE', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            sortname: 'ID',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            autoScroll:true,
+            gridview: true 
+        });
+ 
+        
+    }
+
+        //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var keyword = $("#keyword").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/BaseSet/Material/GetMaterialListForGBMATERIAL")?matclass=" + matclass + '&keyword=' + escape(keyword), page: 1
+        }).trigger('reloadGrid');
+    }
+    //新增
+    function btn_add() {
+        var ID = GetJqGridRowValue("#gridTable", "ID");  
+         var NAME = GetJqGridRowValue("#gridTable", "NAME");  
+          if (IsChecked(ID)) {
+        var url = "/BaseSet/GBMATERIAL/GBMATERIALForm_New?ModuleId="+ModuleId+"&ID="+ID+"&NAME="+escape(NAME);
+        openDialog(url, "GBMATERIALForm_New", "新增产品标准", 650, 380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+        }
+    }
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/GBMATERIAL/GBMATERIALForm_New?KeyValue=" + KeyValue;
+            openDialog(url, "GBMATERIALForm_New", "编辑产品标准", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+        //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridETable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue ;
+            delConfig('/BaseSet/GBMATERIAL/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+         $("#gridETable").trigger("reloadGrid");
+    }
+</script>
+<div id="layout" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="btnbartitle">
+            <div>
+                物料分类
+            </div>
+        </div>
+        <div class="ScrollBar" id="ItemsTree">
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <div class="btnbartitle">
+            <div>
+                物料列表 <span id="CenterTitle"></span>
+            </div>
+        </div>
+        <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+            <div class="PartialButton">
+                <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+                    <b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                        刷新 </b></span></a><a id="ai-add" class="tools_btn" title="新增(Ctrl+Z)" onclick="btn_add()">
+                            <span><b style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">
+                                新增</b></span></a> <a id="ai-edit" class="tools_btn" title="编辑(Ctrl+W)" onclick="btn_edit()">
+                                    <span><b style="background: url(../../Content/Images/Icon16/edit.gif) no-repeat 50% 4px">
+                                        编辑</b></span></a> <a id="lr-delete" class="tools_btn" title="删除(Ctrl+S)" onclick="btn_delete()">
+                                            <span><b style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">
+                                                删除</b>
+                                                <div class="tools_separator">
+                                                </div>
+                                                <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()"><span><b
+                                                    style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                                                    离开 </b></span></a>
+            </div>
+        </div>
+        <div class="QueryArea">
+            <div class="bottomline QueryArea" style="margin: 1px; margin-top: 0px; margin-bottom: 0px;">
+                <table border="0" class="form-find" style="height: 45px;">
+                    <tr>
+                        <th>
+                            关键字：
+                        </th>
+                        <td>
+                            <input id="keyword" type="text" class="txt" style="width: 120px" />
+                        </td>
+                        <td>
+                            <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div id="grid_List">
+            <table id="gridTable">
+            </table>
+            <div id="gridPager">
+            </div>
+            <table id="gridETable">
+            </table>
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

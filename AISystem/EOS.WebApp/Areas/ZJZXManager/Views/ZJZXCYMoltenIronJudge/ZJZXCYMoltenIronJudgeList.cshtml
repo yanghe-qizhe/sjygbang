@@ -1,0 +1,221 @@
+﻿@{
+    ViewBag.Title = "转序铁水采样管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键 
+    $(function () {    
+        GetGrid();
+        GetGrid2();   
+    })
+     
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BILLNO = $("#BILLNO").val(); 
+        var DEF14 = $("#DEF14").val();    
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIronJudge/GetMoltenIronList")?StartTime=" + StartTime + '&EndTime=' + EndTime  + '&BILLNO=' + escape(BILLNO)+ '&DEF14=' + escape(DEF14) , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BILLNO = $("#BILLNO").val(); 
+        var DEF14 = $("#DEF14").val();  
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIronJudge/GetMoltenIronList")?StartTime=" + StartTime + '&EndTime=' + EndTime+ '&BILLNO=' + escape(BILLNO)+ '&DEF14=' + escape(DEF14) ,
+            datatype: "json",
+            height: $(window).height()-150,
+            autowidth:false,
+            width: $(window).width()*0.70,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', width: 180, align: 'left',align:'center',hidden:true }, 
+                { label: '炉号', name: 'BILLNO', index: 'BILLNO', width: 80, align: 'left',align:'center' },  
+                { 
+                    label: '匹配状态', name: 'DEF14', index: 'DEF14', width: 150, align: 'center', 
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:16px'>未匹配</span>";
+                        if (cellvalue == '1') return "<span style='color:green;font-size:16px'>净重罐号全匹配</span>";
+                        if (cellvalue == '2') return "<span style='color:BLUE;font-size:16px'>罐号匹配</span>";
+                        if (cellvalue == '3') return "<span style='color:BLUE;font-size:16px'>净重匹配</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:16px'>未匹配</span>";
+                    }
+                 },  
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 80, align: 'center'  },  
+                { label: '炉号', name: 'DEF3', index: 'DEF3', width: 80, align: 'center'  },  
+                { label: '流水', name: 'DEF4', index: 'DEF4', width: 80, align: 'center'  },    
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 100, align: 'center' }, 
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 80, align: 'center' },
+                {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME desc,DEF9',
+            sortorder: 'asc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            //单击事件
+            onSelectRow: function (RowIndx) {   
+                var MAINID = GetJqGridRowValue("#gridTable", "ID");   
+                $("#gridTable2").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIronJudge/GetMoltenIronListItem")?MAINID=" + escape(MAINID), page: 1
+                }).trigger('reloadGrid'); 
+            } 
+        });
+        
+    }
+       
+    function GetGrid2(MAINID) {  
+        $("#gridTable2").jqGrid({ 
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIronJudge/GetMoltenIronListItem")?MAINID=" + escape(MAINID),
+            datatype: "json",
+            height: $(window).height() - 125,
+            autowidth:false,
+            width: $(window).width()*0.28,
+            colModel: [ 
+                { label: '炉号', name: 'MAINBILLNO', index: 'MAINBILLNO', width: 100, align: 'center' },
+                { label: '磅单', name: 'BILLNO', index: 'BILLNO', width: 100, align: 'center' },
+                { label: '净重', name: 'DEF6', index: 'DEF6', width: 100, align: 'center' } 
+            ],
+            viewrecords: true,
+            rowNum: 100,
+            rownumbers:true, 
+            pager: false,
+            sortname: 'CRETIME',
+            sortorder: 'asc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        columnModelData("#gridTable2");
+    } 
+
+    //获取单据状态
+    function GetStatus(KeyValue){ 
+        AjaxJson("/ZJZXManager/ZJZXCY/GetZXStatus?KeyValue=" +escape(KeyValue), "", function (data) {
+            if (data.Success) {
+                TypeStatus = jQuery.parseJSON(data.Message);
+            }else{
+                tipDialog(data.Message, 3, data.Code);
+                return;
+            } 
+        });
+    }
+       
+    //匹配罐号重量
+    function btn_judge(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {  
+            AddTabMenu("ZJZXCYMoltenIronJudgeAdd", "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIronJudge/ZJZXCYMoltenIronJudgeAdd")?ModuleId="+ModuleId+"&KeyValue="+escape(KeyValue), "铁水采样罐号重量匹配", "page_white_add.png", true, true, true);
+        }
+    } 
+
+    //手动匹配罐号重量
+    function btn_peoplejudge(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {  
+            AddTabMenu("ZJZXCYMoltenIronJudgePeopleAdd", "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIronJudge/ZJZXCYMoltenIronJudgePeopleAdd")?ModuleId="+ModuleId+"&KeyValue="+escape(KeyValue), "铁水采样罐号重量匹配", "page_white_add.png", true, true, true);
+        }
+    } 
+
+    //批量匹配重量
+    function btn_allweight(){
+        var url = '@Url.Content("~/ZJZXManager/ZJZXCYMoltenIronJudge/ZJZXCYMoltenIronJudgeWeight")?ModuleId=' + ModuleId;
+        openDialog(url, "ZJZXCYMoltenIronJudgeWeight", "铁水批量匹配净重", 900,380, function (iframe) {
+            top.frames[iframe].AcceptClick(); 
+        }); 
+    }
+
+    //清除匹配状态
+    function btn_clearstatus(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {  
+            AjaxJson("/ZJZXManager/ZJZXCYMoltenIronJudge/ZJZXCYClearStatus?KeyValue=" +escape(KeyValue), "", function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                windowload();
+            });
+        }
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    炉号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    匹配状态：
+                </th>
+                <td>
+                    <select id="DEF14" class="txtselect" style="width: 105px">
+                        <option value="0" selected="selected">所有的匹配状态</option>
+                        <option value="1">净重罐号全部匹配</option>
+                        <option value="2">罐号匹配</option>
+                        <option value="2">净重匹配</option>
+                    </select>
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <div style="float: left; border-right: 1px solid #ccc">
+            <table id="gridTable">
+            </table>
+            <div id="gridPager">
+            </div>
+        </div>
+        <div style="float: left; border-left: 1px solid #ccc">
+            <table id="gridTable2">
+            </table>
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

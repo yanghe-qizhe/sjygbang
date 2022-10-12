@@ -1,0 +1,341 @@
+﻿@{
+    ViewBag.Title = "火运发货通";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var TASKNO = GetQuery('TASKNO'); //任务单号
+
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+ 
+        BindAutocomplete("OUTSTACKINGNAME", "OUTSTACKING", "Store", "", "", "");
+        BindAutocomplete("INSTACKINGNAME", "INSTACKINGNAME", "Store", "", "", "");
+ 
+        GetGrid();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ExampleModule/DBBillSOF/GetOrderEntryList", { TASKNO: TASKNO }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    $("#ID➩" + rowindex).val(rowData.ID);
+                    $("#CARS➩" + rowindex).val(rowData.CARS);
+                    $("#CARSNAME➩" + rowindex).val(rowData.CARSNAME);
+                    $("#RFCARD➩" + rowindex).val(rowData.RFCARD);
+                    $("#MEMO➩" + rowindex).val(rowData.MEMO);
+                    $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').attr("datacol", "yes");
+                    rowindex++;
+                    $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').removeAttr('disabled');
+                    $("#gridTable").find('.disabled').attr("disabled", "disabled");
+                    $("#CARSNAME➩" + rowindex).focus();
+                });
+            });
+        }
+    })
+
+    function MaterialAutocomplete() {
+        var txtname = "MATERIALNAME";
+        var $txtid = $("#MATERIAL");
+        var $txtname = $("#MATERIALNAME");
+        var $txtcode = $("#MATERIALCODE");
+        var $txtspec= $("#MATERIALSPEC");
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 3) {
+                    DataSource();
+                }
+                $txtid.val("");
+                $txtcode.val("");
+                $txtspec.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtcode.val(data.code);
+            $txtspec.val(data.spec);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="spec" style="display: none;">' + DataJson[i].materialspec + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtcode.val(data.code);
+                    $txtspec.val(data.spec);
+                });
+            });
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/DBBillSOF/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_HYBillSOF");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/ExampleModule/DBBillSOF/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    /*车皮明细begin=======================================*/
+    //销售订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 290,
+            autowidth: true,
+            colModel: [
+                { label: '车号[<font face="宋体">*</font>]', name: "CARSNAME", width: 150, sortable: false },
+                { label: 'RFID', name: "RFCARD", width: 200, sortable: false },
+                { label: '备注', name: "MEMO", width: 200, sortable: false }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true
+        });
+
+        //默认添加30行 空行
+        for (var i = 1; i < 31; i++) {
+            var rowdata = {
+                CARSNAME: '<input id="CARSNAME➩' + i + '" maxlength="50"  class="editable" type="text" style="cursor:pointer" datacol="no" err="车号" checkexpession="NotNull" /><input id="CARS➩' + i + '" type="hidden" /><input id="ID➩' + i + '" type="hidden" />',
+                RFCARD: '<input id="RFCARD➩' + i + '" class="editable disabled" type="text" style="cursor:pointer"  />',
+                MEMO: '<input id="MEMO➩' + i + '" class="editable" type="text" style="cursor:pointer"  />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        }
+        //金额设置居中、设置只能输入金额格式
+
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $("#gridTable").find('input').attr("disabled", "disabled");
+        $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "yes");
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var index = $(this).text();
+            $("#CARS➩" + index).val("");
+            $("#CARSNAME➩" + index).val("");
+            $("#RFCARD➩" + index).val("");
+            $("#MEMO➩" + index).val("");
+
+        });
+        $("#gridTable tbody tr").find('td:eq(1)').find('input').click(function () {
+            if ($(this).attr('disabled') == 'disabled') {
+                return false;
+            }
+            var index = $(this).attr('id').split('➩')[1];
+            var url = "/ExampleModule/DBBillSOF/SELECTCARS?index=" + index;
+            Dialog(url, "SELECTCARS", "选取车号信息（双击表格添加）", 900, 400);
+        });
+
+        //价格信息文本框点击事件
+        $("#gridTable").find('.decimal').click(function () {
+            $(this).select();
+        });
+    }
+
+
+    var array = new Array();
+    function IsExistVBillCode(index, code) {
+        if (!ArrayExists(array, code)) {
+            array[index] = code;
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function IsExistCars(index, code) {
+        if (!ArrayExists(array, code)) {
+            array[index] = code;
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /*明细end=======================================*/
+</script>
+<form id="form1">
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+            <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                    class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                        保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                            <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                离开</b></span></a>
+    </div>
+    <table id="tb_HYBillSOF" class="form">
+        <tr>
+            <th class="formTitle">
+                发货单位：
+            </th>
+            <td class="formValue">
+                <input id="SEND" type="hidden" dbfield="true" />
+                <input id="SENDNAME" maxlength="50" type="text" class="txt required" datacol="yes"
+                    err="发货单位" checkexpession="NotNull" onclick='SelectDept("SENDNAME", "SEND", "选取发货单位信息");'/>
+            </td>
+            <th class="formTitle">
+                发货仓库：
+            </th>
+            <td class="formValue">
+                <input id="OUTSTACKING" type="hidden" dbfield="true" />
+                <input id="OUTSTACKINGNAME" maxlength="50" type="text" class="txt required" datacol="yes"
+                    err="发货仓库" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="MATERIAL" type="hidden" />
+                <input id="MATERIALNAME" type="text" class="txt" onclick='SelectMaterialSpec("MATERIALNAME","MATERIAL","MATERIALSPEC","");' />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                收货单位：
+            </th>
+            <td class="formValue">
+                <input id="RECEIVE" type="hidden" dbfield="true" />
+                <input id="RECEIVENAME" maxlength="50" type="text" class="txt required" datacol="yes"
+                    err="收货单位" checkexpession="NotNull" onclick='SelectDept("RECEIVENAME", "RECEIVE", "选取收货单位信息");'/>
+            </td>
+            <th class="formTitle">
+                收货仓库：
+            </th>
+            <td class="formValue">
+                <input id="INSTACKING" type="hidden" />
+                <input id="INSTACKINGNAME" type="text" class="txt required" datacol="yes" err="收货仓库"
+                    checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                规格：
+            </th>
+            <td class="formValue">
+                <input id="MATERIALCODE" type="hidden" />
+                <input id="MATERIALSPEC" type="text" class="txt readonly" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                开始日期：
+            </th>
+            <td class="formValue">
+                <input id="BEGINDATE" type="text" class="txt Wdate"   value="@DateTime.Now.ToString("yyyy-MM-dd 00:00:00")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd 00:00:00&#39;})" dbfield="true" like="false"/>
+            </td>
+            <th class="formTitle">
+                结束日期：
+            </th>
+            <td class="formValue">
+                <input id="ENDDATE" type="text" class="txt Wdate"  value="@DateTime.Now.ToString("yyyy-MM-dd 23:59:59")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd 23:59:59&#39;})"dbfield="true" like="false"/>
+            </td>
+            <th class="formTitle">
+                制单日期：
+            </th>
+            <td class="formValue">
+                <input id="CREATEDATE" type="text" class="txt readonly" readonly="readonly" datacol="yes" err="制单日期" checkexpession="NotNull" readonly=readonly value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"  />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                提醒：
+            </th>
+            <td class="formValue" colspan="5">
+                <span class="ck_span">
+                    <label id="lbl_msg">
+                        无
+                    </label>
+                </span>
+            </td>
+        </tr>
+    </table>
+    <div id="grid_List">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

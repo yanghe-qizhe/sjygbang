@@ -1,0 +1,307 @@
+﻿@{
+    ViewBag.Title = "铁水采样罐号重量匹配";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJZXManager/ZJZXCYMoltenIronJudge/GetMoltenDataPeople", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data.M[0]) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data.M[0][key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+
+                $.each(data.D, function (i, o) {
+                    var maxcode = parseInt($("#MaxID").val()) + 1;
+                    var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" index=' + maxcode + ' >' + maxcode + '</td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="DEF11➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="no" err="类型" checkexpession="NotNull" value="' + o.DEF11 + '" /><input id="ID➩' + maxcode + '" type="hidden" value="' + o.ID + '" /><input id="MAINID➩' + maxcode + '" type="hidden" value="' + o.MAINID + '" /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="YBILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="样号" checkexpession="NotNull" value="' + o.YBILLNO + '" /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="DEF10➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" ' + (o.DEF11 == "炉号+流水" ? 'datacol="no"' : 'datacol="no"') + ' err="罐号" checkexpession="NotNull"  value="' + (IsNull(o.DEF10) ? o.DEF10 : "") + '"  /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="DEF9➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" ' + (o.DEF11 == "炉号+流水" ? 'datacol="no"' : 'datacol="no"') + ' err="序号" checkexpession="NotNull"  value="' + (IsNull(o.DEF12) ? o.DEF12 : "") + '"  /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="BILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" ' + (o.DEF11 == "炉号+流水" ? 'datacol="no"' : 'datacol="no"') + '  err="磅单" checkexpession="NotNull"  value="' + (IsNull(o.BILLNO) ? o.BILLNO : "") + '"  /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="DEF4➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" ' + (o.DEF11 == "炉号+流水" ? 'datacol="no"' : 'datacol="no"') + ' err="毛重" checkexpession="NotNull"  value="' + (IsNull(o.DEF4) ? o.DEF4 : "") + '"  /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="DEF5➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" ' + (o.DEF11 == "炉号+流水" ? 'datacol="no"' : 'datacol="no"') + ' err="皮重" checkexpession="NotNull"  value="' + (IsNull(o.DEF5) ? o.DEF5 : "") + '"  /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="DEF6➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" ' + (o.DEF11 == "炉号+流水" ? 'datacol="no"' : 'datacol="no"') + ' err="净重" checkexpession="NotNull"  value="' + (IsNull(o.DEF6) ? o.DEF6 : "") + '"  /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="DEF14➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" ' + (o.DEF11 == "炉号+流水" ? 'datacol="no"' : 'datacol="no"') + ' err="重车时间" checkexpession="NotNull"  value="' + (IsNull(o.DEF14) ? o.DEF14 : "") + '"  /></td>';
+                    if (o.DEF11 == "炉号+流水") {
+                        tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="CARS➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" ' + (o.DEF11 == "炉号+流水" ? 'datacol="no"' : 'datacol="yes"') + ' err="罐号" checkexpession="NotNull"  value="' + (IsNull(o.CARS) ? o.CARS : "") + '"  /></td>';
+                    } else {
+                        tr += '<td class="formValue" style="width: 150px; text-align: center;" dbfield="true"><input id="CARS➩' + maxcode + '" type="text" class="txt required " ' + (o.DEF11 == "炉号+流水" ? 'datacol="no"' : 'datacol="yes"') + ' err="罐号" checkexpession="NotNull"  value="' + (IsNull(o.CARS) ? o.CARS : "") + '"  /></td>';
+                    }
+                    tr += '</tr>';
+                    $("#add_TableInfo").append(tr);
+                    $("#MaxID").val(maxcode);
+                })
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControlsForTrue("#RuleHead");
+            postData["Details"] = GetTableDataJson("#Temp_List");
+            AjaxJson("/ZJZXManager/ZJZXCYMoltenIronJudge/MoltenWeightSAVE?KeyValue=" + GetQuery('KeyValue') + "&PITYPE=PEOPLE", postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code == "1") {
+                    top.frames["tabs_iframe_" + ModuleId].windowload();
+                    ThisCloseTab();
+                }
+            });
+        }, 200);
+    }
+    function GetTableDataJson(tableId) {
+        var item_Key_Value = "";
+        var index = 1;
+        var trjson = "";
+        if ($(tableId + " tbody tr").length > 0) {
+            $(tableId + " tbody tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[dbfield=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    tdjson += '"' + array[0] + '"' + ':' + '"' + $.trim(pk_value) + '",'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                trjson += '{' + tdjson + '},';
+            });
+        } else {
+            $(tableId + " tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[dbfield=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    tdjson += '"' + array[0] + '"' + ':' + '"' + $.trim(pk_value) + '",'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                trjson += '{' + tdjson + '},';
+            });
+        }
+        trjson = trjson.substr(0, trjson.length - 1);
+        if (trjson == '{}') {
+            trjson = "";
+        }
+        return '[' + trjson + ']';
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<div id="message" style="display: none">
+</div>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<div id="RuleHead">
+    <table class="form">
+        <tr style="display: none">
+            <th class="formTitle">
+                批号：
+            </th>
+            <td class="formValue">
+                <input id="PCRAWTYPE" type="hidden" datacol="yes" value="2" dbfield="true" />
+                <input id="BILLNO" maxlength="50" type="text" class="txt required" datacol="yes"
+                    dbfield="true" err="批号" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                日期：
+            </th>
+            <td class="formValue">
+                <input id="TYPE" type="hidden" dbfield="true" value="2" />
+                <input id="CYDATE" maxlength="50" type="text" class="txt readonly" readonly="readonly" datacol="yes" value="@EOS.Utilities.DateTimeHelper.GetToday()" dbfield="true"
+                        err="日期" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                质检方案：
+            </th>
+            <td class="formValue">
+                <input id="ZJFA" type="hidden" dbfield="true" checkexpession="NotNull" err="质检方案"
+                    datacol="yes" />
+                <input id="FANAME" type="text" class="txt readonly" readonly="readonly" err="质检方案" />
+            </td>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="MATERIAL" type="hidden" dbfield="true" checkexpession="NotNull" err="物料"
+                    datacol="yes" />
+                <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" err="物料" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                炉号：
+            </th>
+            <td class="formValue">
+                <input id="DEF3" type="text" class="txt readonly" readonly="readonly" err="炉号" checkexpession="NotNull"
+                    dbfield="true" datacol="yes" />
+            </td>
+            <th class="formTitle">
+                流水：
+            </th>
+            <td class="formValue">
+                <input id="DEF4" type="text" class="txt readonly" readonly="readonly" err="流水" checkexpession="NotNull"
+                    dbfield="true" datacol="yes" />
+            </td>
+            <th class="formTitle">
+                铁水样号：
+            </th>
+            <td class="formValue">
+                <input id="DEF5" type="text" class="txt readonly" readonly="readonly" err="铁水样号"
+                    checkexpession="NotNull" dbfield="true" datacol="yes" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                制单日期：
+            </th>
+            <td class="formValue">
+                <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+            </td>
+            <th class="formTitle">
+                制单人：
+            </th>
+            <td class="formValue">
+                <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                描述：
+            </th>
+            <td class="formValue" colspan="5">
+                <input id="MEMO" type="text" class="txt readonly" readonly="readonly" err="描述" dbfield="true" />
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div class="tab_list bd actived">
+                样号列表</div>
+        </div>
+    </div>
+</div>
+<table id="Temp_List" class="grid leftline form" style="width: 100%">
+    <thead>
+        <tr>
+            <td style="width: 30px; text-align: center; border-left: none;">
+                <div class="table-header">
+                    行号</div>
+            </td>
+            <td style="width: 150px; text-align: center;">
+                <div class="table-header">
+                    类型</div>
+            </td>
+            <td style="width: 150px; text-align: center;">
+                <div class="table-header">
+                    样号</div>
+            </td>
+            <td style="width: 80px; text-align: center;">
+                <div class="table-header">
+                    罐号</div>
+            </td>
+            <td style="width: 80px; text-align: center;">
+                <div class="table-header">
+                    序号</div>
+            </td>
+            <td style="width: 150px; text-align: center;">
+                <div class="table-header">
+                    匹配磅单号</div>
+            </td>
+            <td style="width: 100px; text-align: center;">
+                <div class="table-header">
+                    毛重</div>
+            </td>
+            <td style="width: 100px; text-align: center;">
+                <div class="table-header">
+                    皮重</div>
+            </td>
+            <td style="width: 100px; text-align: center;">
+                <div class="table-header">
+                    净重</div>
+            </td>
+            <td style="width: 150px; text-align: center;">
+                <div class="table-header">
+                    重车时间</div>
+            </td>
+            <td style="width: 100px; text-align: center;">
+                <div class="table-header">
+                    罐号</div>
+            </td>
+            <td>
+            </td>
+        </tr>
+    </thead>
+    <tbody id="add_TableInfo">
+    </tbody>
+</table>
+</form>

@@ -1,0 +1,78 @@
+﻿@{
+    ViewBag.Title = "手动读卡";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var FormID = GetQuery('FormID');
+    $(function () {
+
+    })
+
+    function btn_OK() {
+        var CardNo = $("#CardNo").val();
+        if (IsNull(CardNo)) {
+            if (CardNo.length < 6) {
+                tipDialog("请输入6为卡面编号", 2, 0);
+            } else {
+                AjaxJson("/ZJManager/PCRawCY/GetICNO?CardNo=" + escape(CardNo) + "&TYPE=" + escape($("#TYPE").val()), "", function (data) {
+                    if (IsNull(data)) {
+                        if (data.Code == "1") {
+                            if (IsNull(FormID)) {
+                                $parentobj = top.frames[FormID];
+                            } else {
+                                $parentobj = top.frames[tabiframeId()];
+                            }
+                            $parentobj.CallBackEvent(data.Message);
+                            closeDialog();
+                        } else {
+                            tipDialog(data.Message, 2, 0);
+                        }
+                    } else {
+                        tipDialog("未查询到数据", 2, 0);
+                    }
+                });
+            }
+        } else {
+            tipDialog('卡号不能为空', 4, 'warning');
+        }
+    }
+
+</script>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_Commit_Save" title="保存单据" onclick="btn_OK()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    确定 </b></span></a><a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn"><span>
+                        <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开 </b></span></a>
+</div>
+<div id="RuleHead">
+    <table class="form">
+        <tr>
+            <th class="formTitle">
+                卡号：
+            </th>
+            <td class="formValue">
+                <input id="CardNo" maxlength="50" type="text" class="txt required" err="卡号" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                卡类型：
+            </th>
+            <td class="formValue">
+                <select id="TYPE" class="txtselect required" datacol="yes" err="卡类型" checkexpession="NotNull">
+                    @*<option value="2">异性卡</option>*@
+                    <option value="1" selected="true">IC卡片</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

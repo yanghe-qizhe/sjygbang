@@ -1,0 +1,327 @@
+﻿Object Report
+	Version='6.0.0.6'
+	Title='转序逐车明细'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		Height=29.7
+		LeftMargin=1
+		TopMargin=0.5
+		RightMargin=1
+		BottomMargin=0.5
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=CZGT2017es;User ID=c##czgtmqis;Data Source=192.168.7.18/orclczgt'
+			QuerySQL='select BillNo,STOVENUM,SEQNUM,MAINCODE,MTNAME,MSNAME,RTYPENAME,FACTAMOUNT,CALCAMOUNT,FIRSTAMOUNT,ITEMQUANTITY,ZHIAMOUNT,CCLASS,case  when nvl(STATIONID,'')='H12' then Translate('连轧入库秤' USING NCHAR_CS)   when nvl(STATIONID,'')='H33' then Translate('一轧吊钩秤（西）' USING NCHAR_CS) when  nvl(STATIONID,'')='H34' then Translate('一轧吊钩秤' USING NCHAR_CS)  when nvl(STATIONID,'')='H40' then Translate('H型钢入库秤' USING NCHAR_CS) when nvl(STATIONID,'')='H44' then Translate('100万吨棒材西秤' USING NCHAR_CS) when nvl(STATIONID,'')='H45' then Translate('100万吨棒材东秤' USING NCHAR_CS) when nvl(STATIONID,'')='H48' then Translate('高线产品入库计量（东）' USING NCHAR_CS)      when nvl(STATIONID,'')='H49' then Translate('高线产品入库计量（西）'USING NCHAR_CS) end  as STATIONID ,LENGTH,ISVALID   from  wb_convoper_dtl where  ISVALID =1  order by STOVENUM'
+			Items Field
+				Item
+					Name='bh'
+				End
+				Item
+					Name='bz'
+				End
+				Item
+					Name='CREATEDATE'
+					Type=DateTime
+					Format='yyyy-MM-dd hh:mm:ss'
+				End
+				Item
+					Name='amount'
+					Type=Float
+					Format='0.0000'
+				End
+				Item
+					Name='notes'
+				End
+			End
+		End
+		Items Column
+			Item
+				Name='bh'
+				Width=2.56646
+			End
+			Item
+				Name='bz'
+				Width=1.5875
+			End
+			Item
+				Name='CREATEDATE'
+				Width=3.62479
+			End
+			Item
+				Name='amount'
+				Width=2.59292
+			End
+			Item
+				Name='notes'
+				Width=8.20208
+			End
+		End
+		Object ColumnContent
+			CanGrow=T
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Items ColumnContentCell
+				Item
+					Column='bh'
+					DataField='bh'
+				End
+				Item
+					Column='bz'
+					TextAlign=MiddleCenter
+					DataField='bz'
+				End
+				Item
+					Column='CREATEDATE'
+					DataField='CREATEDATE'
+				End
+				Item
+					Column='amount'
+					TextAlign=MiddleRight
+					DataField='amount'
+				End
+				Item
+					Column='notes'
+					DataField='notes'
+				End
+			End
+		End
+		Object ColumnTitle
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Bold=T
+				Charset=134
+			End
+			Items ColumnTitleCell
+				Item
+					GroupTitle=F
+					Column='bh'
+					TextAlign=MiddleCenter
+					Text='磅号'
+				End
+				Item
+					GroupTitle=F
+					Column='bz'
+					TextAlign=MiddleCenter
+					Text='班组'
+				End
+				Item
+					GroupTitle=F
+					Column='CREATEDATE'
+					TextAlign=MiddleCenter
+					Text='核准时间'
+				End
+				Item
+					GroupTitle=F
+					Column='amount'
+					TextAlign=MiddleCenter
+					Text='核准重量'
+				End
+				Item
+					GroupTitle=F
+					Column='notes'
+					TextAlign=MiddleCenter
+					Text='备注'
+				End
+			End
+		End
+	End
+	Object PageHeader
+		Height=0
+	End
+	Object PageFooter
+		Height=1.00542
+		Items Control
+			Item
+				Type=MemoBox
+				Name='MemoBox2'
+				Anchor=[Top|Right]
+				Left=15.1871
+				Width=3.59833
+				Height=0.608542
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+			End
+		End
+	End
+	Items Parameter
+		Item
+			Name='title'
+		End
+		Item
+			Name='start_Date'
+		End
+		Item
+			Name='end_Date'
+		End
+		Item
+			Name='Query'
+		End
+	End
+	Items ReportHeader
+		Item
+			Height=2.40771
+			Items Control
+				Item
+					Type=MemoBox
+					Name='至'
+					Left=3.54542
+					Top=1.05833
+					Width=0.582083
+					Height=0.582083
+					Text='至'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox4'
+					Left=-0.0264583
+					Top=1.05833
+					Width=3.06917
+					Height=0.608542
+					Parameter='start_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox5'
+					Left=4.1275
+					Top=1.05833
+					Width=4.39208
+					Height=0.635
+					Parameter='end_Date'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox6'
+					Left=1.19063
+					Top=1.71979
+					Width=17.6213
+					Height=0.608542
+					Text='StaticBox6'
+					Parameter='Query'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox7'
+					Top=1.71979
+					Width=1.19063
+					Height=0.608542
+					Text='条件：'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox14'
+					Top=0.211667
+					Width=18.8119
+					Height=0.79375
+					Object Font
+						Name='宋体'
+						Size=180000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Text='逐车明细表'
+					Parameter='title'
+				End
+			End
+		End
+	End
+	Items ReportFooter
+		Item
+			Name='ReportFooter2'
+			Height=0
+			Items Control
+				Item
+					Type=SummaryBox
+					Name='SummaryBox14'
+					Left=46.8577
+					Width=2.83104
+					Height=0.85
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=75000,0
+						Weight=400
+						Charset=134
+					End
+					TextAlign=MiddleRight
+					Format='0.00'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox16'
+					Left=44.6881
+					Width=2.2225
+					Height=0.85
+					Object Border
+						Styles=[DrawBottom]
+					End
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox17'
+					Left=49.6888
+					Width=8.17563
+					Height=0.85
+					Object Border
+						Styles=[DrawRight|DrawBottom]
+					End
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox36'
+					Left=41.1427
+					Top=0.0529167
+					Width=2.98979
+					Height=0.79375
+					Object Border
+						Styles=[DrawRight|DrawBottom]
+					End
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox42'
+					Left=29.0513
+					Width=1.71979
+					Height=0.79375
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=90000,0
+						Weight=400
+						Charset=134
+					End
+					TextAlign=MiddleRight
+					Format='0.0000'
+				End
+			End
+		End
+	End
+End

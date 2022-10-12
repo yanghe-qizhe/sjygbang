@@ -1,0 +1,230 @@
+﻿@{
+    ViewBag.Title = "质检部门权限设置";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键  
+    $(function () {   
+        GetTree();
+        GetGrid("");
+        GetGridUser("");
+    }) 
+        
+    var CompanyId, CompanyName = "";
+    //加载左边树
+    function GetTree() {
+        var itemtree = {
+            onnodeclick: function (item) {
+                CompanyId = item.id;            //ID
+                CompanyName = item.text;        //名称
+                $("#CenterTitle").html(" - " + CompanyName);
+                $("#gridTable").jqGrid('setGridParam', { url: "@Url.Content("~/ZJPermission/DeptSet/LoadDeptData")?TYPE=1&CompanyId=" + CompanyId }).trigger('reloadGrid');
+            },
+            url: "@Url.Content("~/CommonModule/Company/TreeJson")"
+        };
+        $("#ItemsTree").treeview(itemtree);
+    }
+    //加载表格
+    function GetGrid(CompanyId) {
+         $("#gridTable").jqGrid({ 
+            url: "@Url.Content("~/ZJPermission/DeptSet/LoadDeptData")?TYPE=1",
+            datatype: "json",
+            treeGrid: true,
+            treeGridModel: "nested",
+            ExpandColumn: "Code",
+            height: $(window).height() - 110,
+            autowidth:false,
+            width: $(window).width()*0.40,
+            colModel: [
+                { label: '主键', name: 'DepartmentId', index: "DepartmentId", hidden: true },
+                { label: '部门', name: 'FullName', index: "FullName", width: 220 },
+                { label: '编码', name: 'Code', index: "Code", width: 80 },
+                { label: '简称', name: 'ShortName', index: "ShortName", width:220 },
+                { label: '所属公司Id', name: 'CompanyId', index: 'CompanyId', hidden: true },
+                { label: '所属公司', name: 'CompanyName', index: "CompanyName", width: 120 }, 
+                { label: '说明', name: 'Remark', index: "remark", width: 300 }
+            ],
+            pager: "false",
+            rowNum: 1000,
+            rownumbers: true,
+            shrinkToFit: false,
+            //单击事件
+            onSelectRow: function (RowIndx) {  
+                var DepartmentId = GetJqGridRowValue("#gridTable", "DepartmentId");  
+                $("#gridTable2").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ZJPermission/UserDept/LoadDeptUser")?DEPTID=" + escape(DepartmentId), page: 1
+                }).trigger('reloadGrid'); 
+            }
+        });
+        
+    }
+     //加载表格
+    function GetGridUser(DEPTID) {  
+        $("#gridTable2").jqGrid({ 
+            url: "@Url.Content("~/ZJPermission/UserDept/LoadDeptUser")?DEPTID="+escape(DEPTID),
+            datatype: "json",
+            height: $(window).height() - 100,
+            autowidth:false,
+            width: $(window).width()*0.35,
+            colModel: [
+                { label: '主键', name: 'USERID', index: "USERID", hidden: true },
+                { label: '名称', name: 'USERNAME', index: "USERNAME", width: 100 },
+                { label: '截止时间', name: 'ETIME', index: "ETIME", width: 120 },
+                { label: '是否过期', name: 'ETIME', index: "ETIME", width: 100,
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if(IsNull(cellvalue)){
+                            if (new Date(cellvalue.replace(/-/g,"\/")) > new Date()) return "<span style='color:red;font-size:18px'>已过期</span>";
+                            else if (new Date(cellvalue.replace(/-/g,"\/")) <= new Date()) return "<span style='color:blue;font-size:18px'>正常</span>"; 
+                        } else {
+                            return ""; 
+                        }
+                    }
+                 }
+            ],
+            multiselect: true,
+            rowNum: 100,
+            rownumbers:true, 
+            pager: false,
+            sortname: 'CRETIME',
+            sortorder: 'asc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            onSelectRow: function () {
+                SelectRowIndx = GetJqGridRowIndx("#" + this.id);
+            } 
+        });
+        columnModelData("#gridTable2");
+    }
+    //部门人员绑定
+    function btn_user(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "DepartmentId");  
+        if (IsNull(KeyValue)) { 
+            if (!!CompanyId) {
+                var url = "/ZJPermission/UserDept/UserDeptAdd?KeyValue=" + escape(KeyValue);
+                openDialog(url, "UserDeptAdd", "部门人员抽签绑定", 750, 450, function (iframe) {
+                    top.frames[iframe].AcceptClick()
+                }); 
+            } else {
+                alertDialog("请选择左边公司", 0);
+            }
+        } else{
+            tipDialog('请选择一个部门', 4, 'warning');
+        }
+    }
+
+    //将当前用户移出该部门
+    function btn_Split(){
+        var DepartmentId = GetJqGridRowValue("#gridTable", "DepartmentId"); 
+        var USERIDS = GetJqGridRowValue("#gridTable2", "USERID"); 
+        if (IsNull(USERIDS)) { 
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + USERIDS + '\",\"Dept\":\"' + DepartmentId + '\"}'); 
+            AjaxJson("/ZJPermission/UserDept/ZJUserDeptDel", postData, function (data) {
+                if(IsNull(data) && IsNull(data.Code)){
+                    tipDialog(data.Message, 3, data.Code);
+
+                    var DepartmentId = GetJqGridRowValue("#gridTable", "DepartmentId"); 
+                    $("#gridTable2").jqGrid('setGridParam', {
+                        url: "@Url.Content("~/ZJPermission/UserDept/LoadDeptUser")?DEPTID=" + escape(DepartmentId), page: 1
+                    }).trigger('reloadGrid'); 
+                } 
+            }); 
+        } else{
+            tipDialog('请至少选择一个用户', 4, 'warning');
+        }
+    }
+
+    //设置用户时间点
+    function btn_SetTime(){ 
+        var DepartmentId = GetJqGridRowValue("#gridTable", "DepartmentId"); 
+        var USERIDS = GetJqGridRowValue("#gridTable2", "USERID"); 
+        if (IsNull(USERIDS)) { 
+            var url = "/ZJPermission/UserDept/UserDeptSetTime";
+            openDialog(url, "UserDeptSetTime", "部门人员设置时间点", 350, 250, function (iframe) {
+                top.frames[iframe].AcceptClick()
+            });  
+        } else {
+            tipDialog('请至少选择一个用户', 4, 'warning');
+        }
+    }
+
+    function CallBackEventSetTime(ETIME){
+        var DepartmentId = GetJqGridRowValue("#gridTable", "DepartmentId"); 
+        var USERIDS = GetJqGridRowValue("#gridTable2", "USERID"); 
+        var postData = jQuery.parseJSON('{\"DATA\":\"' + USERIDS + '\",\"ETIME\":\"' + ETIME + '\",\"DEPT\":\"' + DepartmentId + '\"}'); 
+        AjaxJson("/ZJPermission/UserDept/ZJUserDeptSetTime", postData, function (data) {
+            if(IsNull(data) && IsNull(data.Code)){
+                tipDialog(data.Message, 3, data.Code);
+
+                var DepartmentId = GetJqGridRowValue("#gridTable", "DepartmentId"); 
+                $("#gridTable2").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ZJPermission/UserDept/LoadDeptUser")?DEPTID=" + escape(DepartmentId), page: 1
+                }).trigger('reloadGrid'); 
+            }
+        });
+    }
+
+    //清理过期用户
+    function btn_ClearUser(){
+        var DepartmentId = GetJqGridRowValue("#gridTable", "DepartmentId"); 
+        if (IsNull(DepartmentId)) { 
+            AjaxJson("/ZJPermission/UserDept/ZJUserDeptClearUser?DEPT="+escape(DepartmentId), "", function (data) {
+                if(IsNull(data) && IsNull(data.Code)){
+                    tipDialog(data.Message, 3, data.Code);
+
+                    var DepartmentId = GetJqGridRowValue("#gridTable", "DepartmentId"); 
+                    $("#gridTable2").jqGrid('setGridParam', {
+                        url: "@Url.Content("~/ZJPermission/UserDept/LoadDeptUser")?DEPTID=" + escape(DepartmentId), page: 1
+                    }).trigger('reloadGrid'); 
+                } 
+            });
+        } else{
+            tipDialog('请选择部门', 4, 'warning');
+        } 
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div id="layout" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="btnbartitle">
+            <div>
+                公司目录
+            </div>
+        </div>
+        <div class="ScrollBar" id="ItemsTree">
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <div class="btnbartitle">
+            <div>
+                部门列表<span id="CenterTitle"></span>
+            </div>
+        </div>
+        <div class="tools_bar" style="border-top: none; margin-bottom: 0px;">
+            <div class="PartialButton">
+                @Html.Partial("_PartialButton")
+            </div>
+        </div>
+        @*<table id="gridTable">
+        </table>*@
+        <div id="grid_List" class="topline">
+            <div style="float: left; border-right: 1px solid #ccc">
+                <table id="gridTable">
+                </table>
+            </div>
+            <div style="float: left; border-left: 1px solid #ccc">
+                <input id="btnSearch" type="button" class="btnSearch" value="将当前用户移出此部门" onclick="btn_Split()" />
+                <input id="btnSetTime" type="button" class="btnSearch" value="设置用户时间点" onclick="btn_SetTime()" />
+                <input id="btnClear" type="button" class="btnSearch" value="清理过期用户" onclick="btn_ClearUser()" />
+                <table id="gridTable2">
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

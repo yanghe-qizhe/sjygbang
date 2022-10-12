@@ -1,0 +1,93 @@
+﻿@{
+    ViewBag.Title = "BillSOFQuery";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var ObjectId = $("#ObjectId").val();
+        var ModuleName = $("#ModuleName").val();
+        var LogType = $("#LogType").val();
+        var KeyWord = $("#KeyWord").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&ObjectId=" + ObjectId + "&KeyWord=" + KeyWord;
+        url += "&ModuleName=" + escape(ModuleName) + "&LogType=" + LogType;
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd 00:00:00")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" style="width: 200px"/>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd 23:59:59")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" style="width: 200px"/>
+            </td>
+        </tr>
+        <tr style="display: none">
+            <th>
+                关键字：
+            </th>
+            <td>
+                <input id="KeyWord" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                对象值：
+            </th>
+            <td>
+                <input id="ObjectId" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                操作模块 ：
+            </th>
+            <td>
+                <input id="ModuleName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                操作类型：
+            </th>
+            <td>
+                <select id="LogType" class="select" style="width: 205px;">
+                    <option value="">---请选择---</option>
+                    <option value="0">登陆</option>
+                    <option value="1">新增</option>
+                    <option value="2">修改</option>
+                    <option value="3">删除</option>
+                    <option value="4">其它</option>
+                    <option value="5">访问</option>
+                    <option value="6">离开</option>
+                    <option value="7">查询</option>
+                    <option value="8">安全退出</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>

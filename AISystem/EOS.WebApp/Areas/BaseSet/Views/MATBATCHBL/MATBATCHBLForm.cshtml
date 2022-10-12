@@ -1,0 +1,125 @@
+﻿@{
+    ViewBag.Title = "停车场管理》表单页面";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        InitControl();
+        BindAutocomplete("ORGNAME", "PK_ORG", "Company1", "200", "150", "");
+        BindAutocomplete("MATERIALNAME", "MATERIAL", "Material", "200", "150", "");
+    })
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/MATBATCHBL/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/MATBATCHBL/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+    <div id="message" style="display: none">
+    </div>
+    <table class="form">
+        <tr>
+            <th class="formTitle">
+                单据编号：
+            </th>
+            <td class="formValue">
+                <input id="ID" type="text" class="txt required" datacol="yes" err="单据编号" checkexpession="NotNull" value="@ViewBag.Code" readonly="readonly" />
+            </td>
+        </tr>
+
+        <tr>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="MATERIAL" type="hidden" />
+                <input id="MATERIALNAME" type="text" class="txt" datacol="yes" err="物料" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                批号：
+            </th>
+            <td class="formValue">
+                <input id="BATCHNO" type="text" class="txt required" datacol="yes" err="批号" checkexpession="NotNull" autocomplete="off" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                工厂：
+            </th>
+            <td class="formValue">
+                <input id="PK_ORG" type="hidden" />
+                <input id="ORGNAME" type="text" class="txt" datacol="yes" err="工厂" checkexpession="NotNull" />
+            </td>
+        </tr>
+        @*<tr>
+            <th class="formTitle">
+                总扣重：
+            </th>
+            <td class="formValue">
+                <input id="KZSUTTLE" type="text" class="txt required" datacol="No" err="总扣重" checkexpession="DoubleOrZero"
+                onfocus="IsMoney(this.id);" value="0" autocomplete="off" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                总净重：
+            </th>
+            <td class="formValue">
+                <input id="SUTTLE" type="text" class="txt required" datacol="No" err="总净重" checkexpession="DoubleOrZero"
+                onfocus="IsMoney(this.id);" value="0" autocomplete="off" />
+            </td>
+        </tr>*@
+        <tr>
+            <th class="formTitle">
+                扣点：
+            </th>
+            <td class="formValue">
+                <input id="BLAMOUNT" type="text" class="txt required" datacol="No" err="扣点" checkexpession="DoubleOrZero"
+                onfocus="IsMoney(this.id);" value="0" autocomplete="off" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                选项：
+            </th>
+            <td class="formValue">
+                <span class="item">
+                    <input type="checkbox" name="checkbox" checked="checked" id="ISUSE" />
+                    <label for="ISUSE">
+                        有效
+                    </label>
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                描述：
+            </th>
+            <td class="formValue">
+                <textarea id="MEMO" name="MEMO" maxlength="200" class="txtArea" rows="5"></textarea>
+            </td>
+        </tr>
+    </table>
+</form>

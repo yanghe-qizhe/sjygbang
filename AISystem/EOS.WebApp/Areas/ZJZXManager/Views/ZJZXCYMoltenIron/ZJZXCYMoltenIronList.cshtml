@@ -1,0 +1,352 @@
+﻿@{
+    ViewBag.Title = "转序铁水采样管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+@*<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>*@
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var TypeStatus;
+    var ICNO;
+//    CreateReport("Report");
+    $(function () {   
+//        $("#Report").css("display","none");  
+        GetGrid(); 
+        GetGrid2();
+        GetGridBottom();  
+        LoadrightMenu("#gridTableBottom");
+//        setTimeout(function(){ 
+//            Report.LoadFromURL("../../../../ReportView/grf/PrintCode.grf"); 
+//        },"500"); 
+    })
+     
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#NAME").val(); 
+        var MATERIALNAME = $("#MATERIALNAME").val();   
+        var CheckedTYPE = $("#TYPE")[0].checked.toString();
+        var CheckedISSEND = $("#ISSEND")[0].checked.toString();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIron/GetIronList")?StartTime=" + StartTime + '&EndTime=' + EndTime  + '&BillNo=' + escape(BillNo)+ '&MATERIALNAME=' + escape(MATERIALNAME)  + '&CHECKTYPE=' + escape(CheckedTYPE) + '&CHECKISSEND=' + escape(CheckedISSEND), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIron/GetIronList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 300,
+            autowidth:false,
+            width: $(window).width()*0.8,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', width: 180, align: 'left',align:'center',hidden:true }, 
+                { label: '批号', name: 'BILLNO', index: 'BILLNO', width: 80, align: 'left',align:'center' },
+                {
+                    label: '类型', name: 'PCRAWTYPE', index: 'PCRAWTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "汽运";
+                        if (cellvalue == '1') return "皮带秤"; 
+                        if (cellvalue == '2') return "铁水";  
+                    }
+                }, 
+                {
+                    label: '状态', name: 'TYPE', index: 'TYPE', width: 100, align: 'center',hidden:true,
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<span style='color:red;font-size:18px'>创建批号</span>";
+                        if (cellvalue == '2') return "<span style='color:blue;font-size:18px'>组批中</span>";
+                        if (cellvalue == '3') return "<span style='color:green;font-size:18px'>组批完成</span>";
+                    }
+                },
+                {
+                    label: '送检状态', name: 'ISSEND', index: 'ISSEND', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:18px'>未送检</span>";
+                        if (cellvalue == '1') return "<span style='color:green;font-size:18px'>已送检</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:18px'>未送检</span>";
+                    }
+                },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 80, align: 'center'  },  
+                { label: '炉号', name: 'DEF3', index: 'DEF3', width: 80, align: 'center'  },  
+                { label: '流水', name: 'DEF4', index: 'DEF4', width: 80, align: 'center'  },  
+                { label: '出铁口', name: 'DEF6', index: 'DEF6', width: 80, align: 'center'  },   
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 100, align: 'center' }, 
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 80, align: 'center' },
+                {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME desc ,DEF9',
+            sortorder: 'asc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            //单击事件
+            onSelectRow: function (RowIndx) {  
+                var CYID = GetJqGridRowValue("#gridTable", "ID"); 
+                $("#gridTable2").jqGrid('setGridParam', { 
+                   url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIron/GetIronZJItemList")?CYID=" + escape(CYID), page: 1
+                }).trigger('reloadGrid'); 
+            }
+        });
+        
+    }
+     
+    function GetGrid2(CYID) {  
+        $("#gridTable2").jqGrid({ 
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIron/GetIronZJItemList")?CYID=" + escape(CYID),
+            datatype: "json",
+            height: $(window).height() - 125,
+            autowidth:false,
+            width: $(window).width()*0.18,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, align: 'left', hidden: true },
+                { label: '质检项', name: 'ITEMNAME', index: 'ITEMNAME', width: 80, align: 'center' },
+                { label: '质检值', name: 'ZJVALUE', index: 'ZJVALUE', width: 80, align: 'center' },
+                { 
+                    label: '结果', name: 'ZJBZRESULT', index: 'ZJBZRESULT', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '-1') return "<span style='color:red;font-size:15px'>不合格</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:15px'>合格</span>";
+                        if (!IsNull(cellvalue)) return "";      
+                    }
+                },
+                { label: '描述', name: 'ZJBZRESULTNAME', index: 'ZJBZRESULTNAME', width: 100, align: 'center' } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:false, 
+            pager: false,
+            sortname: 'SORT',
+            sortorder: 'ASC',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        columnModelData("#gridTable2");
+    } 
+    
+    function GetGridBottom(){
+        var Columns="ZJ000221,ZJ000223,ZJ000222,ZJ000220,ZJ000320,ZJ000226,ZJ000227,ZJ000228";//需大写
+        $("#gridTableBottom").jqGrid({ 
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIron/GetIronZJItemListNow")?Columns="+escape(Columns),
+            datatype: "json",
+            height: 120,
+            autowidth:true, 
+            colModel: [  
+                //需小写
+                { label: '炉号', name: 'def5', index: 'def5', width: 100, align: 'center' }, 
+                { label: '罐号', name: 'def13', index: 'def13', width: 100, align: 'center' }, 
+                { label: 'Si', name: 'zj000221', index: 'zj000221', width: 80, align: 'center' },
+                { label: 'S', name: 'zj000223', index: 'zj000223', width: 80, align: 'center' },
+                { label: 'P', name: 'zj000222', index: 'zj000222', width: 80, align: 'center' },
+                { label: 'Mn', name: 'zj000220', index: 'zj000220', width: 80, align: 'center' },
+                { label: 'Ti', name: 'zj000320', index: 'zj000320', width: 80, align: 'center' },
+                { label: 'Cr', name: 'zj000226', index: 'zj000226', width: 80, align: 'center' },
+                { label: 'Ni', name: 'zj000227', index: 'zj000227', width: 80, align: 'center' }, 
+                { label: 'Cu', name: 'zj000228', index: 'zj000228', width: 80, align: 'center' }, 
+                { label: '采样时间', name: 'cydate', index: 'cydate', width: 100, align: 'center' } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:false, 
+            pager: false,
+            sortname: '',
+            sortorder: '',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        columnModelData("#gridTableBottom");
+    }
+
+    function btn_RefreshZJ(){ 
+        var Columns="ZJ000221,ZJ000223,ZJ000222,ZJ000220,ZJ000320,ZJ000226,ZJ000227";//需大写
+        $("#gridTableBottom").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIron/GetIronZJItemListNow")?Columns="+escape(Columns), page: 1
+        }).trigger('reloadGrid'); 
+    }
+
+    //新增
+    function btn_add() { 
+        AddTabMenu("ZJZXCYMoltenIronAdd", "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIron/ZJZXCYMoltenIronAdd")?ModuleId="+ModuleId, "新增采样", "page_white_add.png", true, true, true);
+    }
+     
+    //编辑
+//    function btn_edit() { 
+//        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+//        if (IsChecked(KeyValue)) {
+//            GetStatus(KeyValue); 
+//            if(TypeStatus.TYPE!="3"){ 
+//                var PCRAWTYPE = GetJqGridRowValue("#gridTable", "PCRAWTYPE");
+//                AddTabMenu("ZJZXCYWeightBeltAdd", "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIron/ZJZXCYMoltenIronAdd")?ModuleId="+ModuleId+"&KeyValue="+escape(KeyValue), "编辑采样", "page_white_add.png", true, true, true);
+//            } else{
+//                tipDialog("组批完成无法编辑", 3, 0);
+//            }  
+//        }
+//    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        var BILLNO = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsDelData(KeyValue)) { 
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ZJZXManager/ZJZXCYMoltenIron/PCZXCYDeleteForMolten', delparm, KeyValue.split(",").length,BILLNO);
+        }
+    }
+    function delConfig(url, parm, count,BILLNO) {
+        if (count == undefined) {
+            count = 1;
+        }
+        confirmDialog("提示", "注：您确定要删除【"+BILLNO+"】当前组批记录吗？将会导致批次信息数据丢失,请谨慎操作", function (r) {
+            if (r) {
+                Loading(true, "正在删除数据...");
+                window.setTimeout(function () {
+                    AjaxJson(url, parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }, 200);
+            }
+        });
+    }
+    //获取单据状态
+    function GetStatus(KeyValue){ 
+        AjaxJson("/ZJZXManager/ZJZXCY/GetZXStatus?KeyValue=" +escape(KeyValue), "", function (data) {
+            if (data.Success) {
+                TypeStatus = jQuery.parseJSON(data.Message);
+            }else{
+                tipDialog(data.Message, 3, data.Code);
+                return;
+            } 
+        });
+    }
+       
+    //完成---送检
+    function Finish(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AjaxJson("/ZJZXManager/ZJZXCYMoltenIron/PCZXCYFinishMolten?KeyValue=" + escape(KeyValue), "", function (data) {
+                if (data.Code == "1") {
+                    windowload();
+                }
+                tipDialog(data.Message, 3, data.Code); 
+            });  
+        }
+    }
+
+    //取消完成----取消送检
+    function UNFinish(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AjaxJson("/ZJZXManager/ZJZXCYMoltenIron/PCZXCYUNFinishMolten?KeyValue=" + escape(KeyValue), "", function (data) {
+                if (data.Code == "1") {
+                    windowload();
+                }
+                tipDialog(data.Message, 3, data.Code); 
+            });  
+        }
+    } 
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    批号：
+                </th>
+                <td>
+                    <input id="NAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+                <td>
+                    <span class="item">
+                        <input type="checkbox" name="checkbox" id="TYPE" />
+                        <label for="TYPE">
+                            组批完成</label>
+                    </span>
+                </td>
+                <td>
+                    <span class="item">
+                        <input type="checkbox" name="checkbox" id="ISSEND" />
+                        <label for="ISSEND">
+                            已送检</label>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <div style="float: left; border-right: 1px solid #ccc">
+            <div>
+                <table id="gridTable">
+                </table>
+                <div id="gridPager">
+                </div>
+                <table id="gridTableBottom">
+                </table>
+                <div class="rightMenu">
+                    <ul>
+                        <li onclick="btn_RefreshZJ()">
+                            <img src="~/Content/Images/Icon16/arrow_refresh.png" />刷新最新质检结果 </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div style="float: left; border-left: 1px solid #ccc">
+            <table id="gridTable2">
+            </table>
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

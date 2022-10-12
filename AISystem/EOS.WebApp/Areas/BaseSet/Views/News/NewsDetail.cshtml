@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "公告信息";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/News/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+ 
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            标题：
+        </th>
+        <td class="formValue">
+            <input id="TITLE" type="text" class="txt" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            内容：
+        </th>
+        <td class="formValue">
+            <textarea id="CONTENT" name="CONTENT" maxlength="2000" class="txtArea" cols="80"
+                readonly="readonly" rows="10" style="font-size: 22px;"></textarea>
+        </td>
+    </tr>
+</table>
+</form>

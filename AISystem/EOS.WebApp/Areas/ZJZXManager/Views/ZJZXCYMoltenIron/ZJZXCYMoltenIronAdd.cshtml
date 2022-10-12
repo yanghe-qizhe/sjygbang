@@ -1,0 +1,444 @@
+﻿@{
+    ViewBag.Title = "铁水采样";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<link rel="stylesheet" href="~/Content/Styles/jquery-labelauty.css" />
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        $("#BILLNO").bind("change", function () {
+            $(this).val($(this).val().toUpperCase());
+        });
+        Bind();
+        if (!IsNull(KeyValue)) {
+            GetMaterial();
+        }
+    })
+    function Bind() {
+        $("#DEF3").bind("change", function () {
+            $("#DEF5").val($("#DEF3").val() + $("#DEF4").val());
+            $("#BILLNO").val($("#DEF5").val());
+            CreateYBillNo();
+        })
+        $("#DEF4").bind("change", function () {
+            $("#DEF5").val($("#DEF3").val() + $("#DEF4").val());
+            $("#BILLNO").val($("#DEF5").val());
+            CreateYBillNo();
+        })
+    }
+    function SetGL(num) {
+        $("#DEF3").val(num);
+        GetLS();
+        $("#DEF3").change();
+    }
+    //获取流水
+    function GetLS() {
+        AjaxJson("/ZJZXManager/ZJZXCYMoltenIron/GetLS?GL=" + $("#DEF3").val(), "", function (data) {
+            if (data.Code == "1") {
+                $("#DEF4").val(data.Message);
+            } else {
+                tipDialog(data.Message, 3, data.Code);
+            }
+        });
+    }
+    function CreateYBillNo() {
+        $("#add_TableInfo").empty();
+        var def5 = $("#DEF5").val();
+        if (IsNull(def5)) {
+            var i = 1;
+            var tr = '<tr index=' + i + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" index=' + i + ' >' + i + '</td>';
+            tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="TYPE➩' + i + '" readonly="readonly" type="text" class="txt required readonly" datacol="no" err="类型" checkexpession="NotNull" value="炉号+流水" /></td>';
+            tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="YBILLNO➩' + i + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="样号" checkexpession="NotNull" value="' + (def5) + '" /></td>';
+            tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="DEF6➩' + i + '" readonly="readonly" type="text" class="txt required readonly" datacol="no" err="罐号" checkexpession="NotNull"   /></td>';
+            tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="DEF9➩' + i + '" readonly="readonly" type="text" class="txt required readonly" datacol="no" err="序号" checkexpession="NotNull" value="' + i + '"   /></td>';
+            tr += '</tr>';
+            $("#add_TableInfo").append(tr);
+            $.each($("ul input[fxtype!='ALL'][c='c']"), function (a, o) {
+                i++;
+                var tr = '<tr index=' + i + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" index=' + i + ' >' + i + '</td>';
+                tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="TYPE➩' + i + '" readonly="readonly" type="text" class="txt required readonly" datacol="no" err="类型" checkexpession="NotNull" value="炉号+流水+罐号" /></td>';
+                tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="YBILLNO➩' + i + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="样号" checkexpession="NotNull" value="' + (def5 + $(o).val()) + '" /></td>';
+                tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="DEF6➩' + i + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="罐号" checkexpession="NotNull"  value="' + $(o).val() + '"  /></td>';
+                tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="DEF9➩' + i + '" readonly="readonly" type="text" class="txt required readonly" datacol="no" err="序号" checkexpession="NotNull" value="' + i + '"   /></td>';
+                tr += '</tr>';
+                $("#add_TableInfo").append(tr);
+            })
+        }
+    }
+    //获取固定物料 和 固定方案
+    function GetMaterial() {
+        AjaxJson("/ZJZXManager/ZJZXCYMoltenIron/GetMaterial", "", function (data) {
+            if (data.Code == "1") {
+                var json = $.parseJSON(data.Message);
+                if (IsNull(json)) {
+                    $("#ZJFA").val(json.FANO);
+                    $("#FANAME").val(json.FANAME);
+                    $("#MATERIAL").val(json.MATERIALID);
+                    $("#MATERIALNAME").val(json.MATERIALNAME);
+                }
+            } else {
+                tipDialog(data.Message, 3, data.Code);
+            }
+        });
+    }
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJZXManager/ZJZXCYMoltenIron/GetMoltenData", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data.M[0]) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data.M[0][key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+
+                $.each(data.D, function (i, o) {
+                    var maxcode = parseInt($("#MaxID").val()) + 1;
+                    var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" index=' + maxcode + ' >' + maxcode + '</td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="TYPE➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="no" err="类型" checkexpession="NotNull" value="' + o.DEF11 + '" /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="YBILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="样号" checkexpession="NotNull" value="' + o.YBILLNO + '" /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="DEF6➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="罐号" checkexpession="NotNull"  value="' + (IsNull(o.DEF10) ? o.DEF10 : "") + '"  /></td>';
+                    tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="DEF9➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="序号" checkexpession="NotNull"  value="' + o.DEF12 + '"  /></td>';
+                    tr += '</tr>';
+                    $("#add_TableInfo").append(tr);
+                    $("ul input[value='" + o.DEF10 + "']").attr("checked", "checked").attr("c", "c");
+
+                    $("#MaxID").val(maxcode);
+
+                })
+
+                if ($("ul input[checked='checked']").length == 3) {
+                    var fx = $($("ul input[checked='checked']")[0]).attr("fx");
+                    $("ul input[fxtype='ALL'][fx='" + fx + "']").attr("checked", "checked").attr("c", "c");
+                }
+
+            }
+
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        var len = $("#add_TableInfo tr").length;
+        if (len <= 1) {
+            tipDialog("请选择罐号", 3, 0);
+            return;
+        }
+
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControlsForTrue("#RuleHead");
+            postData["Details"] = GetTableDataJson("#Temp_List");
+            AjaxJson("/ZJZXManager/ZJZXCYMoltenIron/MoltenSAVE?KeyValue=" + GetQuery('KeyValue'), postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code == "1") {
+                    top.frames["tabs_iframe_" + ModuleId].windowload();
+                    ThisCloseTab();
+                }
+            });
+        }, 200);
+    }
+     
+</script>
+<style type="text/css">
+    ul
+    {
+        list-style-type: none;
+    }
+    li
+    {
+        display: inline-block;
+    }
+    li
+    {
+        margin: 20px 0;
+    }
+    input.labelauty + label
+    {
+        font: 12px "Microsoft Yahei";
+    }
+</style>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<div id="message" style="display: none">
+</div>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a>
+    <div class="tools_separator">
+    </div>
+    <a id="8" chose="GL" title="8号高炉" onclick="SetGL('8')" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/ember.png")) 50% 4px no-repeat;">
+        8号高炉</b></span></a>
+    <div class="tools_separator">
+    </div>
+    <a id="9" chose="GL" title="9号高炉" onclick="SetGL('9')" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/ember.png")) 50% 4px no-repeat;">
+        9号高炉</b></span></a>
+    <div class="tools_separator">
+    </div>
+    <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()" class="tools_btn">
+        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+            保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开</b></span></a>
+</div>
+<div id="RuleHead">
+    <table class="form">
+        <tr style="display: none">
+            <th class="formTitle">
+                批号：
+            </th>
+            <td class="formValue">
+                <input id="PCRAWTYPE" type="hidden" datacol="yes" value="2" dbfield="true" />
+                <input id="BILLNO" maxlength="50" type="text" class="txt required" datacol="yes"
+                    dbfield="true" err="批号" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                日期：
+            </th>
+            <td class="formValue">
+                <input id="TYPE" type="hidden" dbfield="true" value="2" />
+                <input id="CYDATE" maxlength="50" type="text" class="txt Wdate" datacol="yes" value="@EOS.Utilities.DateTimeHelper.GetToday()" dbfield="true"
+                    onfocus="var CYDATE=$dp.$('CYDATE');WdatePicker({onpicked:function(){CYDATE.focus();},maxDate:'#F{$dp.$D(\'CYDATE\')}'})"
+                        err="日期" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                质检方案：
+            </th>
+            <td class="formValue">
+                <input id="ZJFA" type="hidden" dbfield="true" checkexpession="NotNull" err="质检方案"
+                    datacol="yes" />
+                <input id="FANAME" type="text" class="txt readonly" readonly="readonly" err="质检方案" />
+            </td>
+            <th class="formTitle">
+                物料：
+            </th>
+            <td class="formValue">
+                <input id="MATERIAL" type="hidden" dbfield="true" checkexpession="NotNull" err="物料"
+                    datacol="yes" />
+                <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" err="物料" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                炉号：
+            </th>
+            <td class="formValue">
+                <input id="DEF3" type="text" class="txt readonly" readonly="readonly" err="炉号" checkexpession="NotNull"
+                    dbfield="true" datacol="yes" />
+            </td>
+            <th class="formTitle">
+                流水：
+            </th>
+            <td class="formValue">
+                <input id="DEF4" type="text" class="txt" err="流水" checkexpession="NotNull" dbfield="true"
+                    datacol="yes" />
+            </td>
+            <th class="formTitle">
+                铁水样号：
+            </th>
+            <td class="formValue">
+                <input id="DEF5" type="text" class="txt readonly" readonly="readonly" err="铁水样号"
+                    checkexpession="NotNull" dbfield="true" datacol="yes" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                制单日期：
+            </th>
+            <td class="formValue">
+                <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+            </td>
+            <th class="formTitle">
+                制单人：
+            </th>
+            <td class="formValue">
+                <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                描述：
+            </th>
+            <td class="formValue" colspan="5">
+                <input id="MEMO" type="text" class="txt" err="描述" dbfield="true" />
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div class="tab_list bd actived">
+                样号列表</div>
+        </div>
+    </div>
+</div>
+<table id="Temp_List" class="grid leftline form" style="width: 100%">
+    <thead>
+        <tr>
+            <td style="width: 30px; text-align: center; border-left: none;">
+                <div class="table-header">
+                    行号</div>
+            </td>
+            <td style="width: 150px; text-align: center;">
+                <div class="table-header">
+                    类型</div>
+            </td>
+            <td style="width: 150px; text-align: center;">
+                <div class="table-header">
+                    样号</div>
+            </td>
+            <td style="width: 150px; text-align: center;">
+                <div class="table-header">
+                    罐号</div>
+            </td>
+            <td style="width: 150px; text-align: center;">
+                <div class="table-header">
+                    序号</div>
+            </td>
+            <td>
+            </td>
+        </tr>
+    </thead>
+    <tbody id="add_TableInfo">
+    </tbody>
+</table>
+@*<h1>
+    jQuery单选框跟复选框美化代码演示</h1>
+<h3>
+     （单选框）</h3>
+<ul class="dowebok">
+    <li>
+        <input type="radio" name="radio" data-labelauty="视觉设计师" /></li>
+    <li>
+        <input type="radio" name="radio" data-labelauty="交互设计师" /></li>
+    <li>
+        <input type="radio" name="radio" data-labelauty="前端工程师" /></li>
+    <li>
+        <input type="radio" name="radio" data-labelauty="数据分析师" /></li>
+    <li>
+        <input type="radio" name="radio" disabled data-labelauty="不可用" /></li>
+</ul>*@
+<div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div class="tab_list bd actived">
+                动态轨道衡罐号选择</div>
+        </div>
+    </div>
+</div>
+<div style="text-align: center">
+    <div>
+        <div style="float: left; width: 49%; border: 1px solid #ccc;">
+            <label style="font-size: 15px; font-weight: bold; margin-top: 5px">
+                方向南</label>
+            <ul class="dowebok" style="font-size: 15px">
+                <li>
+                    <input type="checkbox" name="checkbox" data-labelauty="南全选" fx="N" fxtype="ALL" c=""
+                        value="南全选" /></li></ul>
+            <ul class="dowebok" style="font-size: 40px">
+                <li>
+                    <input type="checkbox" name="checkbox" data-labelauty="南3" fx="N" fxtype="3" c=""
+                        value="南3" /></li>
+                <li>
+                    <input type="checkbox" name="checkbox" data-labelauty="南2" fx="N" fxtype="2" c=""
+                        value="南2" /></li>
+                <li>
+                    <input type="checkbox" name="checkbox" data-labelauty="南1" fx="N" fxtype="1" c=""
+                        value="南1" /></li>
+            </ul>
+        </div>
+        <div style="float: left; width: 49%; border: 1px solid #ccc">
+            <label style="font-size: 15px; font-weight: bold; margin-top: 5px">
+                方向北</label>
+            <ul class="dowebok" style="font-size: 15px">
+                <li>
+                    <input type="checkbox" name="checkbox" data-labelauty="北全选" fx="B" fxtype="ALL" c=""
+                        value="北全选" /></li></ul>
+            <ul class="dowebok" style="font-size: 40px">
+                <li>
+                    <input type="checkbox" name="checkbox" data-labelauty="北1" fx="B" fxtype="1" c=""
+                        value="北1" /></li>
+                <li>
+                    <input type="checkbox" name="checkbox" data-labelauty="北2" fx="B" fxtype="2" c=""
+                        value="北2" /></li>
+                <li>
+                    <input type="checkbox" name="checkbox" data-labelauty="北3" fx="B" fxtype="3" c=""
+                        value="北3" /></li>
+            </ul>
+        </div>
+    </div>
+    <script src="~/Content/Scripts/jquery-labelauty.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('ul input').labelauty();
+            $('ul input').bind("click", function () {
+                var fx = $(this).attr("fx");
+                var fxtype = $(this).attr("fxtype");
+                var checked = $(this).attr("checked");
+                if (checked == "checked") {
+                    $(this).attr("c", "c");
+                    $("ul input[fx!='" + fx + "']").removeAttr("checked").attr("c", "");
+                } else {
+                    $(this).attr("c", "");
+                }
+
+
+                if (fxtype == "ALL") {
+                    if (checked == "checked") {
+                        $("ul input[fx='" + fx + "']").attr("checked", checked).attr("c", "c");
+                    } else {
+                        $("ul input[fx='" + fx + "']").removeAttr("checked").attr("c", "");
+                    }
+                } else {
+                    if (checked == "checked") {
+                        if ($("ul input[fx='" + fx + "'][fxtype!='ALL'][c='c']").length == $("ul input[fx='" + fx + "'][fxtype!='ALL']").length) {
+                            $("ul input[fx='" + fx + "'][fxtype='ALL']").attr("checked", checked).attr("c", "c");
+                        } else {
+                            $("ul input[fx='" + fx + "'][fxtype='ALL']").removeAttr("checked").attr("c", "");
+                        }
+                    } else {
+                        $("ul input[fx='" + fx + "'][fxtype='ALL']").removeAttr("checked").attr("c", "");
+                    }
+
+                }
+                CreateYBillNo();
+            });
+
+            InitControl();
+        });
+
+    </script>
+</div>
+</form>

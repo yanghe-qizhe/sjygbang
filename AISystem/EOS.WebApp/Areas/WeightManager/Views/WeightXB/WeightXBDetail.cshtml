@@ -1,0 +1,233 @@
+﻿@{
+    ViewBag.Title = "采购磅单>>补增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var op = GetQuery('op'); //操作类型
+    $(function () {
+
+        if (!!KeyValue) {
+            //信息
+            InitControl();
+            //明细信息
+            AjaxJson("/WeightManager/WeightIn/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                var rchtml = "", cchtml = "";
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    if (rowData.PICURL != "") {
+                        if (rowData.COMPUTERTYPE == "0") {
+                            rchtml += " <td>";
+                            rchtml += "<a class='fancybox' data-fancybox-group='gallery' href='" + rowData.PICURL + "' style='border: none;'>";
+                            rchtml += "<img alt='' src='" + rowData.PICURL + "' width='400px' height='300px' /></a>";
+                            rchtml += "</td>";
+                        } else {
+                            cchtml += " <td>";
+                            cchtml += "<a class='fancybox' data-fancybox-group='gallery' href='" + rowData.PICURL + "' style='border: none;'>";
+                            cchtml += "<img alt='' src='" + rowData.PICURL + "' width='400px' height='300px' /></a>";
+                            cchtml += "</td>";
+                        }
+                    }
+                });
+                $(rchtml).appendTo("#WeightRCPic");
+                $(cchtml).appendTo("#WeightCCPic");
+            });
+        }
+
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/WeightManager/WeightZX/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+   
+     
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开</b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            计量单号：
+        </th>
+        <td class="formValue">
+            <input id="PK_ORDER" type="hidden" />
+            <input id="BILLNO" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            发货单位：
+        </th>
+        <td class="formValue">
+            <input name="PK_SENDSORG" id="PK_SENDSORG" type="hidden" />
+            <input id="SENDORG" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            收货单位：
+        </th>
+        <td class="formValue">
+            <input id="PK_RECEIVEORG" type="hidden" />
+            <input id="RECEIVEORG" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            车号：
+        </th>
+        <td class="formValue">
+            <input id="PK_CARSID" type="hidden" />
+            <input id="CARS" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            发货仓库：
+        </th>
+        <td class="formValue">
+            <input name="PK_SENDSTORE" id="PK_SENDSTORE" type="hidden" />
+            <input id="SENDSTORE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            收货仓库：
+        </th>
+        <td class="formValue">
+            <input id="PK_RECEIVESTORE" type="hidden" />
+            <input id="RECEIVESTORE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            毛重：
+        </th>
+        <td class="formValue">
+            <input id="GROSS" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            皮重：
+        </th>
+        <td class="formValue">
+            <input id="TARE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            净重：
+        </th>
+        <td class="formValue">
+            <input id="SUTTLE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="PK_MATERIAL" type="hidden" />
+            <input id="MATERIAL" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            规格：
+        </th>
+        <td class="formValue">
+            <input id="PK_MATERIALKIND" type="hidden" />
+            <input id="MATERIALKIND" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            扣重：
+        </th>
+        <td class="formValue">
+            <input id="PDAKZ1" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            创建时间：
+        </th>
+        <td class="formValue">
+            <input id="CREATEDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            轻车时间：
+        </th>
+        <td class="formValue">
+            <input id="LIGHTDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            重车时间：
+        </th>
+        <td class="formValue">
+            <input id="WEIGHTDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            司机：
+        </th>
+        <td class="formValue">
+            <input id="PK_DRIVERS" type="hidden" />
+            <input id="DRIVERS" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            过磅员：
+        </th>
+        <td class="formValue">
+            <input name="OUTGBUSER" id="OUTGBUSER" type="hidden" />
+            <input id="INGBUSER" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue">
+            <input id="MEMO" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                图片信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table>
+            <tbody>
+                <tr id="WeightRCPic">
+                </tr>
+                <tr id="WeightCCPic">
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</form>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.fancybox').fancybox({
+            openEffect: 'none',
+            closeEffect: 'none',
+            prevEffect: 'none',
+            nextEffect: 'none',
+            helpers: {
+                title: {
+                    type: 'inside'
+                },
+                buttons: {}
+            },
+
+            afterLoad: function () {
+                this.title = 'Image ' + (this.index + 1) + ' of ' + this.group.length + (this.title ? ' - ' + this.title : '');
+            }
+        });
+    });
+</script>

@@ -1,0 +1,270 @@
+﻿@{
+    ViewBag.Title = "质检方案复制";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var FANO = GetQuery("FANO");
+    var FANAME = GetQuery("FANAME");
+    var TYPE = GetQuery("TYPE");
+    var TYPENAME = GetQuery("TYPENAME");
+    var Code;
+    $(function () {
+        Code = "FANO,FANAME";
+        InitControl();
+        GetCopyModel(FANO);
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        $("#FANO_OLD").val(FANO);
+        $("#FANAME_OLD").val(unescape(FANAME));
+        $("#TYPE_OLD").val(TYPE);
+        $("#TYPENAME_OLD").val(unescape(TYPENAME));
+        $("#TYPE").val(TYPE);
+        $("#TYPENAME").val(unescape(TYPENAME));
+    }
+
+    //获取复制项
+    function GetCopyModel(FANO) {
+        if (IsNull(FANO)) {
+            AjaxJson("/BaseSet/ZJFA/GetZJItemModel", { KeyValue: FANO }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                $.each(data, function (i, o) {
+                    if ($("#add_TableInfo").find("input[value='" + o.ITEMNO + "']").length <= 0) {
+                        var maxcode = parseInt($("#MaxID").val()) + 1;
+                        var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" ondblclick="Del(this)" index=' + maxcode + ' >' + maxcode + '</td>';
+                        tr += '<td class="formValue" style="width: 80px; text-align: center;"><input id="ITEMNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + o.ITEMNAME + '" /><input id="ITEMNO➩' + maxcode + '" type="hidden" class="txt" value="' + o.ITEMNO + '"/></td>';
+                        tr += '<td class="formValue" style="width: 80px; text-align: center;"><select id="ISJUDGE➩' + maxcode + '" class="txtselect required" datacol="yes" err="是否判定项" checkexpession="NotNull"><option value="0" style="color:red;" ' + (o.ISJUDGE == "0" ? "selected" : "") + '>否</option><option  style="color:Blue;" value="1"  ' + (o.ISJUDGE == "1" ? "selected" : "") + '>是</option></select></td>';
+                        tr += '<td style="width: 80px; text-align: center;"><input id="SORT➩' + maxcode + '" type="text" class="txt" value="' + (IsNull(o.SORT) ? o.SORT : "0") + '" onfocus="IsNumber(this.id)"/></td>';
+                        tr += '<td style="width: 80px; text-align: center;"><input id="MEMO➩' + maxcode + '" type="text" class="txt" value="' + (IsNull(o.MEMO) ? o.MEMO : "") + '" /></td>';
+                        tr += '</tr>';
+                        $("#add_TableInfo").append(tr);
+                        $("#MaxID").val(maxcode);
+                    }
+                })
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+
+    function CallBackEventFANO(KeyValue) {
+        if (IsNull(KeyValue.FANO) && IsNull(KeyValue.FANAME)) {
+            if (KeyValue.FANO == FANO) {
+                tipDialog('复制源和复制目标方案不能是同一个方案', 4, 'warning');
+            } else {
+                $("#FANO").val(KeyValue.FANO);
+                $("#FANAME").val(unescape(KeyValue.FANAME));
+                GetCopyModel(KeyValue.FANO);
+            }
+        } else {
+            tipDialog('未找到质检方案请重新选择', 4, 'warning');
+        }
+    }
+    function CallBackEvent(KeyValue) {
+        if (IsNull(KeyValue.ITEMNO) && IsNull(KeyValue.ITEMNAME)) {
+            var ITEMNOLIST = KeyValue.ITEMNO.split(',');
+            var ITEMNAMELIST = KeyValue.ITEMNAME.split(',');
+
+            $.each(ITEMNOLIST, function (i, o) {
+                if ($("#add_TableInfo").find("input[value='" + o + "']").length <= 0) {
+                    var maxcode = parseInt($("#MaxID").val()) + 1;
+                    var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" ondblclick="Del(this)" index=' + maxcode + ' >' + maxcode + '</td>';
+                    tr += '<td class="formValue" style="width: 80px; text-align: center;"><input id="ITEMNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" value="' + ITEMNAMELIST[i] + '" /><input id="ITEMNO➩' + maxcode + '" type="hidden" class="txt" value="' + ITEMNOLIST[i] + '"/></td>';
+                    tr += '<td class="formValue" style="width: 80px; text-align: center;"><select id="ISJUDGE➩' + maxcode + '" class="txtselect required" datacol="yes" err="是否判定项" checkexpession="NotNull"><option value="0" style="color:red;" selected="true">否</option><option  style="color:Blue;" value="1">是</option></select></td>';
+                    tr += '<td style="width: 80px; text-align: center;"><input id="SORT➩' + maxcode + '" value="0" type="text" class="txt" onfocus="IsNumber(this.id)"/></td>';
+                    tr += '<td style="width: 80px; text-align: center;"><input id="MEMO➩' + maxcode + '" type="text" class="txt" /></td>';
+                    tr += '</tr>';
+                    $("#add_TableInfo").append(tr);
+                    $("#MaxID").val(maxcode);
+                }
+            })
+        }
+    }
+    function Del(obj) {
+        var No = $(obj).attr("index");
+        confirmDialog('', '注：您确定要删除当前第【' + No + '】行数据吗？', function (r) {
+            if (r) {
+                $("#add_TableInfo").find("tr[index='" + No + "']").remove();
+                for (var i = No; i <= $("#MaxID").val(); i++) {
+                    if (IsNull($("#ITEMNO➩" + (parseInt(i) + 1)).val())) {
+                        $("#add_TableInfo").find("td[index='" + (parseInt(i) + 1) + "']").text(i);
+                        $("#add_TableInfo").find("td[index='" + (parseInt(i) + 1) + "']").attr("index", i);
+                        $("#add_TableInfo").find("tr[index='" + (parseInt(i) + 1) + "']").attr("index", i);
+
+                        $("#ITEMNAME➩" + (parseInt(i) + 1)).attr("id", "ITEMNAME➩" + i);
+                        $("#ITEMNO➩" + (parseInt(i) + 1)).attr("id", "ITEMNO➩" + i);
+                        $("#ISJUDGE➩" + (parseInt(i) + 1)).attr("id", "ISJUDGE➩" + i);
+                        $("#SORT➩" + (parseInt(i) + 1)).attr("id", "SORT➩" + i);
+                        $("#MEMO➩" + (parseInt(i) + 1)).attr("id", "MEMO➩" + i);
+                    } else {
+                        $("#add_TableInfo").find("td[index='" + i + "']").text(i);
+                        $("#add_TableInfo").find("td[index='" + i + "']").attr("index", i);
+                        $("#add_TableInfo").find("tr[index='" + i + "']").attr("index", i);
+
+                        $("#ITEMNAME➩" + i).attr("id", "ITEMNAME➩" + i);
+                        $("#ITEMNO➩" + i).attr("id", "ITEMNO➩" + i);
+                        $("#ISJUDGE➩" + i).attr("id", "ISJUDGE➩" + i);
+                        $("#SORT➩" + i).attr("id", "SORT➩" + i);
+                        $("#MEMO➩" + i).attr("id", "MEMO➩" + i);
+                    }
+                }
+                $("#MaxID").val(parseInt($("#MaxID").val()) - 1);
+            }
+        });
+    }
+    function btn_addproject() {
+        var url = "/SelectValue/Select/SelectZJFA?ZJForType=" + escape(TYPE) + "&Type=0&FormID=@ViewBag.FormID&Code=" + escape(Code) + "&FANO=" + escape(FANO);
+        Dialog(url, "SelectZJFA", "选取质检方案信息", 900, 400);
+    }
+    function btn_add() {
+        var NEW_FANO = $("#FANO").val();
+        if (IsNull(NEW_FANO)) {
+            var ZJCode = "ITEMNO,ITEMNAME";
+            var url = "/SelectValue/Select/SelectZJItemMultipleNoFA?ZJForType=" + escape(TYPE) + "&Type=0&FormID=@ViewBag.FormID&Code=" + escape(ZJCode) + "&FANO=" + escape(FANO);
+            Dialog(url, "SelectZJItemMultiple", "选取质检项目信息", 900, 400);
+        } else {
+            tipDialog("请先选择目标质检方案", 3, 0);
+        }
+    }
+    function Dialog(url, _id, _title, _width, _height) {
+        Loading(true);
+        top.$.dialog({
+            id: _id,
+            width: _width,
+            height: _height,
+            max: false,
+            lock: false,
+            title: _title,
+            content: 'url:' + RootPath() + url
+        });
+    }
+
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = jQuery.parseJSON('{"FANO":"' + $("#FANO").val() + '","TYPE":"' + $("#TYPE").val() + '","ENABLED":"1"}');
+            postData["ZJFAProjectDetailJson"] = GetTableDataJson("#Temp_List");
+            AjaxJson("/BaseSet/ZJFA/ZJFAProjectSave", postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<input id="MaxID" type="hidden" value="0" />
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+    <div class="PartialButton">
+        <a title="刷新" class="tools_btn" id="lr-replace" onclick="Replace()" ids="2e93cddb-303b-4584-bbc6-5bfe1fb9c858">
+            <span><b style='background: url("../../Content/Images/Icon16/arrow_refresh.png") no-repeat 50% 4px;'>
+                刷新</b></span></a><div class="tools_separator">
+                </div>
+        <a title="选择目标方案" class="tools_btn" id="lr-add" onclick="btn_addproject()" ids="f92a0cb8-d982-43a9-a7c6-3c970ff40104">
+            <span><b style='background: url("../../Content/Images/Icon16/check_box.png") no-repeat 50% 4px;'>
+                选择目标方案</b></span></a> <a title="选择项目" class="tools_btn" id="lr-add" onclick="btn_add()"
+                    ids="f92a0cb8-d982-43a9-a7c6-3c970ff40104"><span><b style='background: url("../../Content/Images/Icon16/add.png") no-repeat 50% 4px;'>
+                        选择项目</b></span></a>
+        <div class="tools_separator">
+        </div>
+    </div>
+</div>
+<div id="ZJFAProjectAdd">
+    <div id="RuleHead">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    复制源：
+                </th>
+                <th class="formTitle">
+                    方案名称：
+                </th>
+                <td class="formValue">
+                    <input id="FANO_OLD" type="hidden" err="方案编号" datacol="yes" checkexpession="NotNull" />
+                    <input id="FANAME_OLD" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                        datacol="yes" err="方案名称" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    类型：
+                </th>
+                <td class="formValue">
+                    <input id="TYPE_OLD" type="hidden" err="类型" datacol="yes" checkexpession="NotNull" />
+                    <input id="TYPENAME_OLD" maxlength="50" type="text" class="txt required readonly"
+                        readonly="readonly" datacol="yes" err="类型" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    复制到：
+                </th>
+                <th class="formTitle">
+                    方案名称：
+                </th>
+                <td class="formValue">
+                    <input id="FANO" type="hidden" err="方案编号" datacol="yes" checkexpession="NotNull" />
+                    <input id="FANAME" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                        datacol="yes" err="方案名称" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    类型：
+                </th>
+                <td class="formValue">
+                    <input id="TYPE" type="hidden" err="类型" datacol="yes" checkexpession="NotNull" />
+                    <input id="TYPENAME" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                        datacol="yes" err="类型" checkexpession="NotNull" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="bd" style="border-bottom: none; margin-top: 1px; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div class="tab_list bd actived">
+                    项目明细</div>
+            </div>
+        </div>
+    </div>
+    <div class="ScrollBar" style="height: 240px; margin: 1px; overflow-y: scroll;">
+        <table id="Temp_List" class="grid leftline form" style="width: 100%">
+            <thead>
+                <tr>
+                    <td style="width: 30px; text-align: center; border-left: none;">
+                        <div class="table-header">
+                            行号</div>
+                    </td>
+                    <td style="width: 80px;">
+                        <div class="table-header">
+                            项目</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            是否判定项</div>
+                    </td>
+                    <td style="width: 50px;">
+                        <div class="table-header">
+                            排序</div>
+                    </td>
+                    <td style="width: 80px;">
+                        <div class="table-header">
+                            备注</div>
+                    </td>
+                </tr>
+            </thead>
+            <tbody id="add_TableInfo">
+            </tbody>
+        </table>
+    </div>
+</div>
+</form>

@@ -1,0 +1,174 @@
+﻿@{
+    ViewBag.Title = "POORDERDetail";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("TRAFFICCOMPANYNAME", "TRAFFICCOMPANY", "TrafficCompany", "", "", "");
+        setTimeout(function () {
+            GetGrid();
+            InitControl();
+        }, 300);
+    })
+
+    function InitControl() {
+        var rowindex = 1;
+        var frameid = tabiframeId();
+        var $parentobj = top.frames[frameid];
+        var datas = $parentobj.SelectDatas();
+        $.each(datas, function (i) {
+            var rowData = datas[i];
+            $("#PK_ORDER➩" + rowindex).val(rowData.PK_ORDER);
+            $("#VBILLCODE➩" + rowindex).val(rowData.VBILLCODE);
+            $("#PK_SUPPLIER➩" + rowindex).val(rowData.PK_SUPPLIER);
+            $("#SUPPLIERNAME➩" + rowindex).val(rowData.PK_SUPPLIERNAME);
+            $("#BILLTYPE➩" + rowindex).val(rowData.BILLTYPE);
+            $("#DBILLDATE➩" + rowindex).val(rowData.DBILLDATE);
+            $("#DEPNAME➩" + rowindex).val(rowData.DEPNAME);
+            $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').attr("datacol", "yes");
+            rowindex++;
+            $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        });
+    }
+
+    /*车皮明细begin=======================================*/
+    //订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 315,
+            autowidth: true,
+            colModel: [
+               { label: '订单编号[<font face="宋体">*</font>]', name: "VBILLCODE", width: 120, sortable: false },
+                { label: '订单类型', name: "BILLTYPE", width: 100, sortable: false },
+                { label: '供应商', name: "SUPPLIERNAME", width: 260, sortable: false },
+                { label: ' 采购部门', name: "DEPNAME", width: 150, sortable: false },
+                { label: '订单日期', name: "DBILLDATE", width: 130, sortable: false }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+        //默认添加6行 空行
+        for (var i = 1; i < 51; i++) {
+            var rowdata = {
+                VBILLCODE: '<input readonly id="VBILLCODE➩' + i + '" class="editable" type="text" style="cursor:pointer" datacol="no" err="订单编号" checkexpession="NotNull" /><input id="PK_ORDER➩' + i + '" type="hidden" />',
+                BILLTYPE: '<input readonly id="BILLTYPE➩' + i + '" class="editable" type="text" style="cursor:pointer" />',
+                SUPPLIERNAME: '<input readonly id="SUPPLIERNAME➩' + i + '" class="editable" type="text" datacol="no" err="供应商" checkexpession="NotNull" /><input id="PK_SUPPLIER➩' + i + '" type="hidden" />',
+                DEPNAME: '<input readonly id="DEPNAME➩' + i + '" class="editable" type="text" style="cursor:pointer" />',
+                DBILLDATE: '<input id="DBILLDATE➩' + i + '" class="editable center" type="text" />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        }
+
+        $("#gridTable tbody tr").find('td:eq(0)').click(function () {
+            var index = $(this).text();
+            $("#VBILLCODE➩" + index).val("");
+            $("#PK_SUPPLIER➩" + index).val("");
+            $("#BILLTYPE➩" + index).val("");
+            $("#SUPPLIERNAME➩" + index).val("");
+            $("#DEPTNAME➩" + index).val("");
+            $("#DBILLDATE➩" + index).val("");
+        });
+
+    }
+
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    var TRAFFICCOMPANY = $("#TRAFFICCOMPANY").val();
+                    var TRAFFICCOMPANYNAME = $("#TRAFFICCOMPANYNAME").val();
+                    AjaxJson("/ExampleModule/POOrder/SubmitOrderForm1?TRAFFICCOMPANY=" + TRAFFICCOMPANY + "&TRAFFICCOMPANYNAME=" + escape(TRAFFICCOMPANYNAME), postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        closeDialog();
+                    });
+                }, 200);
+            }
+        });
+    }
+     
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn"><span>
+                        <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            承运商：
+        </th>
+        <td class="formValue">
+            <input id="TRAFFICCOMPANY" type="hidden" />
+            <input id="TRAFFICCOMPANYNAME" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+        </th>
+        <td class="formValue">
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                明细信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

@@ -1,0 +1,282 @@
+﻿@{
+    ViewBag.Title = "铁水衡任务单详细信息";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var TASKNO = GetQuery('TASKNO'); //任务单号
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ExampleModule/HYCONVOPER/GetOrderEntryList", { TASKNO: TASKNO }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    $("#ID➩" + rowindex).val(rowData.ID);
+                    $("#PK_CARS➩" + rowindex).val(rowData.CARS);
+                    $("#CARSNAME➩" + rowindex).val(rowData.CARSNAME);
+                    $("#YFNUM➩" + rowindex).val(rowData.YFNUM);
+                    $("#STOVENUM➩" + rowindex).val(rowData.STOVENUM);
+                    $("#SORTID➩" + rowindex).val(rowData.SORTID);
+                    $("#TASKNODTL➩" + rowindex).val(rowData.TASKNODTL);
+                    $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').attr("datacol", "yes");
+                    Conversion(rowindex);
+                    rowindex++;
+                    $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').removeAttr('disabled');
+                    $("#gridTable").find('.disabled').attr("disabled", "disabled");
+                    $("#CARSNAME➩" + rowindex).focus();
+                  
+                });
+            });
+        }
+    })
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/HYCONVOPER/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    /*车皮明细begin=======================================*/
+    //销售订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 290,
+            autowidth: true,
+            colModel: [
+                { label: '车号[<font face="宋体">*</font>]', name: "CARSNAME", width: 180, sortable: false, align: 'center' },
+                { label: '原发量[<font face="宋体">*</font>]', name: 'YFNUM', width: 120, sortable: false, align: 'center' },
+                { label: '炉批号', name: "STOVENUM", width: 180, sortable: false, align: 'center' },
+                { label: '排序', name: "SORTID", width: 100, sortable: false, align: 'center' },
+                { label: '任务明细行', name: "TASKNODTL", width: 180, sortable: false, align: 'center',type:'hidden'}
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计显示
+                $(this).footerData("set", {
+                    "CARSNAME": "原发量合计",
+                    "YFNUM": "<span id='TotalYFNUM'>0.00</span>"
+                });
+            }
+        });
+      
+        //默认添加30行 空行
+        for (var i = 1; i < 31; i++) {
+            var rowdata = {
+                CARSNAME: '<input id="CARSNAME➩' + i + '"  class="editable center" readonly="readonly"/><input id="PK_CARS➩' + i + '" type="hidden" /><input id="ID➩' + i + '" type="hidden" />',
+                YFNUM: '<input id="YFNUM➩' + i + '" class="editable center" readonly="readonly"/>',
+                STOVENUM: '<input id="STOVENUM➩' + i + '" class="editable center" readonly="readonly"/>',
+                SORTID: '<input id="SORTID➩' + i + '"  class="editable center" readonly="readonly"/>',
+                TASKNODTL: '<input id="TASKNODTL➩' + i + '" class="editable center" readonly="readonly" type="hidden"/>'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+        }
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $("#gridTable").find('input').attr("disabled", "disabled");
+        $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "yes");
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').click(function () {
+            var index = $(this).text();
+            $("#PK_CARS➩" + index).val("");
+            $("#CARSNAME➩" + index).val("");
+            $("#YFNUM➩" + index).val("0.00");
+            $("#STOVENUM➩" + index).val("");
+            $("#SORTID➩" + index).val("");
+            $("#TASKNODTL➩" + index).val("");
+            $("#MEMO➩" + index).val("");
+        });
+        $("#gridTable tbody tr").find('td:eq(1)').find('input').keyup(function () {
+            if ($(this).attr('disabled') == 'disabled') {
+                return false;
+            }
+            var index = $(this).attr('id').split('➩')[1];
+            var carsname = $("#CARSNAME➩" + index).val();
+            var stovenum = $("#STOVENUM➩" + index).val();
+            if (carsname != ""&&stovenum!="") {
+                index++;
+                $("#gridTable tbody tr:eq(" + index + ")").find('input').removeAttr('disabled');
+                $("#gridTable").find('.disabled').attr("disabled", "disabled");
+            }
+        });
+        //价格信息文本框点击事件
+        $("#gridTable").find('.decimal').click(function () {
+            $(this).select();
+        });
+    }
+    var array = new Array();
+    function IsExistVBillCode(index, code) {
+        if (!ArrayExists(array, code)) {
+            array[index] = code;
+            return false;
+        } else {
+            return true;
+        }
+    }
+    function IsExistCars(index, code) {
+        if (!ArrayExists(array, code)) {
+            array[index] = code;
+            return false;
+        } else {
+            return true;
+        }
+    }
+    //任务单明细换算+合计
+    function Conversion(index) {
+        var YFNUM = $("#YFNUM➩" + index).val();                            //原发量
+        //统计合计
+        var TotalYFNUM = 0.00;
+        $("#gridTable tbody tr").each(function (i) {
+            var YFNUM = $(this).find('td:eq(2)').find('input').val();
+            if (YFNUM != "" && YFNUM != undefined) {
+                TotalYFNUM += Number(YFNUM);
+            }
+        });
+        $("#TotalYFNUM").text(FormatCurrency(TotalYFNUM));
+        $("#YFNUM").val(FormatCurrency(TotalYFNUM));
+    }
+    /*明细end=======================================*/
+</script>
+<form id="form1">
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+            <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                刷新</b></span></a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                    <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                        离开</b></span></a>
+    </div>
+    <table id="tb_HYBillSOF" class="form">
+        <tr>
+            <th class="formTitle">
+                任务单号：
+            </th>
+            <td class="formValue">
+                <input id="TASKNO" class="txt" readonly="readonly" /> 
+            </td>
+            <th class="formTitle">
+                任务开始时间：
+            </th>
+            <td class="formValue">
+                <input id="STARTTIME" class="txt" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                任务结束时间：
+            </th>
+            <td class="formValue">
+                <input id="ENDTIME" type="text" class="txt" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                <span class="ck_span">发货单位[*]：</span>
+            </th>
+            <td class="formValue">
+                <input id="PK_SENDUNIT" type="hidden" />
+                <input id="SENDUNITNAME" class="txt" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                <span class="ck_span">收货单位[*]：</span>
+            </th>
+            <td class="formValue">
+                <input id="PK_ACCEPTUNIT" type="hidden" />
+                <input id="ACCEPTUNITNAME" class="txt" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                <span class="ck_span">过磅秤点[*]：</span>
+            </th>
+            <td class="formValue">
+                <input id="PK_SCALE" type="hidden" />
+                <input id="SCALENAME" class="txt" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                <span class="ck_span">物料[*]：</span>
+            </th>
+            <td class="formValue">
+                <input id="PK_MATERIAL" type="hidden" />
+                <input id="MATERIALNAME" class="txt" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                物料规格：
+            </th>
+            <td class="formValue">
+                <input id="MATERIALSPEC" class="txt" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                <span class="ck_span">辅组属性[*]：</span>
+            </th>
+            <td class="formValue">
+                <input id="PK_MATERIALSPEC" type="hidden" />
+                <input id="MATERIALSPECNAME"class="txt" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                <span class="ck_span">班组[*]：</span>
+            </th>
+            <td class="formValue">
+                <input id="PK_WTEAM" type="hidden" />
+                <input id="WTEAMNAME" class="txt" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                制单日期：
+            </th>
+            <td class="formValue">
+                <input id="CRETIME" class="txt" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                备注：
+            </th>
+            <td class="formValue">
+                <input id="MEMO" class="txt" readonly="readonly" />
+            </td>
+        </tr>
+    </table>
+    <div id="grid_List">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

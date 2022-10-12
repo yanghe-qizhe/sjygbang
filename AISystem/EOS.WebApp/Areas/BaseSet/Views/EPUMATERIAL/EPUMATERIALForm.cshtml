@@ -1,0 +1,125 @@
+﻿@{
+    ViewBag.Title = "排除检验物料及分类";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        InitControl();
+        var TYPE = $("#TYPE").val();
+        if (MTYPE = "1") {
+            $('#MATERIAL').bind("click", function () {
+                SelectMaterialType();
+            });
+        } else {
+            $('#MATERIAL').unbind("click");
+            $('#MATERIAL').bind("click", function () {
+                SelectMaterial();
+            });
+        }
+        $("#TYPE").change(function () {
+            var MTYPE = this.value;
+            if (MTYPE == "1") {
+                $('#MATERIAL').unbind("click");
+                $('#MATERIAL').bind("click", function () {
+                    SelectMaterialType();
+                });
+            } else {
+                $('#MATERIAL').unbind("click");
+                $('#MATERIAL').bind("click", function () {
+                    SelectMaterial();
+                });
+            }
+        })
+
+    })
+ 
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/EPUMATERIAL/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/EPUMATERIAL/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+
+    function SelectMaterialType() {
+        var url = "/BaseSet/EPUMATERIAL/SelectMaterialType";
+        openMyDialog(url, "Form11111", "选取物料分类信息", 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText();
+             });
+    }
+
+    function SelectMaterial() {
+        var url = "/BaseSet/EPUMATERIAL/SelectMaterial";
+        openMyDialog(url, "Form11111", "选取物料信息", 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText();
+             });
+
+    }
+</script>
+<form id="form1">
+<div id="message" style="display: none; padding: 1px; padding-bottom: 0px;">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            单据编号：
+        </th>
+        <td class="formValue">
+            <input id="ID" type="text"  class="txt readonly" datacol="yes" err="内码" checkexpession="NotNull" value="@ViewBag.Code" readonly="readonly"/>
+        </td>
+ 
+        <th class="formTitle">
+            类型：
+        </th>
+        <td class="formValue">
+            <select id="TYPE" class="txtselect">
+                <option value="1" selected="selected">分类</option>
+                <option value="2">物料</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            名称：
+        </th>
+        <td class="formValue">
+            <input id="PK_MATERIAL" type="hidden" />
+             <input id="SPELLCODE" type="hidden" />
+            <input id="MATERIAL" type="text" class="txt required" datacol="yes" err="名称" checkexpession="NotNull" />
+        </td>
+    
+        <th class="formTitle">
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input id="ISUSE" name="ISUSE" type="checkbox" checked="checked" style="vertical-align: middle;" />
+                <label for="ISUSE" style="vertical-align: middle;">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+ 
+</table>

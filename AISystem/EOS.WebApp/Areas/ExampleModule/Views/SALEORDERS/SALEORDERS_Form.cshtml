@@ -1,0 +1,415 @@
+﻿@{
+    ViewBag.Title = "销售订单";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        BindAutocomplete("CCUSTOMERNAME", "CCUSTOMERID", "Customer", "", "", "");
+        //DriversAutocomplete();
+        GetGrid();
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ExampleModule/SALEORDERS/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    $("#VBDEF1➩" + rowindex).val(rowData.VBDEF1);
+                    $("#CROWNO➩" + rowindex).val(rowData.CROWNO);
+                    $("#CSALEORDERBID➩" + rowindex).val(rowData.CSALEORDERBID);
+                    $("#CSALEORDERID➩" + rowindex).val(rowData.CSALEORDERID);
+                    $("#CMATERIALNAME➩" + rowindex).val(rowData.CMATERIALNAME);
+                    $("#CMATERIALID➩" + rowindex).val(rowData.CMATERIALID);
+                    $("#CMATERIALSPEC➩" + rowindex).val(rowData.CMATERIALSPEC);
+                    $("#PK_MATERIAL➩" + rowindex).val(rowData.PK_MATERIAL);
+                    $("#MATERIALNAME➩" + rowindex).val(rowData.MATERIALNAME);
+                    $("#MATERIALSPEC➩" + rowindex).val(rowData.MATERIALSPEC);
+                    $("#DBILLDATE➩" + rowindex).val(rowData.DBILLDATE);
+                    $("#NASTNUM➩" + rowindex).val(rowData.NASTNUM);
+                    $("#VROWNOTE➩" + rowindex).val(rowData.VROWNOTE);
+                    $("#PK_ORG➩" + rowindex).val(rowData.PK_ORG);
+                    $("#PK_ORGNAME➩" + rowindex).val(rowData.PK_ORGNAME);
+                    $("#gridTable tbody tr:eq(" + rowindex + ")").find('input').attr("datacol", "yes");
+                    Conversion(rowindex);
+                    rowindex++;
+
+                });
+            });
+        }
+    })
+
+
+    /*明细begin=======================================*/
+    //订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 215,
+            autowidth: true,
+            colModel: [
+                 { label: '行号', name: "CROWNO", width: 60, sortable: false, align: 'center' },
+                { label: '物料', name: "MATERIALNAME", width: 200, sortable: false, align: 'center' },
+                { label: '规格', name: "MATERIALSPEC", width: 100, sortable: false, align: 'center' },
+                { label: '数量[<font face="宋体">*</font>]', name: 'NASTNUM', width: 80, sortable: false, align: 'center' },
+                { label: '追加数量', name: 'NNUM', width: 80, sortable: false, align: 'center' },
+                { label: '发货工厂', name: 'PK_ORGNAME', index: 'PK_ORGNAME', width: 200, sortable: false, align: 'center' },
+                { label: '备注', name: "VROWNOTE", width: 200, sortable: false }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计
+                $(this).footerData("set", {
+                    "MATERIALNAME": "合计",
+                    "NASTNUM": "<span id='TotalNASTNUM'>0</span>"
+                });
+            }
+        });
+
+        //默认添加6行 空行
+        for (var i = 1; i <= 21; i++) {
+            MateilAutocomplete(i);
+            var rowdata = {
+                CROWNO: '<input readonly id="CROWNO➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" value="' + i + '" />',
+                MATERIALNAME: '<input id="CMATERIALNAME➩' + i + '" class="editable" type="text" style="cursor:pointer" /><input id="CMATERIALID➩' + i + '" type="hidden" />',
+                MATERIALSPEC: '<input readonly id="CMATERIALSPEC➩' + i + '" class="editable disabled " type="text" style="cursor:pointer"/>',
+                NASTNUM: '<input id="NASTNUM➩' + i + '" maxlength="10"  class="editable decimal center" type="text" onkeyup="Conversion(' + i + ')" datacol="No" err="数量" checkexpession="Double" value="0"/>',
+                NNUM: '<input id="NNUM➩' + i + '" maxlength="10"  class="editable decimal center" type="text" onkeyup="Conversion(' + i + ')" datacol="No" err="追加数量" checkexpession="Double" value="0"/>',
+                PK_ORGNAME: '<input id="PK_ORGNAME➩' + i + '"  class="editable center" type="text" value=""/><input id="PK_ORG➩' + i + '" type="hidden" value="" />',
+                VROWNOTE: '<input id="VROWNOTE➩' + i + '" class="editable center" type="text" />'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+            MateilAutocomplete(i);
+            BindAutocomplete("PK_ORGNAME➩" + i, "PK_ORG➩" + i, "Company1", "", "", "");
+        }
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $("#gridTable").find('input').attr("disabled", "disabled");
+        $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "yes");
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').click(function () {
+            var index = $(this).text();
+            $("#VBDEF1➩" + index).val("1");
+            $("#CMATERIALID➩" + index).val("");
+            $("#CMATERIALNAME➩" + index).val("");
+            $("#CMATERIALSPEC➩" + index).val("");
+            $("#NASTNUM➩" + index).val("");
+            $("#NNUM➩" + index).val("");
+            $("#VROWNOTE➩" + index).val("");
+
+        });
+
+        //价格信息文本框点击事件
+        $("#gridTable").find('.decimal').click(function () {
+            $(this).select();
+        });
+    }
+    var array = new Array();
+    function IsExistOrder(index, json) {
+        if (!ArrayOrderExists(array, json)) {
+            array[index] = json;
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function ArrayOrderExists(arr, json) {
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] != null) {
+                if (arr[i].PK_SUPPLIER == json.PK_SUPPLIER && arr[i].PK_MATERIAL == json.PK_MATERIAL)
+                    return true;
+            }
+        }
+        return false;
+    }
+    //订单明细换算+合计
+    function Conversion(index) {
+        var CMATERIALNAME = $("#CMATERIALNAME➩" + index).val();
+        var NASTNUM = $("#NASTNUM➩" + index).val();                                //订单数量
+
+        //统计合计
+        var TotalNASTNUM = 0;
+        $("#gridTable tbody tr").each(function (i) {
+            var NASTNUM = $(this).find('td:eq(4)').find('input').val();
+            if (NASTNUM != "" && NASTNUM != undefined) {
+                TotalNASTNUM += Number(NASTNUM);
+            }
+        });
+        $("#TotalNASTNUM").text(FormatCurrency(TotalNASTNUM));
+
+    }
+    /*选择物料明细end=======================================*/
+    var arr = new Array;
+    function MateilAutocomplete(i) {
+        var datas = [];
+        var ids = $("#gridTable").getGridParam('selarrrow');
+
+
+        var txtname = "CMATERIALNAME➩" + i;
+        var $txtid = $("#CMATERIALID➩" + i);
+        var $txtname = $("#CMATERIALNAME➩" + i);
+        var $txtspec = $("#CMATERIALSPEC➩" + i);
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtspec.val(data.materialspec);
+            var inum = i + 1;
+            $("#CMATERIALNAME➩" + inum).removeAttr('disabled');
+            $("#NASTNUM➩" + inum).removeAttr('disabled');
+            $("#PK_ORGNAME➩" + inum).removeAttr('disabled');
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/Material", { keywords: $txtname.val() }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 60%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="materialspec" style="width: 40%;">' + (DataJson[i].materialspec != null ? DataJson[i].materialspec : "") + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtspec.val(data.materialspec);
+                    var inum = i + 1;
+                    $("#CMATERIALNAME➩" + inum).removeAttr('disabled');
+                    $("#NASTNUM➩" + inum).removeAttr('disabled');
+                    $("#PK_ORGNAME➩" + inum).removeAttr('disabled');
+                });
+            });
+        }
+    }
+    //预留多行明细方式
+    Array.prototype.Contains = function (m) {
+        var res = 0, j = 0, s = 0;
+
+        $.each(this, function (i, n) {
+            if (n.CMATERIALID == m.CMATERIALID) {
+                j++;
+            }
+        });
+        if (j == this.length) {
+            res = 0;
+        }
+        else {
+            res = 1;
+        }
+        return res;
+    };
+
+    //得到一个对象实体
+
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/SALEORDERS/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebMyControls(data);
+            });
+        }
+    }
+    function SetWebMyControls(data) {
+        try {
+            for (var key in data) {
+                if (key == "ACTUALVALIDATE" || key == "ACTUALINVALIDATE") {
+                    continue;
+                }
+                var id = $('#' + key);
+                if (id.attr('id')) {
+                    var value = $.trim(data[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                    var type = id.attr('type');
+                    switch (type) {
+                        case "checkbox":
+                            if (value == 1) {
+                                id.attr("checked", 'checked');
+                            } else {
+                                id.removeAttr("checked");
+                            }
+                            break;
+                        default:
+                            id.val(value);
+                            break;
+                    }
+                }
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/ExampleModule/SALEORDERS/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+</script>
+<form id="form1" style="margin: 1px">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    <table id="tb_OrderFrom" class="form">
+        <tr>
+            <th class="formTitle">
+                订单编号：
+            </th>
+            <td class="formValue">
+                <input id="BILLSOFTYPE" type="hidden" value="NORMAL" />
+                <input id="DATATYPE" type="hidden" value="0" />
+                <input id="VBILLCODE" maxlength="50" type="text" class="txt readonly required" datacol="yes" readonly=readonly
+                       err="订单编号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+            </td>
+            <th class="formTitle">
+                客户：
+            </th>
+            <td class="formValue">
+                <input name="CCUSTOMERID" id="CCUSTOMERID" type="hidden" />
+                <input id="CCUSTOMERNAME" maxlength="50" type="text" class="txt required" datacol="yes"
+                       err="客户" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">
+                制单人：
+            </th>
+            <td class="formValue">
+                <input id="CREATOR" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" err="制单人" checkexpession="NotNull" value="@ViewBag.CreateUserName" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                生效时间：
+            </th>
+            <td class="formValue">
+                <input id="ACTUALVALIDATE" type="text" dbfield="true" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" onfocus="WdatePicker({onpicked:function(){ACTUALINVALIDATE.focus();},maxDate:'#F{$dp.$D(\'ACTUALINVALIDATE\')}'})" />
+            </td>
+            <th class="formTitle">
+                终止时间：
+            </th>
+            <td class="formValue">
+                <input id="ACTUALINVALIDATE" type="text" dbfield="true" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'ACTUALVALIDATE\')}'})" />
+            </td>
+            <th class="formTitle">
+                制单时间：
+            </th>
+            <td class="formValue">
+                <input id="DMAKEDATE" type="text" class="txt readonly" readonly="readonly"
+                       datacol="yes" err="制单时间" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                备注：
+            </th>
+            <td class="formValue" colspan="5">
+                <input id="VNOTE" type="text" class="txt" />
+                <input id="FSTATUSFLAG" type="hidden" class="txt" />
+            </td>
+        </tr>
+    </table>
+    <div class="bd" style="border-bottom: none; margin: 2px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                    明细信息
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+        <!--拼单信息-->
+        <div id="order" class="tabPanel">
+            <table id="gridTable"></table>
+            <style>
+                .ui-widget-content {
+                    border-left: none;
+                }
+
+                .ui-jqgrid tr.ui-row-ltr td {
+                    padding: 0px;
+                    border-bottom: 1px solid #ccc;
+                }
+
+                .ui-jqgrid .ui-jqgrid-htable th {
+                    line-height: 15px;
+                }
+
+                    .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+                        background: none;
+                    }
+
+                .editable {
+                    height: 22px;
+                    background-color: #fff;
+                }
+            </style>
+        </div>
+    </div>
+</form>

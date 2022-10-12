@@ -1,0 +1,143 @@
+﻿@{
+    ViewBag.Title = "门禁核验》详细";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    $(function () {
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/CHECKOUT/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+   
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开</b></span></a>
+</div>
+
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Tabbasic" class="tab_list bd actived" onclick="Tabchange('basic')">
+                详细信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--录入信息-->
+    <div id="basic" class="tabPanel">
+     <table class="form">
+            <tr>
+                <th class="formTitle">
+                    门禁单号:
+                </th>
+                <td class="formValue">
+                    <input id="BILLNO" type="text" class="txt" readonly="readonly"  />
+                </td>
+                <th class="formTitle">
+                    通知单号：
+                </th>
+                <td class="formValue">
+                    <input id="PK_ORDER" type="text" class="txt" readonly="readonly"  />
+                </td>
+                 <th class="formTitle">
+                    业务类型：
+                </th>
+                <td class="formValue">
+                    <input id="TYPE" type="text" class="txt" readonly="readonly"  />
+                </td>
+                <th class="formTitle">
+                    车号：
+                </th>
+                <td class="formValue">
+                    <input id="CARS" type="text" class="txt" readonly="readonly"  />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    司机:
+                </th>
+                <td class="formValue">
+                    <input id="DRIVER" type="text" class="txt" readonly="readonly"  />
+                </td>
+                 <th class="formTitle">
+                    卡面编号：
+                </th>
+                <td class="formValue">
+                    <input id="ICNUMBER" type="text" class="txt" readonly="readonly"  />
+                </td>
+                <th class="formTitle">
+                   入厂时间：
+                </th>
+                <td class="formValue">
+                    <input id="INDATE" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    出厂时间：
+                </th>
+                <td class="formValue">
+                    <input id="OUTDATE" type="text" class="txt" readonly="readonly"  />
+                </td>
+            </tr>
+            <tr>
+                 <th class="formTitle">
+                    核验人：
+                </th>
+                <td class="formValue">
+                    <input id="CREUSER" type="text" class="txt" readonly="readonly"  />
+                </td>
+                <th class="formTitle">
+                   核验时间：
+                </th>
+                <td class="formValue">
+                    <input id="CRETIME" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    手持机编号：
+                </th>
+                <td class="formValue">
+                    <input id="PDANO" type="text" class="txt" readonly="readonly" />
+                </td>
+                <th class="formTitle">
+                    状态：
+                </th>
+                <td class="formValue">
+                    <input id="STATUS" type="text" class="txt" readonly="readonly" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle" >
+                    备注：
+                </th>
+                <td class="formValue" colspan="7">
+                    <input id="MEMO" type="text" class="txt" readonly="readonly"  />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    <span class="ck_span">提醒：</span>
+                </th>
+                <td class="formValue" colspan="7">
+                    <span class="ck_span">
+                        <label id="lbl_msg">
+                            无
+                        </label>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+</form>

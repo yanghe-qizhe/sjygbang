@@ -1,0 +1,44 @@
+﻿@{
+    ViewBag.Title = "质检方案管理》选择物料分类";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript"> 
+    $(function () {
+        GetTree();
+    })
+    //加载左边树
+    function GetTree() {
+        var itemtree = {
+            onnodeclick: function (item) { 
+                if(item.value.length >= 7 ){
+                    var FormID = GetQuery('FormID'); 
+                    if(IsNull(FormID)){
+                         $parentobj = top.frames[FormID]; 
+                    } else{
+                         $parentobj = top.frames[tabiframeId()];
+                    }  
+                    $parentobj.CallBackEventMaterialType(item);
+                    closeDialog();
+                }else{
+                    tipDialog("请选择三级及以下分类", 3, 0);
+                }  
+            },
+            url: "@Url.Content("~/BaseSet/Material/TreeJson")"
+        };
+        $("#ItemsTree").treeview(itemtree);
+    }
+     
+</script>
+<form id="form1" style="margin: 1px">
+<div>
+    <div class="layoutPanel layout-west">
+        <div class="btnbartitle">
+            <div>
+                物料分类
+            </div>
+        </div>
+        <div class="ScrollBar" id="ItemsTree" style="overflow: auto; height: 380px">
+        </div>
+    </div>
+</div>
+</form>

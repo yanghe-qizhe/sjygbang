@@ -1,0 +1,163 @@
+<html>
+<head>
+    <title>ATL 3.0 test page for object MWReaderCtl</title>
+    <style type="text/css">
+        #apDiv1
+        {
+            position: absolute;
+            width: 200px;
+            height: 115px;
+            z-index: 1;
+            left: -26px;
+            top: -287px;
+        }
+        #apDiv2
+        {
+            position: absolute;
+            width: 333px;
+            height: 26px;
+            z-index: 2;
+            left: 106px;
+            top: 546px;
+        }
+        #apDiv3
+        {
+            position: absolute;
+            width: 246px;
+            height: 118px;
+            z-index: 3;
+            left: 118px;
+            top: 114px;
+        }
+        #apDiv4
+        {
+            position: absolute;
+            width: 75px;
+            height: 24px;
+            z-index: 1;
+            left: 80px;
+            top: 89px;
+        }
+    </style>
+</head>
+<body>
+    &nbsp;
+    <p align="left">
+        <font size="6" face="隶书" color="#FF0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            射频读写器网页调用示例程序</font></p>
+    <div id="apDiv2">
+        <div id="apDiv1">
+            <textarea rows="18" name="msg" cols="50" id="msg"></textarea>
+        </div>
+        <object id="MWRFATL" style="width: 0px; height: 0px" codebase="EOS_UHFReader.cab#version=1,0,0,1"
+            classid="CLSID:679F69BE-D0D7-422D-A7FC-852DA88C8F47">
+        </object>
+        <script type="text/javascript">
+            function Connect() {
+                //if(!window.ActiveXObject){
+                //alert("对不起，证书登陆请使用IE浏览器！");
+                //return;
+                //}
+                var port_e = document.getElementById('port');
+                var port = port_e.options[port_e.selectedIndex].value;
+                var baud_e = document.getElementById('port2');
+                var baud = baud_e.options[baud_e.selectedIndex].value;
+                var addr = document.getElementById('textfield3').value;
+                var port = parseInt(port);
+                var baud = parseInt(baud);
+                var addr = parseInt(addr);
+
+
+                var version = MWRFATL.OpenUHFReader(port, addr, baud);
+                alert("打开成功")
+                //MWRFATL.ReaderBeep(30);
+            }
+
+            //寻卡
+            function Scard() {
+                var CardNumber = MWRFATL.UHFReadCard();
+                msg.value = msg.value + "射频卡卡号：" + CardNumber + "\n";
+            }
+
+
+            function GetUHFInformation() {
+                var StringArray = MWRFATL.GetUHFInformation();
+                var StringList = StringArray.toArray();
+                msg.value = msg.value + "版本号" + StringList[0] + "\n";
+                msg.value = msg.value + "端口号" + StringList[1] + "\n";
+                msg.value = msg.value + "扫描时间" + StringList[2] + "\n";
+                msg.value = msg.value + "最小频率" + StringList[3] + "\n";
+                msg.value = msg.value + "最大频率" + StringList[4] + "\n";
+                msg.value = msg.value + "读卡器型号" + StringList[5] + "\n";
+                msg.value = msg.value + "当前功率" + StringList[6] + "\n";
+
+            }
+
+
+            //断开设备
+            function exit() {
+                var iRet = MWRFATL.closeUHFCard(0);
+                if (iRet) {
+                    msg.value = msg.value + "断开设备失败！" + "\n";
+                }
+                else {
+                    msg.value = msg.value + "断开设备成功！" + "\n";
+                }
+            } 
+
+ 
+        </script>
+        <input type="button" value="读取射频卡" onclick="Scard()">
+        <input type="button" value="获取设备信息" onclick="GetUHFInformation()">
+        <input type="button" value="断开设备" onclick="exit()" />
+    </div>
+    <p align="center">
+        &nbsp;</p>
+    <div id="apDiv3">
+        <table width="198" height="37" border="1">
+            <tr>
+                <td width="57">
+                    <label for="textfield">
+                        端口号</label>
+                </td>
+                <td width="47">
+                    <label for="port">
+                        波特率</label>
+                </td>
+                <td width="72">
+                    地址
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <select name="port" id="port">
+                        <option value="1">com1</option>
+                        <option value="2">com2</option>
+                        <option value="3">com3</option>
+                        <option value="4">com4</option>
+                        <option value="5">com5</option>
+                        <option value="6">com6</option>
+                        <option value="7">com7</option>
+                    </select>
+                </td>
+                <td>
+                    <select name="port2" id="port2">
+                        <option value="0">9600</option>
+                        <option value="1">19200</option>
+                        <option value="2">38400</option>
+                        <option value="4">56000</option>
+                        <option value="5">57600</option>
+                        <option value="6">115200</option>
+                    </select>
+                </td>
+                <td>
+                    <input name="textfield3" type="text" id="textfield3" value="255" size="12" maxlength="10">
+                </td>
+            </tr>
+        </table>
+        <div id="apDiv4">
+            <input type="button" value=" 连接设备" name="btn_ValOper" onclick="Connect()">
+        </div>
+    </div>
+</body>
+</html>

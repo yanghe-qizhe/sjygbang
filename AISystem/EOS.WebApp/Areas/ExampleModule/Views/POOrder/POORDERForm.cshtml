@@ -1,0 +1,233 @@
+﻿@{
+    ViewBag.Title = "POORDERDetail";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var op = GetQuery('op'); //操作类型
+    var json1 = [
+        { val: '青岛港', txt: '青岛港', selected: true },
+        { val: '连云港', txt: '连云港' },
+        { val: '日照港', txt: '日照港' },
+		{ val: '常熟港', txt: '常熟港' },
+		{ val: '济宁港', txt: '济宁港' }
+        ];
+
+    $(function () {
+        //仓库
+        BindAutocomplete("RECEIVESTORE", "PK_RECEIVESTORE", "U9Store", "", "", "");
+        BindAutocomplete("PK_SUPPLIERNAME", "PK_SUPPLIER", "Supply", "", "", "");
+
+        BINDTXTAutocomplete(json1, "PORTARRIVAL", "", "");
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+        }
+    })
+
+    function BINDTXTAutocomplete(DataJson, txtname, width, height) {
+        var $txtname = $("#" + txtname);
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource(DataJson);
+                }
+            }
+        }).focus(function () {
+            DataSource(DataJson);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $("#" + txtname).val(data.name)
+        });
+        //获取数据源
+        function DataSource(DataJson) {
+            var html = "";
+            $.each(DataJson, function (i) {
+                html += "<tr>";
+                html += '<td id="name" style="width: 100%;">' + DataJson[i].txt + '</td>';
+                html += "</tr>";
+            });
+            //点击事件回调
+            autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                $("#" + txtname).val(data.name)
+            });
+
+        }
+    }
+    /*明细end=======================================*/
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/POORDER/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    AjaxJson("/ExampleModule/POOrder/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+ 
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存 </b></span></a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开 </b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            订单编号：
+        </th>
+        <td class="formValue">
+            <input id="VBILLCODE" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            业务日期：
+        </th>
+        <td class="formValue">
+            <input id="DBILLDATE" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            来源单号：
+        </th>
+        <td class="formValue">
+            <input name="SOURCEORDER" id="SOURCEORDER" type="hidden" />
+            <input id="SOURCEBILLNO" name="SOURCEBILLNO" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            采购部门：
+        </th>
+        <td class="formValue">
+            <input id="DEPNAME" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input name="PK_SUPPLIER" id="PK_SUPPLIER" type="hidden" />
+            <input id="PK_SUPPLIERNAME" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            合同号：
+        </th>
+        <td class="formValue">
+            <input id="VCONTRACTCODE" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            贸易方式：
+        </th>
+        <td class="formValue">
+            <select id="TRADEMODE" class="txt select">
+                <option value="">===请选择===</option>
+                <option value="一般贸易">一般贸易</option>
+                <option value="来料加工">来料加工</option>
+                <option value="进料加工">进料加工</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            HK木浆采购单号：
+        </th>
+        <td class="formValue">
+            <input id="HKCGBILLNO" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            船名航次：
+        </th>
+        <td class="formValue">
+            <input id="DEF3" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            到货港口：
+        </th>
+        <td class="formValue">
+            <input id="PORTARRIVAL" name="PORTARRIVAL" type="text" class="txt icontree" />
+        </td>
+        <th class="formTitle">
+            加工贸易手册：
+        </th>
+        <td class="formValue">
+            <input id="REGISTERACCOUNT" name="REGISTERACCOUNT" type="text" class="txt" />
+        </td>
+        <th class="formTitle">
+            加工仓库：
+        </th>
+        <td class="formValue">
+            <input id="PK_RECEIVESTORE" type="hidden" />
+            <input id="RECEIVESTORE" type="text" class="txt icontree" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CREATIONTIME" maxlength="50" type="text" class="txt readonly" readonly="readonly"/>
+        </td>
+        <th class="formTitle">
+            生效时间：
+        </th>
+        <td class="formValue">
+            <input id="ACTUALVALIDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+        </td>
+        <th class="formTitle">
+            终止时间：
+        </th>
+        <td class="formValue">
+            <input id="ACTUALINVALIDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREATOR" maxlength="50" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            派车车数：
+        </th>
+        <td class="formValue">
+            <input id="CARSNUM" type="text" class="txt" onfocus="IsMoney(this.id);" maxlength="5"
+                value="0" />
+        </td>
+        <td class="formValue" colspan="2">
+        </td>
+    </tr>
+</table>
+</form>

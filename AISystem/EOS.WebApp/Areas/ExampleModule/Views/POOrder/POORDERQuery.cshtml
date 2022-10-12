@@ -1,0 +1,145 @@
+﻿@{
+    ViewBag.Title = "POORDERQuery";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+
+    $(function () {
+        BindComBoxTree("matclassname", "matclass", "200", "/BaseSet/Material/TreeJson");
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+        BindAutocomplete("RECCOMPANYNAME", "RECCOMPANYID", "Company", "200", "150", "");
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+
+        var BillNo = $("#BillNo").val();
+        var Supply = $("#Supply").val();
+
+        var Material = $("#Material").val();
+        var DATATYPE = $("#DATATYPE").val();
+        var BILLTYPE = $("#BILLTYPE").val();
+        var matclass = $("#matclass").val();
+        var PK_DEPT = $("#PK_DEPT").val();
+        var RECCOMPANYID = $("#RECCOMPANYID").val();
+        var SOURCEBILLNO = $("#SOURCEBILLNO").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&BillNo=" + BillNo;
+        url += "&Supply=" + Supply + "&Material=" + Material + "&DATATYPE=" + DATATYPE;
+        url += "&BILLTYPE=" + escape(BILLTYPE) + "&matclass=" + matclass + "&PK_DEPT=" + PK_DEPT + "&RECCOMPANYID=" + RECCOMPANYID;
+        url += "&SOURCEBILLNO=" + SOURCEBILLNO;
+        return url;
+    }
+
+
+
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-90)" style="width: 200px" onfocus="var EndTime=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(30)" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                接收公司：
+            </th>
+            <td>
+                <input id="RECCOMPANYID" type="hidden" />
+                <input id="RECCOMPANYNAME" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                供应商：
+            </th>
+            <td>
+                <input id="Supply" type="hidden" />
+                <input id="SupplyName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料分类：
+            </th>
+            <td>
+                <input id="matclass" type="hidden" />
+                <input id="matclassname" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="Material" type="hidden" />
+                <input id="MaterialName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+   
+        <tr>
+            <th>
+                数据来源：
+            </th>
+            <td>
+                <select id="DATATYPE" name="DATATYPE" class="select" style="width: 205px;">
+                    <option value="">---请选择---</option>
+                    <option value="0">自建</option>
+                    <option value="1">SAP</option>
+                    <option value="2">BI</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                订单类型：
+            </th>
+            <td>
+                <select id="BILLTYPE" name="BILLTYPE" class="select" style="width: 205px;">
+                    <option value="">---请选择---</option>
+                    <option value="YG01">标准采购订单</option>
+                    <option value="YG02">固定资产采购订单</option>
+                    <option value="YG03">寄售采购订单</option>
+                    <option value="YG04">委外维修采购订单</option>
+                    <option value="YG05">成本中心采购订单</option>
+                    <option value="YG06">内部订单采购订单</option>
+                    <option value="YG07">价格后置采购订单</option>
+                    <option value="YG08">免费采购订单</option>
+                    <option value="YG09">退货采购订单</option>
+                    <option value="YG10">公司间采购订单</option>
+                    <option value="YG11">基建采购订单</option>
+                    <option value="YG12">试用采购订单</option>
+                    <option value="YG13">项目采购订单</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                订单编号：
+            </th>
+            <td>
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+     
+    </table>
+</div>

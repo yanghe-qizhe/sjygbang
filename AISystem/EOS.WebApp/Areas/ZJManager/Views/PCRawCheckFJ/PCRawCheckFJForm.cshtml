@@ -1,0 +1,639 @@
+﻿@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var PCRAWTYPE = GetQuery("PCRAWTYPE");
+
+
+    $(function () {
+        BindAutocomplete("ORGNAME", "PK_ORG", "Company", "200", "150", "");
+        GetGrid();
+        $("#PCRAWTYPE").val(PCRAWTYPE);
+        $("#PRINTCODE").keyup(function (event) {
+            if (event.keyCode == 13) {
+                InitControlZY();
+            }
+        });
+        $("#CYTYPE").bind("change", function () {
+            InitControlZY();
+        });
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+            var CYTYPE = $("#CYTYPE").val();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ZJManager/PCRawCheckFJ/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                var bol = false;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    var CHECKMEMO = rowData.CHECKMEMO == null ? "" : rowData.CHECKMEMO;
+                    var ZJBZRESULTNAME = rowData.ZJBZRESULTNAME == null ? "" : rowData.ZJBZRESULTNAME;
+                    var DEF1 = rowData.DEF1 == null ? "" : rowData.DEF1;
+                    var ZJVALUETYPE = rowData.ZJVALUETYPE;
+                    var ITEMNAME = rowData.ITEMNAME;
+                    var ZJVALUETD = '';
+                    var ZJVALUETD1 = '';
+
+                    if (rowData.FJTYPE == "1") {
+                        if (ITEMNAME.indexOf('杂质') >= 0) {
+                            ZJVALUETD = '<select disabled id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="txtselect items" style="width: 75px;"><option value="0" ' + (rowData.ZJVALUE == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJVALUE == "1" ? 'selected="selected"' : "") + '>不合格</option></select><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                            ZJVALUETD1 = '<input readonly id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="editable decimal " type="text" style="cursor:pointer"  value="' + rowData.ZJVALUE + '"  /><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                        } else {
+                            ZJVALUETD = '<select id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="txtselect items" style="width: 75px;"><option value="0" ' + (rowData.ZJVALUE == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJVALUE == "1" ? 'selected="selected"' : "") + '>不合格</option></select><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                            ZJVALUETD1 = '<input id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="editable decimal " type="text" style="cursor:pointer"  value="' + rowData.ZJVALUE + '" onblur="CheckBZPD(' + rowindex + ')"/><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                        }
+                    } else {
+                        ZJVALUETD = '<select disabled id="ZJVALUE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="0">合格</option><option value="1">不合格</option></select><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.FANO + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                        ZJVALUETD1 = '<input readonly enter="1" id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="editable decimal disabled" type="text" style="cursor:pointer"  value="' + rowData.ZJVALUE + '" onkeydown="SetUpDown(' + rowindex + ')"/><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                    }
+                    var rowdata = {};
+                    if (rowData.FJTYPE == "0") {
+                        rowdata = {
+                            FJTYPE: '<select disabled id="FJTYPE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="0">A样</option></select>',
+                            ZJITEMNAME: '<input readonly id="ZJITEMNAME➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" value="' + rowData.ITEMNAME + '" zjvaltype="' + ZJVALUETYPE + '"/><input id="ZJITEM➩' + rowindex + '" type="hidden" value="' + rowData.ZJITEM + '" />',
+                            ZJVALUE: ZJVALUETYPE == "1" ? ZJVALUETD1 : ZJVALUETD,
+                            ZJBZRESULT: '<select disabled id="ZJBZRESULT➩' + rowindex + '" index=' + rowindex + ' class="txtselect" style="width: 115px;"><option value="0" ' + (rowData.ZJBZRESULT == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJBZRESULT == "1" ? 'selected="selected"' : "") + '>不合格</option></select>',
+                            CHECKMEMO: '<input readonly id="CHECKMEMO➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + CHECKMEMO + '"/>',
+                            ZJBZRESULTNAME: '<input readonly id="ZJBZRESULTNAME➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + ZJBZRESULTNAME + '"/>',
+                            DEF1: '<input readonly id="DEF1➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + DEF1.replace("null", "") + '"/><input id="DEF10➩' + rowindex + '" type="hidden" value="' + rowData.DEF10 + '" />'
+                        }
+                    }
+                    else if (rowData.FJTYPE == "1") {
+                        rowdata = {
+                            FJTYPE: '<select disabled id="FJTYPE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="1">B样</option></select>',
+                            ZJITEMNAME: '<input readonly id="ZJITEMNAME➩' + rowindex + '" index=' + rowindex + ' class="editable" type="text" value="' + rowData.ITEMNAME + '" zjvaltype="' + ZJVALUETYPE + '"/><input id="ZJITEM➩' + rowindex + '" type="hidden" value="' + rowData.ZJITEM + '" />',
+                            ZJVALUE: ZJVALUETYPE == "1" ? ZJVALUETD1 : ZJVALUETD,
+                            ZJBZRESULT: '<select disabled id="ZJBZRESULT➩' + rowindex + '" index=' + rowindex + ' class="txtselect" style="width: 115px;"><option value="0">合格</option><option value="1">不合格</option></select>',
+                            CHECKMEMO: '<input readonly id="CHECKMEMO➩' + rowindex + '" index=' + rowindex + ' class="editable" type="text" style="cursor:pointer"  value="' + CHECKMEMO + '"/>',
+                            ZJBZRESULTNAME: '<input id="ZJBZRESULTNAME➩' + rowindex + '" index=' + rowindex + ' class="editable" type="text" style="cursor:pointer"  value="' + ZJBZRESULTNAME + '"/>',
+                            DEF1: '<input id="DEF1➩' + rowindex + '" index=' + rowindex + ' class="editable" type="text" style="cursor:pointer"  value="' + DEF1.replace("null", "") + '"/><input id="DEF10➩' + rowindex + '" type="hidden" value="' + rowData.DEF10 + '" />'
+                        }
+                    } else if (rowData.FJTYPE == "2") {
+                        rowdata = {
+                            FJTYPE: '<select disabled id="FJTYPE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="2">C样</option></select>',
+                            ZJITEMNAME: '<input readonly id="ZJITEMNAME➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" value="' + rowData.ITEMNAME + '" zjvaltype="' + ZJVALUETYPE + '"/><input id="ZJITEM➩' + rowindex + '" type="hidden" value="' + rowData.ZJITEM + '" />',
+                            ZJVALUE: ZJVALUETYPE == "1" ? ZJVALUETD1 : ZJVALUETD,
+                            ZJBZRESULT: '<select disabled id="ZJBZRESULT➩' + rowindex + '" index=' + rowindex + ' class="txtselect" style="width: 115px;"><option value="0" ' + (rowData.ZJBZRESULT == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJBZRESULT == "1" ? 'selected="selected"' : "") + '>不合格</option></select>',
+                            CHECKMEMO: '<input readonly id="CHECKMEMO➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + CHECKMEMO + '"/>',
+                            ZJBZRESULTNAME: '<input readonly id="ZJBZRESULTNAME➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + ZJBZRESULTNAME + '"/>',
+                            DEF1: '<input readonly id="DEF1➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + DEF1.replace("null", "") + '"/><input id="DEF10➩' + rowindex + '" type="hidden" value="' + rowData.DEF10 + '" />'
+                        }
+                    }
+                    $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                    rowindex++;
+                    $("#gridTable").find('.items').change(function () {
+                        var index = $(this).attr('id').split('➩')[1];
+                        if (this.value == "0") {
+                            $("#ZJBZRESULT➩" + index).val("0");
+                        } else {
+                            $("#ZJBZRESULT➩" + index).val("1");
+                        }
+                    });
+                    $("#gridTable").find('.center').css('text-align', 'center');
+                    $("#gridTable").find('.decimal').focus(function () {
+                        IsMoneySubtract(this.id);
+                        var val = this.value;
+                        if (val == "0" || val == "0.000" || val == "0.00") {
+                            this.value = "";
+                        } else {
+                            $(this).select();
+                        }
+                    });
+                    $("#gridTable").find('.decimal').blur(function () {
+                        var val = this.value;
+                        if (val == "") {
+                            this.value = "0";
+                        }
+                        if (this.value != "0") {
+                            var index = $(this).attr('id').split('➩')[1];
+                            //CheckBZPD(index);
+                        }
+                    });
+
+                });
+            });
+        }
+    })
+
+
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ZJManager/PCRawCheckFJ/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebMyControls(data);
+            });
+        }
+    }
+
+
+    //得到一个对象实体
+    function InitControlZY() {
+        var PRINTCODE = $("#PRINTCODE").val();
+        if (IsNull(PRINTCODE)) {
+            AjaxJson("/ZJManager/PCRawCheck/SetFormControl1", { KeyValue: PRINTCODE }, function (data) {
+                $("#CYID").val(data.CYID);
+                $("#DEF1").val(data.ID);
+                $("#PRINTCODE").val(data.PRINTCODE);
+                $("#MATERIAL").val(data.MATERIAL);
+                $("#MATERIALNAME").val(data.MATERIALNAME);
+                var MATERIALSPEC = data.MATERIALSPEC == "&nbsp;" ? "" : data.MATERIALSPEC;
+                $("#MATERIALSPEC").val(MATERIALSPEC);
+                $("#CYDATE").val(data.CYDATE);
+                $("#PCRAWTYPE").val(data.PCRAWTYPE);
+                $("#PK_ORG").val(data.PK_ORG);
+                $("#ORGNAME").val(data.ORGNAME);
+                $("#MEMO").val(data.MEMO);
+
+                $("#gridTable").jqGrid('clearGridData');
+                var CYTYPE = $("#CYTYPE").val();
+                var rowindex = 1;
+                var index = 1;
+                if (IsNull(data.ID)) {
+                    var rowindex = 1;
+                    //明细信息
+                    AjaxJson("/ZJManager/PCRawCheck/GetOrderEntryList", { KeyValue: data.ID }, function (data) {
+                        var JsonData = data.rows;
+                        var bol = false;
+                        //A样
+                        $.each(JsonData, function (i) {
+                            var rowData = JsonData[i];
+                            var CHECKMEMO = rowData.CHECKMEMO == null ? "" : rowData.CHECKMEMO;
+                            var ZJBZRESULTNAME = rowData.ZJBZRESULTNAME == null ? "" : rowData.ZJBZRESULTNAME;
+                            var DEF1 = rowData.DEF1 == null ? "" : rowData.DEF1;
+                            var ZJVALUETYPE = rowData.ZJVALUETYPE;
+
+                            var ZJVALUETD = '';
+                            var ZJVALUETD1 = '';
+
+                            ZJVALUETD = '<select disabled id="ZJVALUE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="0">合格</option><option value="1">不合格</option></select><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                            ZJVALUETD1 = '<input readonly enter="1" id="ZJVALUE➩' + rowindex + '" index=' + index + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + rowData.ZJVALUE + '" onkeydown="SetUpDown(' + rowindex + ')"/><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                            var rowdata = {
+                                FJTYPE: '<select disabled id="FJTYPE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="0">A样</option></select>',
+                                ZJITEMNAME: '<input readonly id="ZJITEMNAME➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" value="' + rowData.ITEMNAME + '" zjvaltype="' + ZJVALUETYPE + '"/><input id="ZJITEM➩' + rowindex + '" type="hidden" value="' + rowData.ZJITEM + '" />',
+                                ZJVALUE: ZJVALUETYPE == "1" ? ZJVALUETD1 : ZJVALUETD,
+                                ZJBZRESULT: '<select disabled id="ZJBZRESULT➩' + rowindex + '" index=' + rowindex + ' class="txtselect" style="width: 115px;"><option value="0" ' + (rowData.ZJBZRESULT == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJBZRESULT == "1" ? 'selected="selected"' : "") + '>不合格</option></select>',
+                                CHECKMEMO: '<input readonly id="CHECKMEMO➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + CHECKMEMO + '"/>',
+                                ZJBZRESULTNAME: '<input readonly id="ZJBZRESULTNAME➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + ZJBZRESULTNAME + '"/>',
+                                DEF1: '<input readonly id="DEF1➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + DEF1.replace("null", "") + '"/><input id="DEF10➩' + rowindex + '" type="hidden" value="' + rowData.DEF10 + '" />'
+                            }
+                            $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                            rowindex++;
+                        });
+
+                        if (CYTYPE != "2") {
+                            //B样
+                            $.each(JsonData, function (i) {
+                                var rowData = JsonData[i];
+                                var CHECKMEMO = rowData.CHECKMEMO == null ? "" : rowData.CHECKMEMO;
+                                var ZJBZRESULTNAME = rowData.ZJBZRESULTNAME == null ? "" : rowData.ZJBZRESULTNAME;
+                                var DEF1 = rowData.DEF1 == null ? "" : rowData.DEF1;
+                                var ZJVALUETYPE = rowData.ZJVALUETYPE;
+                                var ZJVALUETD = '';
+                                var ZJVALUETD1 = '';
+                                var ITEMNAME = rowData.ITEMNAME;
+                                //赋值扣杂
+
+                                if (ITEMNAME.indexOf('杂质') >= 0) {
+                                    ZJVALUETD = '<select disabled id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="txtselect items" style="width: 75px;"><option value="0" ' + (rowData.ZJVALUE == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJVALUE == "1" ? 'selected="selected"' : "") + '>不合格</option></select><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                                    ZJVALUETD1 = '<input readonly id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="editable decimal" type="text" style="cursor:pointer"  value="' + rowData.ZJVALUE + '" /><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                                }
+                                else {
+                                    ZJVALUETD = '<select id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="txtselect items" style="width: 75px;"><option value="0" ' + (rowData.ZJVALUE == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJVALUE == "1" ? 'selected="selected"' : "") + '>不合格</option></select><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                                    ZJVALUETD1 = '<input id="ZJVALUE➩' + rowindex + '" index=' + rowindex + ' class="editable decimal" type="text" style="cursor:pointer"  value="0" onblur="CheckBZPD(' + rowindex + ')"/><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                                }
+                                var rowdata = {
+                                    FJTYPE: '<select disabled id="FJTYPE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="1">B样</option></select>',
+                                    ZJITEMNAME: '<input readonly id="ZJITEMNAME➩' + rowindex + '" index=' + rowindex + ' class="editable" type="text" value="' + rowData.ITEMNAME + '" zjvaltype="' + ZJVALUETYPE + '"/><input id="ZJITEM➩' + rowindex + '" type="hidden" value="' + rowData.ZJITEM + '" />',
+                                    ZJVALUE: ZJVALUETYPE == "1" ? ZJVALUETD1 : ZJVALUETD,
+                                    ZJBZRESULT: '<select disabled id="ZJBZRESULT➩' + rowindex + '" index=' + rowindex + ' class="txtselect" style="width: 115px;"><option value="0">合格</option><option value="1">不合格</option></select>',
+                                    CHECKMEMO: '<input readonly id="CHECKMEMO➩' + rowindex + '" index=' + rowindex + ' class="editable" type="text" style="cursor:pointer"  value="' + CHECKMEMO + '"/>',
+                                    ZJBZRESULTNAME: '<input id="ZJBZRESULTNAME➩' + rowindex + '" index=' + rowindex + ' class="editable" type="text" style="cursor:pointer"  value="' + ZJBZRESULTNAME + '"/>',
+                                    DEF1: '<input id="DEF1➩' + rowindex + '" index=' + rowindex + ' class="editable" type="text" style="cursor:pointer"  value="' + DEF1.replace("null", "") + '"/><input id="DEF10➩' + rowindex + '" type="hidden" value="' + rowData.DEF10 + '" />'
+                                }
+                                $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                                rowindex++;
+                                $("#gridTable").find('.items').change(function () {
+                                    var index = $(this).attr('id').split('➩')[1];
+                                    if (this.value == "0") {
+                                        $("#ZJBZRESULT➩" + index).val("0");
+                                    } else {
+                                        $("#ZJBZRESULT➩" + index).val("1");
+                                    }
+                                });
+                                $("#gridTable").find('.center').css('text-align', 'center');
+                                $("#gridTable").find('.decimal').focus(function () {
+                                    IsMoneySubtract(this.id);
+                                    var val = this.value;
+                                    if (val == "0" || val == "0.000" || val == "0.00") {
+                                        this.value = "";
+                                    } else {
+                                        $(this).select();
+                                    }
+                                });
+                                $("#gridTable").find('.decimal').blur(function () {
+                                    var val = this.value;
+                                    if (val == "") {
+                                        this.value = "0";
+                                    }
+                                    if (this.value != "0") {
+                                        var index = $(this).attr('id').split('➩')[1];
+                                        CheckBZPD(index);
+                                    }
+                                });
+
+                            });
+                        }
+                        if (CYTYPE == "2") {
+                            //C样
+                            $.each(JsonData, function (i) {
+                                var rowData = JsonData[i];
+                                var CHECKMEMO = rowData.CHECKMEMO == null ? "" : rowData.CHECKMEMO;
+                                var ZJBZRESULTNAME = rowData.ZJBZRESULTNAME == null ? "" : rowData.ZJBZRESULTNAME;
+                                var DEF1 = rowData.DEF1 == null ? "" : rowData.DEF1;
+                                var ZJVALUETYPE = rowData.ZJVALUETYPE;
+                                var ZJVALUETD = '';
+                                var ZJVALUETD1 = '';
+                                ZJVALUETD = '<select disabled id="ZJVALUE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="0">合格</option><option value="1">不合格</option></select><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                                ZJVALUETD1 = '<input readonly enter="1" id="ZJVALUE➩' + rowindex + '" index=' + index + ' class="editable disabled" type="text" style="cursor:pointer"  value="0" onkeydown="SetUpDown(' + rowindex + ')"/><input id="ZJFA➩' + rowindex + '" type="hidden" value="' + rowData.ZJFA + '" /><input id="TYPE➩' + rowindex + '" type="hidden" value="' + rowData.TYPE + '" />';
+                                var rowdata = {
+                                    FJTYPE: '<select disabled id="FJTYPE➩' + rowindex + '" class="txtselect items" style="width: 75px;" ><option value="2">C样</option></select>',
+                                    ZJITEMNAME: '<input readonly id="ZJITEMNAME➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" value="' + rowData.ITEMNAME + '" zjvaltype="' + ZJVALUETYPE + '"/><input id="ZJITEM➩' + rowindex + '" type="hidden" value="' + rowData.ZJITEM + '" />',
+                                    ZJVALUE: ZJVALUETYPE == "1" ? ZJVALUETD1 : ZJVALUETD,
+                                    ZJBZRESULT: '<select disabled id="ZJBZRESULT➩' + rowindex + '" index=' + rowindex + ' class="txtselect" style="width: 115px;"><option value="0" ' + (rowData.ZJBZRESULT == "0" ? 'selected="selected"' : "") + '>合格</option><option value="1" ' + (rowData.ZJBZRESULT == "1" ? 'selected="selected"' : "") + '>不合格</option></select>',
+                                    CHECKMEMO: '<input readonly id="CHECKMEMO➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + CHECKMEMO + '"/>',
+                                    ZJBZRESULTNAME: '<input readonly id="ZJBZRESULTNAME➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + ZJBZRESULTNAME + '"/>',
+                                    DEF1: '<input readonly id="DEF1➩' + rowindex + '" index=' + rowindex + ' class="editable disabled" type="text" style="cursor:pointer"  value="' + DEF1.replace("null", "") + '"/><input id="DEF10➩' + rowindex + '" type="hidden" value="' + rowData.DEF10 + '" />'
+                                }
+                                $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                                rowindex++;
+                            });
+                        }
+                    });
+                }
+
+            });
+
+            if (!!KeyValue) {
+                var rows = $("#gridTable").jqGrid("getRowData");
+                var rowcount = rows.length;
+                AjaxJson("/ZJManager/PCRawCheckFJ/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                    var JsonData = data.rows;
+                    $.each(JsonData, function (i) {
+                        var rowData = JsonData[i];
+                        for (var rowindex = 1; rowindex <= rowcount; rowindex++) {
+                            var FJTYPE = $("#FJTYPE➩" + rowindex).val();
+                            var ZJITEM = $("#ZJITEM➩" + rowindex).val();
+                            if (ZJITEM != "" || ZJITEM != null) {
+                                if (rowData.FJTYPE == FJTYPE && rowData.ZJITEM == ZJITEM) {
+                                    $("#ZJVALUE➩" + rowindex).val(rowData.ZJVALUE);
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+        }
+    }
+
+    function SetUpDown(rowindex) {
+        var key = event.keyCode;
+        if (key == 38 || key == 40) {
+            var a = $(document.activeElement);
+            if ($(a).attr("enter") == "1") {
+                var maxcode = $(a).attr("index");
+                var maxcodenext = key == 38 ? FloatSub(maxcode, 1) : FloatAdd(maxcode, 1);
+                $("#gridTable").find("input[index='" + maxcodenext + "'][enter='1']").focus();
+                $("#gridTable").find("input[index='" + maxcodenext + "'][enter='1']").select();
+            }
+        }
+    }
+
+    function SetWebMyControls(data) {
+        try {
+            for (var key in data) {
+
+                var id = $('#' + key);
+                if (id.attr('id')) {
+                    var value = $.trim(data[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                    var type = id.attr('type');
+                    switch (type) {
+                        case "checkbox":
+                            if (value == 1) {
+                                id.attr("checked", 'checked');
+                            } else {
+                                id.removeAttr("checked");
+                            }
+                            break;
+                        default:
+                            id.val(value);
+                            break;
+                    }
+                }
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 230,
+            autowidth: true,
+            colModel: [
+
+              { label: '检验类型', name: "FJTYPE", width: 80, sortable: false, align: 'center' },
+              { label: '化验项[<font face="宋体">*</font>]', name: 'ZJITEMNAME', width: 120, sortable: false, align: 'center' },
+              { label: '化验值', name: "ZJVALUE", width: 80, sortable: false, align: 'center' },
+              { label: '合格判定', name: "ZJBZRESULT", width: 120, sortable: false, align: 'center' },
+              { label: '检验标准', name: "CHECKMEMO", width: 200, sortable: false, align: 'center' },
+              { label: '描述', name: "ZJBZRESULTNAME", width: 300, sortable: false, align: 'left' },
+              { label: '单位', name: "DEF1", width: 60, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+
+    }
+
+    function AVGZJRESULT() {
+        var CYTYPE = $("#CYTYPE").val();
+        if (CYTYPE != "2") {
+            tipDialog("只有C样需要平均结果!", 3, "");
+            return false;
+        }
+        var postData = {};
+        var BILLNO = $("#BILLNO").val();
+        var PRINTCODE = $("#PRINTCODE").val();
+        postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+        AjaxJson("/ZJManager/PCRawCheckFJ/CheckData?BILLNO=" + BILLNO + "&PRINTCODE=" + PRINTCODE, postData, function (data) {
+            var JsonData = data.rows;
+            var rowindex = 1;
+            $.each(JsonData, function (i) {
+                var rowData = JsonData[i];
+                var index = 1;
+                $("#gridTable tbody tr").each(function (i) {
+                    var ZJITEM = $("#ZJITEM➩" + index).val();
+                    var FJTYPE = $("#FJTYPE➩" + index).val();
+                    if (FJTYPE == "2" && ZJITEM == rowData.ZJITEM) {
+                        $("#ZJVALUE➩" + index).val(rowData.ZJVALUE);
+                    }
+                    index++;
+                });
+                rowindex++;
+            });
+            //CheckData();
+        });
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        var rows = $("#gridTable").jqGrid("getRowData");
+        var len = rows.length;
+        if (len == 0) {
+            tipDialog("明细信息不能为空!", 3, "");
+            return false;
+        }
+        CheckData();
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/ZJManager/PCRawCheckFJ/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    //判定
+    function CheckData() {
+        var rowindex = 1;
+        var rows = $("#gridTable").jqGrid("getRowData");
+        var len = rows.length;
+        for (var index = 0; index < len; index++) {
+            CheckBZPD(rowindex);
+            rowindex++;
+        }
+    }
+    var checkstatus = 0;
+    function CheckBZPD(index) {
+        var zjvaltype = $("#ZJITEMNAME➩" + index).attr("zjvaltype");
+        if (zjvaltype == "1") {
+            var ZJITEM = $("#ZJITEM➩" + index).val();                                //订单数量
+            var ZJFA = $("#ZJFA➩" + index).val();                            //余量
+            var ZJVALUE = $("#ZJVALUE➩" + index).val();                //预提
+            getAjax("/ZJManager/PCRawCheckFJ/PCRawCHECheckZJBZ?ZJITEMNO=" + escape(ZJITEM) + "&ZJFA=" + escape(ZJFA) + "&ZJValue=" + escape(ZJVALUE), "", function (data) {
+                var json = jQuery.parseJSON(data);
+                $("#ZJBZRESULT➩" + index).val(json.Code);
+                if (json.Code == "1") {
+                    checkstatus++;
+                }
+            });
+        }
+        if (checkstatus == 0) {
+            $("#ZJRESULT").val("0");
+        } else {
+            $("#ZJRESULT").val("1");
+        }
+    }
+
+    //强制合格
+    function QZCheckData() {
+        var rowindex = 1;
+        var rows = $("#gridTable").jqGrid("getRowData");
+        var len = rows.length;
+        if (len == 0) {
+            tipDialog("明细信息不能为空!", 3, "");
+            return false;
+        }
+        for (var index = 0; index < len; index++) {
+            $("#ZJBZRESULT➩" + rowindex).val("0");
+            rowindex++;
+        }
+        $("#ZJRESULT").val("0");
+    }
+
+ 
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a><a title="判定" onclick="CheckData()" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/ok.png")) 50% 4px no-repeat;">
+                        判定</b></span></a><a title="强制合格" onclick="QZCheckData()" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/ok.png")) 50% 4px no-repeat;">
+                            强制合格</b></span></a><a id="SelZJOrder" title="加权计算" onclick="AVGZJRESULT()" class="tools_btn">
+                                <span><b
+                         style="background: url(@Url.Content("~/Content/Images/Icon16/application_view_list.png")) 50% 4px no-repeat;">
+                                    平均结果</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                            离开</b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            化验单号：
+        </th>
+        <td class="formValue">
+            <input id="BILLNO" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                err="化验单号" checkexpession="NotNull" value="@ViewBag.BillNo"  >
+        </td>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单人" checkexpession="NotNull"  value="@ViewBag.CreateUserName"/>
+        </td>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                        err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制样扫码：
+        </th>
+        <td class="formValue">
+            <input id="DEF1" type="hidden" dbfield="true" />
+            <input id="ZJFA" type="hidden" dbfield="true" />
+            <input id="CYID" type="hidden" dbfield="true" />
+            <input id="PCRAWTYPE" type="hidden" value="0" dbfield="true" />
+            <input id="PRINTCODE" type="text" dbfield="true" class="txt required" datacol="yes"
+                err="制样扫码" checkexpession="NotNull">
+        </td>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" dbfield="true" />
+            <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPEC" type="text" dbfield="true" class="txt readonly" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            接收公司：
+        </th>
+        <td class="formValue">
+            <input id="PK_ORG" type="hidden" dbfield="true" />
+            <input id="ORGNAME" type="text" class="txt" dbfield="true" />
+        </td>
+        <th class="formTitle">
+            采样日期：
+        </th>
+        <td class="formValue">
+            <input id="CYDATE" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                datacol="yes" dbfield="true" err="日期" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            化验人：
+        </th>
+        <td class="formValue">
+            <input id="DEF10" type="text"  dbfield="true"  class="txt " datacol="yes" dbfield="true" err="化验人"
+                checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            合格判定：
+        </th>
+        <td class="formValue">
+            <select id="ZJRESULT" class="txtselect" dbfield="true" datacol="yes" err="合格判定" checkexpession="NotNull">
+                <option value="">---请选择---</option>
+                <option value="0" selected="selected">检验合格</option>
+                <option value="1">检验不合格</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            复检类型：
+        </th>
+        <td class="formValue">
+            <select id="CYTYPE" class="txtselect" dbfield="true">
+                <option value="">请选择</option>
+                @*<option value="0">A样</option>*@
+                <option value="1" selected="selected">B样</option>
+                <option value="2">C样</option>
+            </select>
+        </td>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue">
+            <input id="MEMO" type="text" class="txt" dbfield="true" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                质检信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+    </div>
+</div>
+</form>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+    
+    .ui-jqgrid tr.ui-row-ltr td
+    {
+        padding: 0px;
+        border-bottom: 1px solid #ccc;
+    }
+    
+    .ui-jqgrid .ui-jqgrid-htable th
+    {
+        line-height: 15px;
+    }
+    
+    .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+    {
+        background: none;
+    }
+    
+    .editable
+    {
+        height: 22px;
+        background-color: #fff;
+    }
+</style>

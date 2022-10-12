@@ -1,0 +1,134 @@
+﻿@{
+    ViewBag.Title = "物料分类";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+  
+       $(document).ready(function () {
+       
+             setTimeout(function () {
+                GetGrid();
+            }, 100);
+ 
+    });
+ 
+ 
+    //加载表格
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/Material/TreeGridListJson")",
+            datatype: "json",
+            treeGrid: true,
+            treeGridModel: "nested",
+            ExpandColumn: "Code",
+            height: $(window).height()-80,
+            autowidth: true,
+            colNames: ['主键', '名称', '编码', '简称', '拼音码', "pk_Id"],
+            colModel: [
+            {  name: 'Id', index: 'Id', width: 80,key:true, hidden: true },
+            {   name: "Name", index: "Name", width: 180 , formatter: showName },
+            {  name: "Code", index: "CODE", width: 100 },
+            {   name: "ShortName", index: "ShortName", width: 150 },
+            { name: "SPELLCODE", index: "SPELLCODE", width: 100 },
+            { name: "pk_Id", index: "pk_Id", hidden: true }
+            ],
+            pager: "false",
+            rowNum: 2000, 
+            multiselect: true, 
+               rownumbers: true,
+               shrinkToFit: false,
+               gridComplete: function () {
+//                   $(".ace").change(function () {
+//                       var id = $(this).attr("value");
+//                       var checked = $(this)[0].checked;
+//                       $(".ace").each(function () {
+//                           var selectvalue = $(this).attr("value");
+//                           if (selectvalue != null) {
+//                               if (selectvalue.length > id.length) {
+//                                   if (selectvalue.substring(0, id.length) == id) {
+//                                       if (checked) {
+//                                           $(this).attr("checked", "checked");
+//                                       } else {
+//                                           $(this).removeAttr("checked");
+//                                       }
+//                                   }
+//                               }
+//                           }
+//                       });
+//                       
+//                   })
+               }
+        });
+
+    }
+function showName( cellvalue, options, cell ) {
+    var rowId = cell.Id;
+    var checkbox = '<label ><input type="checkbox" id="chx' + rowId + '" class="ace" value="' + rowId + '" val="' + cell.Name + '" pk_id="' + cell.pk_Id + '" />' +
+                        '<span class="lbl align-top" ></span>'+  cell.Name +'</label>';
+    return  checkbox ;          
+}
+ 
+     //搜索
+    function btn_Search() {
+        var keyword = $("#keyword").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "/BaseSet/Material/TreeGridListJson?keyword=" + escape(keyword) , page: 1
+        }).trigger('reloadGrid');
+    }
+
+  function SelectText(txtname,txtid) {
+   var keys = [];
+    var vals = [];
+    $('input:checkbox:checked').each(function (index, item) {
+        keys.push($(this).attr("pk_id"));
+      vals.push($(this).attr("val"));
+    });
+     var ids=keys.join(',');
+      var names=vals.join(',');
+      
+//        var RowIndx=$("#gridTable").jqGrid('getGridParam','selrow');
+//        var rowData = $("#gridTable").jqGrid('getRowData', RowIndx);
+        var frameid = tabiframeId();
+        var $parentobj = top.frames[frameid];
+//        $parentobj.$("#" + txtid).val(rowData.Id);
+//        $parentobj.$("#" + txtname ).val(rowData.ShortName);
+        $parentobj.$("#" + txtid).val(ids);
+        $parentobj.$("#" + txtname ).val(names);
+        closeDialog();
+    }
+    function ClearText(txtname, txtid) {
+        var frameid = tabiframeId();
+        var $parentobj = top.frames[frameid];
+        $parentobj.$("#" + txtid).val("");
+        $parentobj.$("#" + txtname).val("");
+        closeDialog();
+    }
+
+
+
+ //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+</script>
+<div class="rightline" style="margin: 1px; margin-top: -1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    关键字：
+                </th>
+                <td>
+                    <input id="keyword" type="text" class="txt" style="width: 120px" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable">
+    </table>
+</div>

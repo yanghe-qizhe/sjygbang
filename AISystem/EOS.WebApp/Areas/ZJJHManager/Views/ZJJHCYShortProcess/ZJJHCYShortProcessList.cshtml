@@ -1,0 +1,239 @@
+﻿@{
+    ViewBag.Title = "非钢采样短流程管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键 
+    $(function () {  
+        GetGrid();      
+    })
+     
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#NAME").val();  
+        var MATERIALNAME = $("#MATERIALNAME").val();   
+        var CheckedTYPE = $("#TYPE")[0].checked.toString();
+        var CheckedISSEND = $("#ISSEND")[0].checked.toString();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJJHManager/ZJJHCYShortProcess/GetZJJHCYShortProcessList")?StartTime=" + StartTime + '&EndTime=' + EndTime  + '&BillNo=' + escape(BillNo)+ '&MATERIALNAME=' + escape(MATERIALNAME) +   '&CHECKTYPE=' + escape(CheckedTYPE) + '&CHECKISSEND=' + escape(CheckedISSEND), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJJHManager/ZJJHCYShortProcess/GetZJJHCYShortProcessList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth:true,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID', width: 180, align: 'left',align:'center',hidden:true }, 
+                { label: '批号', name: 'BILLNO', index: 'BILLNO', width: 80, align: 'left',align:'center' },
+                {
+                    label: '类型', name: 'PCRAWTYPE', index: 'PCRAWTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return "短流程";  
+                    }
+                }, 
+                {
+                    label: '状态', name: 'TYPE', index: 'TYPE', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<span style='color:red;font-size:18px'>创建批号</span>";
+                        if (cellvalue == '2') return "<span style='color:blue;font-size:18px'>组批中</span>";
+                        if (cellvalue == '3') return "<span style='color:green;font-size:18px'>组批完成</span>";
+                    }
+                },
+                {
+                    label: '送检状态', name: 'ISSEND', index: 'ISSEND', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) { 
+                        if (cellvalue == '0') return "<span style='color:red;font-size:18px'>未送检</span>";
+                        if (cellvalue == '1') return "<span style='color:green;font-size:18px'>已送检</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:18px'>未送检</span>";
+                    }
+                },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 150, align: 'center'  }, 
+                { label: '方案', name: 'FANAME', index: 'FANAME', width: 150, align: 'center'  },    
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 100, align: 'center' },
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 80, align: 'center' },
+                {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 300, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+        });
+        
+    }
+     
+    //新增
+    function btn_add() { 
+        var url = "/ZJJHManager/ZJJHCYShortProcess/ZJJHCYShortProcessAdd?FormID=@ViewBag.FormID";
+        Dialog(url, "ZJJHCYShortProcessAdd", "新增短流程", 900, 400);
+    }
+     
+    //编辑
+    function btn_edit() { 
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            GetStatus(KeyValue); 
+            if(TypeStatus.TYPE!="3"){ 
+                var url = "/ZJJHManager/ZJJHCYShortProcess/ZJJHCYShortProcessAdd?KeyValue="+escape(KeyValue)+"&FormID=@ViewBag.FormID";
+                Dialog(url, "ZJJHCYShortProcessAdd", "编辑短流程", 900, 400);
+            } else{
+                tipDialog("组批完成无法编辑", 3, 0);
+            }  
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        var BILLNO = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsDelData(KeyValue)) { 
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ZJJHManager/ZJJHCY/DeleteItem', delparm, KeyValue.split(",").length,BILLNO);
+        }
+    }
+    function delConfig(url, parm, count,BILLNO) {
+        if (count == undefined) {
+            count = 1;
+        }
+        confirmDialog("提示", "注：您确定要删除【"+BILLNO+"】当前组批记录吗？将会导致批次信息数据丢失,请谨慎操作", function (r) {
+            if (r) {
+                Loading(true, "正在删除数据...");
+                window.setTimeout(function () {
+                    AjaxJson(url, parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }, 200);
+            }
+        });
+    }
+    //获取单据状态
+    function GetStatus(KeyValue){ 
+        AjaxJson("/ZJJHManager/ZJJHCY/GetJHStatus?KeyValue=" +escape(KeyValue), "", function (data) {
+            if (data.Success) {
+                TypeStatus = jQuery.parseJSON(data.Message);
+            }else{
+                tipDialog(data.Message, 3, data.Code);
+                return;
+            } 
+        });
+    }
+      
+     
+    //完成
+    function Finish(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AjaxJson("/ZJJHManager/ZJJHCYShortProcess/ZJJHCYFinishShortProcess?KeyValue=" + escape(KeyValue), "", function (data) {
+                if (data.Code == "1") {
+                    windowload();
+                }
+                tipDialog(data.Message, 3, data.Code); 
+            });  
+        }
+    }
+
+    //取消完成
+    function UNFinish(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            AjaxJson("/ZJJHManager/ZJJHCY/ZJJHCYUNFinish?KeyValue=" + escape(KeyValue), "", function (data) {
+                if (data.Code == "1") {
+                    windowload();
+                }
+                tipDialog(data.Message, 3, data.Code); 
+            });  
+        }
+    }
+
+     
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    批号：
+                </th>
+                <td>
+                    <input id="NAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+                <td>
+                    <span class="item">
+                        <input type="checkbox" name="checkbox" id="TYPE" />
+                        <label for="TYPE">
+                            组批完成</label>
+                    </span>
+                </td>
+                <td>
+                    <span class="item">
+                        <input type="checkbox" name="checkbox" id="ISSEND" />
+                        <label for="ISSEND">
+                            已送检</label>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,540 @@
+﻿@{
+    ViewBag.Title = "转序物理检测";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery("KeyValue");
+    var ModuleId = GetQuery("ModuleId");
+    var CYID = GetQuery("CYID");
+    $(function () {
+        $("#CYDetails").css("height", $(this).height() - $(".tools_bar").height() - $("#RuleHead").height() - $(".bd").height() - 10);
+
+        InitControl();
+
+        SetEnter();
+        SetUpDown();
+    })
+
+    //回车切换
+    function SetEnter() {
+        //获取当前鼠标所在的焦点元素
+        var $inp = $("input:text");
+        $inp.bind('keydown', function (e) {
+            var key = e.which;
+            if (key == 13 || key == 108) {
+                var a = $(document.activeElement);
+                if ($(a).attr("enter") == "1") {
+                    e.preventDefault();
+                    var maxcode = $(a).attr("index");
+                    var maxcodenext = FloatAdd(maxcode, 1);
+                    $("#tbZJItem").find("input[index='" + maxcodenext + "'][enter='1']").focus().select();
+                }
+            }
+        });
+    }
+
+    //上下键切换
+    function SetUpDown() {
+        //获取当前鼠标所在的焦点元素
+        var $inp = $("input:text");
+        $inp.bind('keydown', function (e) {
+            var key = e.which;
+            if (key == 38 || key == 40) {
+                var a = $(document.activeElement);
+                if ($(a).attr("enter") == "1") {
+                    e.preventDefault();
+                    var maxcode = $(a).attr("index");
+                    var maxcodenext = key == 38 ? FloatSub(maxcode, 1) : FloatAdd(maxcode, 1);
+                    $("#tbZJItem").find("input[index='" + maxcodenext + "'][enter='1']").focus().select();
+                }
+            }
+        });
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJZXManager/ZJZXCYPHYSICAL/SetFormMain", { KeyValue: KeyValue, CYID: CYID }, function (data) {
+                SetWebControls(data);
+            });
+            LoadZJItem();
+            $("#ZJItemStatus").val("1");
+        }
+    }
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data.M[0]) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data.M[0][key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+
+                //                $.each(data.D, function (i, o) {
+                //                    var maxcode = parseInt($("#MaxID").val()) + 1;
+                //                    var tr = '<tr index=' + maxcode + '><td class="td-div" style="width: 30px; text-align: center; border-left: none;" ondblclick="Del(this)" index=' + maxcode + ' >' + maxcode + '</td>';
+                //                    tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="YBILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" datacol="yes" err="样号" checkexpession="NotNull" /></td>';
+                //                    tr += '<td class="formValue" style="width: 80px; text-align: center;"><input id="BILLNO➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" /><input id="PCID➩' + maxcode + '" readonly="readonly" type="hidden" class="txt required readonly" /><input id="PCITEMID➩' + maxcode + '" type="hidden" class="txt" /></td>';
+                //                    tr += '<td class="formValue" style="width: 150px; text-align: center;"><input id="LEADERDEPAS➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /><input id="PK_LEADERDEPAS➩' + maxcode + '" type="hidden" class="txt" /></td>';
+                //                    tr += '<td class="formValue" style="width: 50px; text-align: center;"><input id="CARSNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /><input id="CARS➩' + maxcode + '" type="hidden" class="txt" /></td>';
+                //                    tr += '<td class="formValue" style="width: 120px; text-align: center;"><input id="MATERIALNAME➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly"  /><input id="MATERIAL➩' + maxcode + '" type="hidden" class="txt"/></td>';
+                //                    tr += '<td class="formValue" style="width: 100px; text-align: center;"><input id="LEADERDEPAT➩' + maxcode + '" readonly="readonly" type="text" class="txt required readonly" /><input id="PK_LEADERDEPAT➩' + maxcode + '" type="hidden" class="txt" /></td>';
+                //                    tr += '<td class="formValue" style="width: 60px; text-align: center;"><input id="KZ➩' + maxcode + '" type="text" class="txt required readonly" readonly="readonly" onfocus="IsMoney(this.id)" value="0" checkexpession="Double" /></td>';
+                //                    tr += '<td class="formValue" style="width: 60px; text-align: center;"><select id="KS➩' + maxcode + '" class="txtselect required readonly" disabled datacol="yes" err="扣水"></select></td>';
+                //                    tr += '<td class="formValue" style="width: 80px; text-align: center;"><input id="MEMO➩' + maxcode + '" type="text" class="txt required" /></td>';
+                //                    tr += '</tr>';
+                //                    $("#add_TableInfo").append(tr);
+                //                    $("#MaxID").val(maxcode);
+                //                    DetailsBind(maxcode);
+                //                    for (var key in o) {
+                //                        var id = $('#' + key + "➩" + (i + 1));
+                //                        if (id.attr('id')) {
+                //                            var value = $.trim(o[key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                //                            var type = id.attr('type');
+                //                            switch (type) {
+                //                                case "checkbox":
+                //                                    if (value == 1) {
+                //                                        id.attr("checked", 'checked');
+                //                                    } else {
+                //                                        id.removeAttr("checked");
+                //                                    }
+                //                                    break;
+                //                                default:
+                //                                    //id.val(value);
+                //                                    id.attr("value", value);
+                //                                    break;
+                //                            }
+                //                        }
+                //                    }
+                //                })
+            }
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    function DetailsBind(maxcode) {
+        $("#KZ➩" + maxcode).bind("blur", function () {
+            $(this).val(parseFloat($(this).val()).toFixed(3));
+        })
+        BindDropItemForID("#KS➩" + maxcode, "KSType", "==请选择="); //扣水类型
+    }
+
+    //Tab标签切换
+    function Tabchange(id) {
+        $('.ScrollBar').find('.tabPanel').hide();
+        $('.ScrollBar').find("#" + id).show();
+        $(".tab_list_top div").removeClass("actived");
+        $(".tab_list_top").find("#Tab" + id).addClass("actived"); //添加选中样式
+        if ($("#ZJItemStatus").val() == "0" && id == "ZJItem") {
+            $("#ZJItemStatus").val("1");
+            LoadZJItem();
+        }
+    }
+
+    //加载质检项目
+    function LoadZJItem() {
+        AjaxJson("/ZJZXManager/ZJZXCYPHYSICAL/LoadPHYZJItem?KeyValue=" + escape(KeyValue), "", function (data) {
+            if (IsNull(data)) {
+                var json = jQuery.parseJSON(data.Message);
+                LoadZJItemControls(json);
+            }
+        });
+    }
+
+    //循环加载物理质检项目
+    function LoadZJItemControls(json) {
+        var rowindex = 0;
+        var len = json.length;
+        var tr = '';
+        $.each(json, function (i, o) {
+            //var tr = '';
+            var index = i + 1;
+            if (index == 1 || (index > 2 && index % 2 == 1)) {
+                rowindex++;
+                tr += '<tr rowindex=' + rowindex + ' index=' + index + '>';
+            }
+            tr += '<th class="formTitle" style="white-space:pre-wrap">' + (o.ITEMNAME + "[" + (IsNull(o.UNIT) ? o.UNIT : "无单位") + "]") + '</th>';
+            tr += '<td class="formValue" id="name➩' + index + '" dbfield="true" index=' + index + ' enter="1">';
+            if (o.ZJVALUETYPENAME == "数值型") {
+                tr += '<input enter="1" rowindex=' + rowindex + ' index=' + index + ' id="' + o.ZJITEM + '" type="text" format="' + (IsNull(o.FORMAT) && o.FORMAT.indexOf('.') > 0 ? o.FORMAT.split('.')[1].length : "") + '" class="txt required" datacol="no" dbfield="true" err="' + o.ITEMNAME + '" value="' + (IsNull(o.ZJVALUE) ? o.ZJVALUE : "") + '" onfocus="IsMoneySubtract(this.id)" checkexpession="NotNull" />';
+            } else if (o.ZJVALUETYPENAME == "文本型") {
+                tr += '<select enter="1" rowindex=' + rowindex + ' index=' + index + ' id="' + o.ZJITEM + '" class="txtselect required" datacol="yes" err="' + o.ITEMNAME + '" checkexpession="NotNull">';
+                tr += '<option value="合格" ' + (o.ZJVALUE == "合格" ? "selected" : "") + '>合格</option>';
+                tr += '<option value="不合格" ' + (o.ZJVALUE == "不合格" ? "selected" : "") + '>不合格</option>';
+                tr += '</select>';
+            } else {
+                tr += '<input enter="1" rowindex=' + rowindex + ' index=' + index + ' id="' + o.ZJITEM + '" type="text" class="txt required" datacol="no" dbfield="true" err="' + o.ITEMNAME + '" value="' + (IsNull(o.ZJVALUE) ? o.ZJVALUE : "") + '" checkexpession="NotNull" />';
+            }
+            tr += '</td>';
+            tr += '<td class="formValue" id="result➩' + index + '" style="width:150px">';
+            //tr += '<input rowindex=' + rowindex + ' index=' + index + ' id="txtzjbz➩' + index + '" type="hidden" />';
+            tr += '<input rowindex=' + rowindex + ' index=' + index + ' id="ZJBZRESULT➩' + index + '" type="hidden" dbfield="true" value="' + (!IsNull(o.ZJBZRESULT) ? "" : o.ZJBZRESULT) + '" />';
+            tr += '<input rowindex=' + rowindex + ' index=' + index + ' id="txtresult➩' + index + '" type="text" class="txt" value="' + (!IsNull(o.ZJBZRESULTNAME) ? "" : o.ZJBZRESULTNAME) + '" style="background-color:#dd7e6b" readonly="readonly" />';
+            tr += '</td>';
+            if (index == len || (index % 2 == 0)) {
+                tr += '</tr>';
+            }
+
+            $("#" + o.ZJITEM).live("blur", function () {
+                if (o.ZJVALUETYPENAME == "数值型" && IsNull(o.FORMAT) && o.FORMAT.indexOf('.') > 0) {
+                    if (!IsNull($(this).val())) {
+                        //$(this).val(FormatFloat("0.000000", o.FORMAT.split('.')[1].length));
+                    } else {
+                        $(this).val(FormatFloat($(this).val(), o.FORMAT.split('.')[1].length));
+                    }
+                }
+                var index = $(this).attr('index');
+                getAjax("/ZJZXManager/ZJZXCYPHYSICAL/ZXPHYCheckZJBZ?ZJITEMNO=" + escape(o.ZJITEM) + "&ZJFA=" + escape(o.ZJFA) + "&ZJValue=" + escape($(this).val()), "", function (data) {
+                    var json = jQuery.parseJSON(data);
+                    $("#txtresult➩" + index).val(json.Message);
+                    $("#ZJBZRESULT➩" + index).val(json.Code);
+                });
+            })
+        })
+        $("#tbZJItem").append(tr);
+        $.each(json, function (i, list) {
+            if (list.ZJVALUETYPENAME == "数值型" && IsNull(list.FORMAT) && list.FORMAT.indexOf('.') > 0) {
+                TxtBandFocusBlurEvent(list.ZJITEM, list.FORMAT.split('.')[1].length);
+            }
+        });
+    }
+    function TxtBandFocusBlurEvent(txtid, type) {
+        $("#" + txtid).attr('maxlength', '10');
+        $("#" + txtid).focus(function () {
+            if ($("#" + txtid).val() == "0" || $("#" + txtid).val() == "0.000" || $("#" + txtid).val() == "0.00") {
+                $("#" + txtid).val("");
+            }
+        });
+        //        $("#" + txtid).blur(function () {
+        //            if ($("#" + txtid).val() == "") {
+        //                $("#" + txtid).val(FormatFloat("0.000000", type));
+        //            } else {
+        //                $("#" + txtid).val(FormatFloat($("#" + txtid).val(), type));
+        //            }
+        //        });
+    }
+
+    function FormatFloat(num, type) {
+        var stype = "100000".substr(0, parseInt(type) + 1);
+        num = num.toString().replace(/\$|\,/g, '');
+        if (isNaN(num))
+            num = "0";
+        sign = (num == (num = Math.abs(num)));
+        num = Math.floor(num * parseInt(stype) + 0.50000000001);
+        cents = num % parseInt(stype);
+        num = Math.floor(num / parseInt(stype)).toString();
+        while ((cents).toString().length < type) {
+            cents = "0" + cents;
+        }
+        for (var i = 0; i < Math.floor((num.length - (1 + i)) / 3) ; i++)
+            num = num.substring(0, num.length - (4 * i + 3)) + '' +
+                num.substring(num.length - (4 * i + 3));
+        return (((sign) ? '' : '-') + num + '.' + cents);
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if ($("#tbZJItem").find("tr").length <= 0) {
+            tipDialog("未发现质检项目", 3, 0);
+            tipCss($(this), "未发现质检项目");
+            return false;
+        }
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = jQuery.parseJSON('{"ZXPHYData":""}');
+            postData["ZXPHYData"] = GetTableDataJson("#tbZJItem");
+            postData["PHYMemo"] = $("#PHYMEMO").val();
+            AjaxJson("/ZJZXManager/ZJZXCYPHYSICAL/ZXPHYSave?KeyValue=" + escape(KeyValue) + "&SaveType=SAVE", postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames["tabs_iframe_" + ModuleId].windowload();
+                ThisCloseTab();
+            });
+        }, 200);
+    }
+
+    function GetTableDataJson(tableId) {
+        var item_Key_Value = "";
+        var index = 1;
+        var trjson = "";
+        if ($(tableId + " tbody tr").length > 0) {
+            $(tableId + " tbody tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[DBField=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    index = $(this).attr('index');
+                    tdjson += '{"id":"' + array[0] + '", "name"' + ':' + '"' + $.trim(pk_value) + '", "ZJBZRESULT"' + ':' + '"' + $.trim($("#ZJBZRESULT➩" + index).val()) + '", "ZJBZRESULTNAME"' + ':' + '"' + $.trim($("#txtresult➩" + index).val()) + '"},'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                //trjson += '{' + tdjson + '},';
+                trjson += '[' + tdjson + '],';
+            });
+        } else {
+            $(tableId + " tr").each(function () {
+                var tdjson = "";
+                $(this).find('td[DBField=true]').find('input,select,textarea').each(function () {
+                    var pk_id = $(this).attr('id');
+                    var pk_value = "";
+                    if ($("#" + pk_id).attr('type') == "checkbox") {
+                        if ($("#" + pk_id).attr("checked")) {
+                            pk_value = "1";
+                        } else {
+                            pk_value = "0";
+                        }
+                    } else {
+                        pk_value = $("#" + pk_id).val();
+                    }
+                    var array = new Array();
+                    array = pk_id.split("➩"); //字符分割
+                    index = $(this).attr('index');
+                    //tdjson += '"' + array[0] + '"' + ':' + '"' + $.trim(pk_value) + '",'
+                    tdjson += '{"id":"' + array[0] + '", "name"' + ':' + '"' + $.trim(pk_value) + '", "ZJBZRESULT"' + ':' + '"' + $.trim($("#ZJBZRESULT➩" + index).val()) + '", "ZJBZRESULTNAME"' + ':' + '"' + $.trim($("#txtresult➩" + index).val()) + '"},'
+                })
+                tdjson = tdjson.substr(0, tdjson.length - 1);
+                trjson += '[' + tdjson + '],';
+            });
+        }
+        trjson = trjson.substr(0, trjson.length - 1);
+        if (trjson == '[]') {
+            trjson = "";
+        }
+        //return '[' + trjson + ']';
+        return trjson;
+    }
+
+
+</script>
+<form id="form1" style="margin: 1px">
+    <input id="MaxID" type="hidden" value="0" />
+    <input id="ZJRESULTID" type="hidden" />
+    <input id="ZJItemStatus" type="hidden" value="0" />
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+        <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+            <span>
+                <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                    刷新
+                </b>
+            </span>
+        </a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存
+                </b>
+            </span>
+        </a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+            <span>
+                <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                    离开
+                </b>
+            </span>
+        </a>
+    </div>
+    <div id="PCRAWCYPHYSICAL">
+        <div id="RuleHead">
+            <table class="form">
+                <tr>
+                    <th class="formTitle">
+                        批号：
+                    </th>
+                    <td class="formValue">
+                        <input id="BILLNO" maxlength="50" type="text" class="txt required readonly" readonly="readonly"
+                               datacol="yes" dbfield="true" err="批号" checkexpession="NotNull" />
+                    </td>
+                    <th class="formTitle">
+                        日期：
+                    </th>
+                    <td class="formValue">
+                        <input id="CYDATE" maxlength="50" type="text" class="txt readonly" readonly="readonly"
+                               datacol="yes" dbfield="true" err="日期" checkexpession="NotNull" />
+                    </td>
+                    <th class="formTitle">
+                        组批车数：
+                    </th>
+                    <td class="formValue">
+                        <input id="CARSNUM" type="text" class="txt required readonly" readonly="readonly"
+                               dbfield="true" err="组批车数" checkexpession="NotNull" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">
+                        质检方案：
+                    </th>
+                    <td class="formValue">
+                        <input id="FANO" type="hidden" dbfield="true" />
+                        <input id="FANAME" type="text" class="txt readonly" readonly="readonly" err="质检方案" />
+                    </td>
+                    <th class="formTitle">
+                        物料：
+                    </th>
+                    <td class="formValue">
+                        <input id="MATERIAL" type="hidden" dbfield="true" />
+                        <input id="MATERIALNAME" type="text" class="txt readonly" readonly="readonly" err="物料" />
+                    </td>
+                    <th class="formTitle">
+                        发货单位：
+                    </th>
+                    <td class="formValue">
+                        <input id="PK_LEADERDEPAS" type="hidden" dbfield="true" />
+                        <input id="LEADERDEPAS" type="text" class="txt readonly" readonly="readonly" err="发货单位" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">
+                        制单日期：
+                    </th>
+                    <td class="formValue">
+                        <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly"
+                               err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+                    </td>
+                    <th class="formTitle">
+                        制单人：
+                    </th>
+                    <td class="formValue">
+                        <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly"
+                               err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+                    </td>
+                    <th class="formTitle">
+                    </th>
+                    <td class="formValue"></td>
+                </tr>
+                <tr>
+                    <th class="formTitle">
+                        质检备注：
+                    </th>
+                    <td class="formValue" colspan="5">
+                        <input id="PHYMEMO" type="text" class="txt " err="质检备注" dbfield="true" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="bd" style="border: none; margin-bottom: 1px;">
+            <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+                <div class="tab_list_top" style="position: absolute">
+                    <div id="TabToolbar" class="tab_list bd actived" onclick="Tabchange('ZJItem')">
+                        检测项目
+                    </div>
+                    @*<div id="TabRightToolbar" class="tab_list bd " onclick="Tabchange('CYDetails')">
+                        采样明细</div>*@
+                </div>
+            </div>
+        </div>
+        <div class="ScrollBar" style="overflow: hidden">
+            <div id="ZJItem" class="tabPanel" style="display: block;">
+                <table id="tbZJItem" class="form"></table>
+            </div>
+            <div id="CYDetails" class="tabPanel" style="display: none; overflow: auto">
+                <table id="Temp_List" class="grid leftline form" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <td style="width: 30px; text-align: center; border-left: none;">
+                                <div class="table-header">
+                                    行号
+                                </div>
+                            </td>
+                            <td style="width: 50px; text-align: center;">
+                                <div class="table-header">
+                                    样号
+                                </div>
+                            </td>
+                            <td style="width: 80px; text-align: center;">
+                                <div class="table-header">
+                                    过磅单号
+                                </div>
+                            </td>
+                            <td style="width: 150px; text-align: center;">
+                                <div class="table-header">
+                                    发货单位
+                                </div>
+                            </td>
+                            <td style="width: 50px; text-align: center;">
+                                <div class="table-header">
+                                    车号
+                                </div>
+                            </td>
+                            <td style="width: 120px; text-align: center;">
+                                <div class="table-header">
+                                    物料
+                                </div>
+                            </td>
+                            <td style="width: 150px; text-align: center;">
+                                <div class="table-header">
+                                    收货单位
+                                </div>
+                            </td>
+                            <td style="width: 60px; text-align: center;">
+                                <div class="table-header">
+                                    扣重(吨)
+                                </div>
+                            </td>
+                            <td style="width: 60px; text-align: center;">
+                                <div class="table-header">
+                                    扣水
+                                </div>
+                            </td>
+                            <td style="width: 200px; text-align: center;">
+                                <div class="table-header">
+                                    备注
+                                </div>
+                            </td>
+                            <td style="display: none"></td>
+                        </tr>
+                    </thead>
+                    <tbody id="add_TableInfo"></tbody>
+                </table>
+                <div class="line">
+                </div>
+                <table class="grid  form" style="width: 100%;">
+                    <tfoot>
+                        <tr>
+                            <td style="width: 30px; text-align: center;">
+                                合计
+                            </td>
+                            <td style="width: 50px; text-align: center;"></td>
+                            <td style="width: 80px; text-align: center;"></td>
+                            <td style="width: 150px; text-align: center;"></td>
+                            <td style="width: 50px; text-align: center;"></td>
+                            <td style="width: 120px; text-align: center;"></td>
+                            <td style="width: 150px; text-align: center;"></td>
+                            <td style="width: 60px; text-align: center;">
+                                <label id="TotalKZ">
+                                </label>
+                            </td>
+                            <td style="width: 60px; text-align: center;"></td>
+                            <td style="width: 200px; text-align: center;"></td>
+                            <td style="display: none"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>

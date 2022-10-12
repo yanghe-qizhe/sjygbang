@@ -1,0 +1,73 @@
+﻿@{
+    ViewBag.Title = "供应商系数》表单页面";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var op = GetQuery("op");
+    $(function () {
+        InitControl();
+    });
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/SUPPLYPRICE/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+
+    }
+</script>
+<form id="form1" style="margin: 1px">
+    <div id="message" style="display: none">
+    </div>
+    <table class="form">
+        <tr>
+            <th class="formTitle">
+                供应商：
+            </th>
+            <td class="formValue">
+                <input id="ID" type="hidden" />
+                <input id="PK_SUPPLIER" type="hidden" />
+                <input id="SUPPLIERNAME" type="text" class="txt" readonly="readonly" autocomplete="off" />
+            </td>
+            <th class="formTitle">
+                系数：
+            </th>
+            <td class="formValue">
+                <input id="PRICE" type="text" class="txt" readonly="readonly" autocomplete="off" />
+            </td>
+        </tr>
+        <tr>
+
+            <th class="formTitle">
+                执行时间：
+            </th>
+            <td class="formValue">
+                <input id="IMPLEMENTDATE" type="text" class="txt" readonly="readonly" />
+            </td>
+            <th class="formTitle">
+                是否启用：
+            </th>
+            <td class="formValue">
+                <select id="ENABLESTATE" class="txtselect" disabled="disabled">
+                    <option value="">---请选择---</option>
+                    <option value="0" selected="selected">停用</option>
+                    <option value="1">启用</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">
+                描述：
+            </th>
+            <td class="formValue" colspan="3">
+                <textarea id="VMEMO" name="Description" maxlength="200" class="txtArea" rows="5" readonly="readonly"></textarea>
+            </td>
+        </tr>
+    </table>
+</form>

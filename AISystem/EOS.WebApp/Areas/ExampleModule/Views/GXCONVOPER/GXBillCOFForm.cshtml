@@ -1,0 +1,369 @@
+﻿@{
+    ViewBag.Title = "工序任务单》新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        //秤点
+        DictionaryAutocomplete();
+        //物料辅助属性
+        MaterialSpecAutocomplete("MATERIALSPECNAME", "PK_MATERIALSPEC", "MATERIALSPECCODE");
+        InitControl();
+        $("#GXOrder").find('.decimal').click(function () {
+            $(this).select();
+        });
+        $("#MATERPIECENUM").bind('keyup', function () {
+            GetZS();
+        });
+        $("#MATERIALNUM").bind('keyup', function () {
+            GetZS();
+        });
+        $("#MATERIALWEI").bind('keyup', function () {
+            GetZS();
+        });
+
+
+        $("#MATERPIECENUM").bind('keyup', function () {
+            var num = this.value;
+            if (Number(num) > 3) {
+                tipDialog("件数不能大于3件！", 3, "");
+                this.value = 0;
+            }
+        });
+    })
+    //计算总数
+    function GetZS() {
+        var JS = $("#MATERPIECENUM").val();
+        var JZ = $("#MATERIALWEI").val();
+        var JGS = $("#MATERIALNUM").val();
+
+        if (JS != 0 && JS != undefined && JGS != 0 && JGS != undefined) {
+            var ZS = FloatMul(JS, JGS);
+            $("#MATERIALSNUM").val(ZS);
+            var LZ = FloatMul(ZS, JZ);
+            var LZSuttle = round2(LZ, 4);
+            $("#MATERIALSUTTLE").val(LZSuttle);
+        } else {
+            $("#MATERIALSNUM").val('0');
+        }
+    }
+    function round2(num, precision) {
+        var dnum = Math.pow(10, precision);
+        if (Math.floor(num * dnum * 10) % 5 == 0 && Math.floor(num * dnum * 10) == num * dnum * 10 && Math.floor(num * dnum) % 2 == 0) {
+            return Math.floor(num * dnum) / dnum;
+        } else {
+            return Math.round(num, precision);
+        }
+    }
+    ///获取物料辅助信息
+
+    function MaterialSpecAutocomplete(txtname, txtid, txtcode) {
+        var $txtid = $("#" + txtid);
+        var $txtname = $("#" + txtname);
+        var $txtcode = $("#" + txtcode);
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtcode.val(data.code);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/MaterialSpec", { keywords: $txtname.val(), material: $txtname.attr("material") }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtcode.val(data.code);
+                });
+            });
+        }
+    }
+
+    function DictionaryAutocomplete() {
+        var txtname = "SCALENAME";
+        var $txtid = $("#PK_SCALE");
+        var $txtname = $("#SCALENAME");
+
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 3) {
+                    var parm = "keywords=" + escape(keyvalue);
+                    var items = $(this).attr("items");
+                    if (items != null && items != "") {
+                        parm += "&items=" + escape(items);
+                    }
+                    DataSource(parm);
+                }
+            }
+        }).focus(function () {
+            var parm = "keywords=";
+            $(this).select();
+            var items = $(this).attr("items"); //添加items属性值为职称查找职称字典数据
+            if (items != null && items != "") {
+                parm += "&items=" + items;
+            }
+            DataSource(parm);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.code);
+            $txtname.val(data.name);
+        });
+        //获取数据源
+        function DataSource(parm) {
+            AjaxJson("/AutoData/Dictionary", parm, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].code + "-" + DataJson[i].name + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                    $txtid.val(data.code);
+                    $txtname.val(data.name);
+                });
+            });
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/GXCONVOPER/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+                var MATERIALCODE = $("#MATERIALCODE").val();
+                $("#MATERIALSPECNAME").attr("material", MATERIALCODE);
+            });
+        }
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    AjaxJson("/ExampleModule/GXCONVOPER/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+    function SelectMaterialMyClass(txtname, txtid, txtspec, txtcode, txtclass, title) {
+        if (title == "") {
+            title = "选取物料信息";
+        }
+        var url = "/Utility/SelectMaterial?type=2";
+        openMyDialog(url, "Form11111", title, 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText3(txtname, txtid, txtspec, txtcode, txtclass);
+                 $("#MATERIALSPECNAME").attr("material", txtcode);
+             }, function (iframe) {
+                 top.frames[iframe].CloseDialog(); // top.frames[iframe].ClearText3(txtname, txtid, txtspec, txtcode, txtclass);
+             });
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<table id="GXOrder" class="form">
+    <tr>
+        <th class="formTitle">
+            单据编号：
+        </th>
+        <td class="formValue">
+            <input id="TASKNO" type="text"  class="txt readonly" datacol="yes" err="单据编号" checkexpession="NotNull" value="@ViewBag.BillNo"/>
+        </td>
+        <th class="formTitle">
+            发货单位：
+        </th>
+        <td class="formValue">
+            <input id="PK_SENDUNIT" type="hidden" />
+            <input id="SENDUNITNAME" type="text" class="txt required" datacol="yes" err="发货单位"
+                checkexpession="NotNull" onclick='SelectDept("SENDUNITNAME", "PK_SENDUNIT", "选取收货单位信息");' />
+        </td>
+        <th class="formTitle">
+            收货单位：
+        </th>
+        <td class="formValue">
+            <input id="PK_ACCEPTUNIT" type="hidden" />
+            <input id="ACCEPTUNITNAME" type="text" class="txt required" datacol="yes" err="收货单位"
+                checkexpession="NotNull" onclick='SelectDept("ACCEPTUNITNAME", "PK_ACCEPTUNIT", "选取收货单位信息");' />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="PK_MATERIAL" type="hidden" />
+            <input id="MATERIALNAME" type="text" class="txt required" datacol="yes" err="物料名称"
+                checkexpession="NotNull" onclick='SelectMaterialMyClass("MATERIALNAME","PK_MATERIAL","MATERIALSPEC","MATERIALCODE","DEF2","");' />
+        </td>
+        <th class="formTitle">
+            物料内码：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALCODE" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                err="物料内码" />
+        </td>
+        <th class="formTitle">
+            规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPEC" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                err="物料规格" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            开始时间：
+        </th>
+        <td class="formValue">
+            <input id="STARTTIME" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)"  onfocus="WdatePicker({onpicked:function(){ENDTIME.focus();},maxDate:'#F{$dp.$D(\'STARTTIME\')}'})" />
+        </td>
+        <th class="formTitle">
+            牌号：
+        </th>
+        <td class="formValue">
+            <input id="DEF2" type="text" class="txt readonly" readonly="readonly" />
+        </td>
+        <th class="formTitle">
+            过磅秤点：
+        </th>
+        <td class="formValue">
+            <input id="PK_SCALE" type="hidden" />
+            <input id="SCALENAME" type="text" class="txt required" datacol="yes" err="过磅秤点" checkexpession="NotNull"
+                items="计量称点" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            结束时间：
+        </th>
+        <td class="formValue">
+            <input id="ENDTIME" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()"  onfocus="WdatePicker({minDate:'#F{$dp.$D(\'ENDTIME\')}'})"  />
+        </td>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue">
+            <input id="MEMO" type="text" class="txt" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            <span class="ck_span">提醒：</span>
+        </th>
+        <td class="formValue" colspan="5">
+            <span class="ck_span">
+                <label id="lbl_msg">
+                    无
+                </label>
+            </span>
+        </td>
+    </tr>
+    <tr style="display: none">
+        <th class="formTitle">
+            长度：
+        </th>
+        <td class="formValue">
+            <input id="PK_MATERIALSPEC" type="hidden" />
+            <input id="MATERIALSPECNAME" type="text" class="txt required" datacol="no" err="辅助属性"
+                checkexpession="NotNull" material="" />
+        </td>
+        <th class="formTitle">
+            长度内码：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPECCODE" type="text" class="txt readonly" readonly="readonly"
+                datacol="no" err="长度内码" />
+        </td>
+        <th class="formTitle">
+            总根数：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSNUM" type="text" class="txt readonly" readonly="readonly" value="0" />
+        </td>
+        <th class="formTitle">
+            件数：
+        </th>
+        <td class="formValue">
+            <input id="MATERPIECENUM" type="text" class="txt decimal required" datacol="no" err="件数"
+                checkexpession="Double" onfocus="IsMoney(this.id);" maxlength="5" value="0" />
+        </td>
+        <th class="formTitle">
+            单根重：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALWEI" type="text" class="txt decimal required" datacol="no" err="单根重"
+                checkexpession="Double" onfocus="IsMoney(this.id);" maxlength="20" value="0" />
+        </td>
+        <th class="formTitle">
+            件根数：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALNUM" type="text" class="txt decimal required" datacol="no" err="件跟数"
+                checkexpession="Double" onfocus="IsMoney(this.id);" maxlength="5" value="0" />
+        </td>
+        <th class="formTitle">
+            理重：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSUTTLE" type="text" class="txt readonly" readonly="readonly" value="0" />
+        </td>
+    </tr>
+</table>
+</form>

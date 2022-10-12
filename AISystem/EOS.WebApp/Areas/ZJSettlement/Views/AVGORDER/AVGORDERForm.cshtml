@@ -1,0 +1,604 @@
+﻿@{
+    ViewBag.Title = "采购结算";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        GetGrid();
+        BindAutocomplete("SUPPLYNAME", "SUPPLY", "Supply", "200", "150", "");
+
+        BindAutocompleteNew("MATERIALNAME", "MATERIAL", "MATERIALSPEC", "Material", "200", "150", "");
+
+        if (!!KeyValue) {
+            InitControl();
+            var rowindex = 1;
+            //明细信息
+            AjaxJson("/ZJSettlement/AVGORDER/GetOrderEntryList", { KeyValue: KeyValue }, function (data) {
+                var JsonData = data.rows;
+                var rowindex = 1;
+                $.each(JsonData, function (i) {
+                    var rowData = JsonData[i];
+                    if ($("#gridTable").find("input[value='" + rowData.BILLNO + "']").length <= 0) {
+                        var rowdata = {
+                            ID: '<input id="ID➩' + rowindex + '" type="hidden" value="" />',
+                            PK_TASK: '<input readonly id="PK_TASK➩' + rowindex + '" class="editable center disabled" type="text" style="cursor:pointer"  value="' + rowData.PK_TASK + '"/><input id="BILLNO➩' + rowindex + '" type="hidden" value="' + rowData.BILLNO + '" />',
+                            PK_CONTRACT_B: '<input readonly id="PK_CONTRACT_B➩' + rowindex + '"  class="editable center disabled" type="text" value="' + rowData.PK_CONTRACT_B + '"/><input id="PK_BILL➩' + rowindex + '" type="hidden" value="' + rowData.PK_BILL + '" /><input id="PK_BILL_B➩' + rowindex + '" type="hidden" value="' + rowData.PK_BILL_B + '" />',
+                            CARS: '<input readonly id="CARS➩' + rowindex + '" maxlength="10"  class="editable center disabled" type="text" value="' + rowData.CARS + '"/><input id="PK_CARSID➩' + rowindex + '" type="hidden" value="' + rowData.PK_CARSID + '" />',
+                            MATERIAL: '<input readonly id="MATERIAL➩' + rowindex + '"  class="editable center disabled" type="text" value="' + rowData.MATERIAL + '"/><input id="PK_MATERIAL➩' + rowindex + '" type="hidden" value="' + rowData.PK_MATERIAL + '" />',
+                            MATERIALKIND: '<input readonly id="MATERIALKIND➩' + rowindex + '" class="editable center disabled" type="text" style="cursor:pointer"  value="' + (rowData.MATERIALKIND != null ? rowData.MATERIALKIND : "") + '"/>',
+                            YFSUTTLE: '<input readonly id="YFSUTTLE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.YFSUTTLE + '"/>',
+                            GROSS: '<input readonly id="GROSS➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.GROSS + '"/>',
+                            TARE: '<input readonly id="TARE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.TARE + '"/>',
+                            SUTTLE: '<input readonly id="SUTTLE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.SUTTLE + '"/>',
+                            DEF3: '<input readonly id="DEF3➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.DEF3 + '"/>',
+                            JJSUTTLE: '<input readonly id="JJSUTTLE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"   value="' + getFloat(rowData.JJSUTTLE, 3) + '"/>',
+                            ZJSUTTLE: '<input readonly id="ZJSUTTLE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"   value="' + getFloat(rowData.ZJSUTTLE, 3) + '"/>',
+                            TZSUTTLE: '<input id="TZSUTTLE➩' + rowindex + '" class="editable decimal center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"   value="' + getFloat(rowData.TZSUTTLE, 3) + '"/>',
+                            BDSUTTLE: '<input readonly id="BDSUTTLE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + getFloat(rowData.BDSUTTLE, 3) + '"/>',
+                            JSSUTTLE: '<input readonly id="JSSUTTLE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + getFloat(rowData.JSSUTTLE, 3) + '"/>',
+                            PRICE: '<input id="PRICE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + getFloat(rowData.PRICE, 3) + '"/>',
+                            CHARGE: '<input readonly id="CHARGE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.CHARGE + '"/>',
+                            RECEIVESTORE: '<input readonly id="RECEIVESTORE➩' + rowindex + '" class="editable center disabled" type="text" value="' + rowData.RECEIVESTORE + '"/><input id="PK_RECEIVESTORE➩' + rowindex + '" type="hidden" value="' + rowData.PK_RECEIVESTORE + '" />',
+                            RECEIVEORG: '<input readonly id="RECEIVEORG➩' + rowindex + '" class="editable center disabled" type="text" value="' + rowData.RECEIVEORG + '"/><input id="PK_RECEIVEORG➩' + rowindex + '" type="hidden" value="' + rowData.PK_RECEIVEORG + '" />',
+
+                            PK_ORDER: '<input readonly id="PK_ORDER➩' + rowindex + '" class="editable center disabled" type="text" style="cursor:pointer"  value="' + rowData.PK_ORDER + '"/><input id="PK_ORDER_B➩' + rowindex + '" type="hidden" value="' + rowData.PK_ORDER_B + '" />',
+                            SENDORG: '<input readonly id="SENDORG➩' + rowindex + '" class="editable disabled" type="text" value="' + rowData.SENDORG + '"/><input id="PK_SENDORG➩' + rowindex + '" type="hidden" value="' + rowData.PK_SENDORG + '" />',
+                            TRAFFICCOMPANY: '<input readonly id="TRAFFICCOMPANY➩' + rowindex + '" class="editable center disabled" type="text" value="' + rowData.TRAFFICCOMPANY + '"/><input id="PK_TRAFFICCOMPANY➩' + rowindex + '" type="hidden" value="' + rowData.PK_TRAFFICCOMPANY + '" />',
+                            BRANDMODEL: '<input readonly id="BRANDMODEL➩' + rowindex + '" class="editable center disabled" type="text" style="cursor:pointer"  value="' + (rowData.BRANDMODEL != null ? rowData.BRANDMODEL : "") + '"/>',
+
+                            HZUSERNAME: '<input readonly id="HZUSERNAME➩' + rowindex + '" class="editable center disabled" type="text" style="cursor:pointer"  value="' + (rowData.HZUSERNAME != null ? rowData.HZUSERNAME : "") + '"/>',
+                            DEF1: '<input id="DEF1➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.DEF1 + '"/>',
+                            DEF2: '<input id="DEF2➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + rowData.DEF2 + '"/>',
+                            WEIGHTDATE: '<input readonly id="WEIGHTDATE➩' + rowindex + '" class="editable center disabled" type="text" style="cursor:pointer"  value="' + rowData.WEIGHTDATE + '"/>',
+                            KJRESULTMEMO: '<input readonly id="KJRESULTMEMO➩' + rowindex + '" class="editable center disabled" type="text" style="cursor:pointer"   value="' + (rowData.KJRESULTMEMO != null ? rowData.KJRESULTMEMO : "") + '"/>',
+                            ZJRESULTMEMO: '<input readonly id="ZJRESULTMEMO➩' + rowindex + '" class="editable center disabled" type="text" style="cursor:pointer"  value="' + (rowData.ZJRESULTMEMO != null ? rowData.ZJRESULTMEMO : "") + '"/>',
+                            MEMO: '<input id="MEMO➩' + rowindex + '" class="editable center" type="text" style="cursor:pointer"  value="' + (rowData.MEMO != null ? rowData.MEMO : "") + '"/>'
+                        }
+                        $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+                        //                        if (rowindex == 1) {
+                        //                            $("#PK_BILL").val(rowData.PK_BILL);
+                        //                            $("#PK_BILL_B").val(rowData.PK_BILL_B);
+                        //                            $("#VBILLCODE").val(rowData.PK_CONTRACT_B);
+                        //                            $("#SUPPLY").val(rowData.PK_SENDORG);
+                        //                            $("#SUPPLYNAME").val(rowData.SENDORG);
+                        //                            $("#MATERIAL").val(rowData.PK_MATERIAL);
+                        //                            $("#MATERIALNAME").val(rowData.MATERIAL);
+                        //                            $("#MATERIALSPEC").val(rowData.MATERIALKIND);
+                        //                        }
+                        rowindex++;
+                    }
+                });
+                Conversion(1);
+                $("#gridTable").find('.disabled').attr("disabled", "disabled");
+                $("#gridTable").find('.center').css('text-align', 'center')
+                $('.jqgrid-rownum').attr('title', '双击删除一行');
+                $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+                    var rowindex = $(this).text();
+                    $('#gridTable').jqGrid('delRowData', rowindex);
+                    Conversion(rowindex);
+                });
+                $("#gridTable").find('.decimal').focus(function () {
+                    IsMoney(this.id)
+                    var val = this.value;
+                    if (val == "0" || val == "0.000" || val == "0.00") {
+                        this.value = "";
+                    } else {
+                        $(this).select();
+                    }
+                });
+                $("#gridTable").find('.decimal').blur(function () {
+                    var val = this.value;
+                    if (val == "") {
+                        this.value = "0";
+                    }
+                });
+            });
+        }
+
+    });
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJSettlement/AVGORDER/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+
+
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 345,
+            autowidth: true,
+            colModel: [
+             { label: 'ID', name: 'ID', hidden: true },
+              { label: '日期[<font face="宋体">*</font>]', name: 'JSDATE', width: 120, sortable: false, align: 'center' },
+              { label: '车数', name: "CARSNUM", width: 80, sortable: false, align: 'center' },
+               { label: '应收重量', name: "YFSUTTLE", width: 60, sortable: false, align: 'center' },
+               { label: '净料', name: "SUTTLE", width: 60, sortable: false, align: 'center' },
+               { label: '结算重量', name: "JSSUTTLE", width: 60, sortable: false, align: 'center' },
+               { label: '检验项1', name: "ITEMNAME1", width: 80, sortable: false, align: 'center' },
+                { label: '标准1', name: "ITEMBZ1", width: 80, sortable: false, align: 'center' },
+               { label: '检验值1', name: "ITEMVALUE1", width: 80, sortable: false, align: 'center' },
+                 { label: '检验项2', name: "ITEMNAME2", width: 80, sortable: false, align: 'center' },
+                { label: '标准2', name: "ITEMBZ2", width: 80, sortable: false, align: 'center' },
+               { label: '检验值2', name: "ITEMVALUE2", width: 80, sortable: false, align: 'center' },
+               { label: '检验项3', name: "ITEMNAME3", width: 80, sortable: false, align: 'center' },
+                { label: '标准3', name: "ITEMBZ3", width: 80, sortable: false, align: 'center' },
+               { label: '检验值3', name: "ITEMVALUE3", width: 80, sortable: false, align: 'center' },
+               { label: '检验项4', name: "ITEMNAME4", width: 80, sortable: false, align: 'center' },
+                { label: '标准4', name: "ITEMBZ4", width: 80, sortable: false, align: 'center' },
+               { label: '检验值4', name: "ITEMVALUE4", width: 80, sortable: false, align: 'center' },
+              { label: '检验项5', name: "ITEMNAME5", width: 80, sortable: false, align: 'center' },
+                { label: '标准5', name: "ITEMBZ5", width: 80, sortable: false, align: 'center' },
+               { label: '检验值5', name: "ITEMVALUE5", width: 80, sortable: false, align: 'center' }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计
+                $(this).footerData("set", {
+                    "JSDATE": "合计",
+                    "CARSNUM": "<span id='TotalCARSNUM'>0</span>",
+                    "YFSUTTLE": "<span id='TotalYFSUTTLE'>0.00</span>",
+                    "SUTTLE": "<span id='TotalSUTTLE'>0.00</span>",
+                    "JSSUTTLE": "<span id='TotalJSSUTTLE'>0.00</span>",
+                    "ITEMVALUE1": "<span id='TotalITEMVALUE1'>0.00</span>",
+                    "ITEMVALUE2": "<span id='TotalITEMVALUE2'>0.00</span>",
+                    "ITEMVALUE3": "<span id='TotalITEMVALUE3'>0.00</span>",
+                    "ITEMVALUE4": "<span id='TotalITEMVALUE4'>0.00</span>",
+                    "ITEMVALUE5": "<span id='TotalITEMVALUE5'>0.00</span>"
+                });
+            }
+        });
+    }
+
+
+
+    function Conversion(rowindex) {
+        //统计合计
+        var TotalCARSNUM = 0, TotalYFSUTTLE = 0.0, TotalJSSUTTLE = 0.0, TotalSUTTLE = 0.0;
+        var TotalITEMVALUE1 = 0.0, TotalITEMVALUE2 = 0.0, TotalITEMVALUE3 = 0.0, TotalITEMVALUE4 = 0.0, TotalITEMVALUE5 = 0.0;
+
+        $("#gridTable tbody tr").each(function (i) {
+            var CARSNUM = $(this).find('td:eq(3)').find('input').val();
+            if (CARSNUM != "" && CARSNUM != undefined) {
+                TotalCARSNUM = FloatAdd(TotalCARSNUM, CARSNUM);
+            }
+            var YFSUTTLE = $(this).find('td:eq(4)').find('input').val();
+            if (YFSUTTLE != "" && YFSUTTLE != undefined) {
+                TotalYFSUTTLE = FloatAdd(TotalYFSUTTLE, YFSUTTLE);
+            }
+
+            var SUTTLE = $(this).find('td:eq(5)').find('input').val();
+            if (SUTTLE != "" && SUTTLE != undefined) {
+                TotalSUTTLE = FloatAdd(TotalSUTTLE, SUTTLE);
+            }
+
+            var JSSUTTLE = $(this).find('td:eq(6)').find('input').val();
+            if (JSSUTTLE != "" && JSSUTTLE != undefined) {
+                TotalJSSUTTLE = FloatAdd(TotalJSSUTTLE, JSSUTTLE);
+            }
+            var ITEMVALUE1 = $(this).find('td:eq(9)').find('input').val();
+            if (ITEMVALUE1 != "" && ITEMVALUE1 != undefined) {
+                TotalITEMVALUE1 = FloatAdd(TotalITEMVALUE1, ITEMVALUE1);
+            }
+            var ITEMVALUE2 = $(this).find('td:eq(12)').find('input').val();
+            if (ITEMVALUE2 != "" && ITEMVALUE2 != undefined) {
+                TotalITEMVALUE2 = FloatAdd(TotalITEMVALUE2, ITEMVALUE2);
+            }
+            var ITEMVALUE3 = $(this).find('td:eq(15)').find('input').val();
+            if (ITEMVALUE3 != "" && ITEMVALUE3 != undefined) {
+                TotalITEMVALUE3 = FloatAdd(TotalITEMVALUE3, ITEMVALUE3);
+            }
+            var ITEMVALUE4 = $(this).find('td:eq(18)').find('input').val();
+            if (ITEMVALUE4 != "" && ITEMVALUE4 != undefined) {
+                TotalITEMVALUE4 = FloatAdd(TotalITEMVALUE4, ITEMVALUE4);
+            }
+            var ITEMVALUE5 = $(this).find('td:eq(21)').find('input').val();
+            if (ITEMVALUE5 != "" && ITEMVALUE5 != undefined) {
+                TotalITEMVALUE5 = FloatAdd(TotalITEMVALUE5, ITEMVALUE5);
+            }
+        });
+        //车数
+        $("#TotalCARSNUM").text(TotalCARSNUM);
+        $("#CARSNUM").val(TotalCARSNUM);
+        //应收重量
+        $("#TotalYFSUTTLE").text(getFloat(TotalYFSUTTLE, 3));
+        $("#YFSUTTLE").val(getFloat(TotalYFSUTTLE, 3));
+
+        //净重
+        $("#TotalSUTTLE").text(getFloat(TotalSUTTLE, 3));
+        $("#SUTTLE").val(getFloat(TotalSUTTLE, 3));
+
+        //结算重量
+        $("#TotalJSSUTTLE").text(getFloat(TotalJSSUTTLE, 3));
+        $("#JSSUTTLE").val(getFloat(TotalJSSUTTLE, 3));
+
+
+    }
+
+    function SelectPOOrder() {
+        var url = "/ZJSettlement/AVGORDER/SELECTPOORDERS";
+        Dialog(url, "SELECTPOORDERS", "选取采购订单信息（双击表格添加）", 900, 400);
+    }
+
+    function SelectWeight() {
+        var MATERIAL = $("#MATERIAL").val();
+        var MATERIALNAME = $("#MATERIALNAME").val();
+        var WEIGHTNO = $("#WEIGHTNO").val();
+        var WEIGHTNAME = $("#WEIGHTNAME").val();
+        var SUPPLY = $("#SUPPLY").val();
+        var SUPPLYNAME = $("#SUPPLYNAME").val();
+        var BEGINDATE = $("#BEGINDATE").val();
+        var ENDDATE = $("#ENDDATE").val();
+        var VBILLCODE = $("#VBILLCODE").val();
+
+        //        if (VBILLCODE == "") {
+        //            top.TipMsg("请您先选择订单！", 4000, "error");
+        //            return false;
+        //        }
+
+        var title = "选取采购过磅信息";
+        var url = "/ZJSettlement/AVGORDER/SELECTWEIGHTS?MATERIAL=" + MATERIAL + "&MATERIALNAME=" + escape(MATERIALNAME) + "&WEIGHTNO=" + escape(WEIGHTNO) + "&WEIGHTNAME=" + escape(WEIGHTNAME) + "&SUPPLY=" + SUPPLY + "&SUPPLYNAME=" + escape(SUPPLYNAME) + "&BEGINDATE=" + escape(BEGINDATE) + "&ENDDATE=" + escape(ENDDATE) + "&VBILLCODE=" + VBILLCODE;
+        openMyDialog(url, "SELECTWEIGHTS", title, 900, 400,
+             function (iframe) {
+                 top.frames[iframe].SelectText();
+             }, function (iframe) {
+                 top.frames[iframe].ClearText();
+             });
+    }
+
+
+    function SelectAVGEXPRESSIONS() {
+        var VBILLCODE = $("#VBILLCODE").val();
+        if (VBILLCODE == "") {
+            top.TipMsg("请您先选择订单！", 4000, "error");
+            return false;
+        }
+        var MATERIAL = $("#MATERIAL").val();
+        var MATERIALNAME = $("#MATERIALNAME").val();
+        var url = "/ZJSettlement/AVGORDER/SELECTAVGEXPRESSIONS?MATERIAL=" + MATERIAL + "&MATERIALNAME=" + escape(MATERIALNAME);
+        Dialog(url, "SELECTAVGEXPRESSIONS", "选取加权平均公式信息（双击表格添加）", 900, 400);
+    }
+
+    function CheckData() {
+        var PK_AVGEXPRESSIONS = $("#PK_AVGEXPRESSIONS").val();
+        if (PK_AVGEXPRESSIONS == "") {
+            top.TipMsg("请您先选择加权平均公式！", 4000, "error");
+            return false;
+        }
+        var MATERIAL = $("#MATERIAL").val();
+        var SUPPLY = $("#SUPPLY").val();
+        var BEGINDATE = $("#BEGINDATE").val();
+        var ENDDATE = $("#ENDDATE").val();
+        var VBILLCODE = $("#VBILLCODE").val();
+        var PK_ORDER_B = $("#PK_BILL_B").val();
+        var AVGTYPE = $("#AVGTYPE").val();
+        var postData = { MATERIAL: MATERIAL, SUPPLY: SUPPLY, BEGINDATE: BEGINDATE, ENDDATE: ENDDATE, VBILLCODE: VBILLCODE, PK_ORDER_B: PK_ORDER_B, PK_AVGEXPRESSIONS: PK_AVGEXPRESSIONS, AVGTYPE: AVGTYPE };
+        AjaxJson("/ZJSettlement/AVGORDER/CheckData", postData, function (data) {
+            $("#gridTable").jqGrid('clearGridData');
+            var JsonData = data.rows;
+            var rowindex = 1;
+            $.each(JsonData, function (i) {
+                var rowData = JsonData[i];
+                if ($("#gridTable").find("input[value='" + rowData.BILLNO + "']").length <= 0) {
+                    var rowdata = {
+                        ID: '<input id="ID➩' + rowindex + '" type="hidden" value="" />',
+                        JSDATE: '<input readonly id="JSDATE➩' + rowindex + '" class="editable center disabled" type="text" style="cursor:pointer"  value="' + rowData.JSDATE + '"/>',
+                        CARSNUM: '<input readonly id="CARSNUM➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.CARSNUM + '"/>',
+                        YFSUTTLE: '<input readonly id="YFSUTTLE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.YFSUTTLE + '"/>',
+                        SUTTLE: '<input readonly id="SUTTLE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.SUTTLE + '"/>',
+                        JSSUTTLE: '<input readonly id="JSSUTTLE➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.JSSUTTLE + '"/>',
+                        ITEMNAME1: '<input id="ITEMNAME1➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMNAME1 + '"/><input id="ITEM1➩' + rowindex + '" type="hidden" value="' + rowData.ITEM1 + '" />',
+                        ITEMBZ1: '<input id="ITEMBZ1➩' + rowindex + '" class="editable decimal center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMBZ1 + '"/>',
+                        ITEMVALUE1: '<input id="ITEMVALUE1➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMVALUE1 + '"/>',
+                        ITEMNAME2: '<input id="ITEMNAME2➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMNAME2 + '"/><input id="ITEM2➩' + rowindex + '" type="hidden" value="' + rowData.ITEM2 + '" />',
+                        ITEMBZ2: '<input id="ITEMBZ1➩' + rowindex + '" class="editable decimal center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMBZ2 + '"/>',
+                        ITEMVALUE2: '<input readonly id="ITEMVALUE2➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMVALUE2 + '"/>',
+                        ITEMNAME3: '<input id="ITEMNAME3➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMNAME3 + '"/><input id="ITEM3➩' + rowindex + '" type="hidden" value="' + rowData.ITEM3 + '" />',
+                        ITEMBZ3: '<input id="ITEMBZ3➩' + rowindex + '" class="editable decimal center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMBZ3 + '"/>',
+                        ITEMVALUE3: '<input readonly id="ITEMVALUE3➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMVALUE3 + '"/>',
+                        ITEMNAME4: '<input id="ITEMNAME4➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMNAME4 + '"/><input id="ITEM4➩' + rowindex + '" type="hidden" value="' + rowData.ITEM4 + '" />',
+                        ITEMBZ4: '<input id="ITEMBZ4➩' + rowindex + '" class="editable decimal center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMBZ1 + '"/>',
+                        ITEMVALUE4: '<input readonly id="ITEMVALUE4➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMVALUE4 + '"/>',
+                        ITEMNAME5: '<input id="ITEMNAME5➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMNAME5 + '"/><input id="ITEM5➩' + rowindex + '" type="hidden" value="' + rowData.ITEM5 + '" />',
+                        ITEMBZ5: '<input id="ITEMBZ5➩' + rowindex + '" class="editable decimal center" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMBZ5 + '"/>',
+                        ITEMVALUE5: '<input readonly id="ITEMVALUE5➩' + rowindex + '" class="editable decimal center disabled" type="text" onkeyup="Conversion(' + rowindex + ')" style="cursor:pointer"  value="' + rowData.ITEMVALUE5 + '"/>'
+                    }
+                    $('#gridTable').jqGrid('addRowData', rowindex, rowdata);
+
+                    rowindex++;
+                }
+            });
+            Conversion(1);
+            $("#gridTable").find('.disabled').attr("disabled", "disabled");
+            $("#gridTable").find('.center').css('text-align', 'center')
+            $('.jqgrid-rownum').attr('title', '双击删除一行');
+            $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+                var rowindex = $(this).text();
+                $('#gridTable').jqGrid('delRowData', rowindex);
+                Conversion(rowindex);
+            });
+
+        });
+    }
+
+    //保存事件  后关闭
+    function SubmitOrderFormClose() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#tb_OrderFrom");
+            postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+            AjaxJson("/ZJSettlement/AVGORDER/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue') + "&ModuleId=" + ModuleId, postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code == "1") {
+                    top.frames["tabs_iframe_" + ModuleId].windowload();
+                    var url = "/ZJSettlement/AVGORDER/PCRawYLJSPrint?KeyValue=" + data.BillNo + "&ModuleId=" + ModuleId;
+                    Dialog(url, "PCRawYLJSPrint", "打印检斤单", 900, 400);
+                    Replace();
+                }
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新 </b></span></a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderFormClose()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存 </b></span></a><a title="计算" onclick="CheckData()" class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/ok.png")) 50% 4px no-repeat;">
+                        计算</b></span></a>@*<a id="SelDSWeight" title="选单" onclick="SelectWeight()" class="tools_btn">
+                            <span><b
+                         style="background: url(@Url.Content("~/Content/Images/Icon16/application_view_list.png")) 50% 4px no-repeat;">
+                                选磅单</b></span></a> *@<a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                                    <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                                        离开 </b></span></a>
+</div>
+<table id="tb_OrderFrom" class="form">
+    <tr>
+        <th class="formTitle">
+            单据编号：
+        </th>
+        <td class="formValue">
+            <input id="BILLNO" maxlength="50" type="text" dbfield="true" class="txt readonly"  readonly="readonly" datacol="yes" err="单据编号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+        </td>
+        <th class="formTitle">
+            结算日期：
+        </th>
+        <td class="formValue">
+            <input id="JSDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd")"  
+                          onfocus="WdatePicker({startDate:'%y-%M-%d',dateFmt: &#39;yyyy-MM-dd&#39;})" onchange="GetBillCode()"  />
+        </td>
+        <th class="formTitle">
+            结算方式：
+        </th>
+        <td class="formValue">
+            <select id="AVGTYPE" class="txtselect" dbfield="true">
+                <option value="0" selected="selected">应收数量</option>
+                <option value="1">实收数量</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            订单编号：
+        </th>
+        <td class="formValue">
+            <input id="PK_BILL" type="hidden" dbfield="true" />
+            <input id="PK_BILL_B" type="hidden" dbfield="true" />
+            <input id="VBILLCODE" type="text" class="txt iconsearch" datacol="yes" err="订单编号"
+                checkexpession="NotNull" onclick="SelectPOOrder();" />
+        </td>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue">
+            <input id="MATERIAL" type="hidden" dbfield="true" />
+            <input id="MATERIALNAME" type="text" dbfield="true" class="txt readonly" readonly="readonly"
+                datacol="yes" err="物料" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            物料规格：
+        </th>
+        <td class="formValue">
+            <input id="MATERIALSPEC" maxlength="50" type="text" dbfield="true" class="txt readonly"
+                readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            供应商：
+        </th>
+        <td class="formValue">
+            <input id="SUPPLY" type="hidden" dbfield="true" datacol="yes" err="供应商" checkexpession="NotNull" />
+            <input id="SUPPLYNAME" type="text" class="txt readonly" readonly="readonly" dbfield="true"
+                err="供应商" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            开始日期：
+        </th>
+        <td class="formValue">
+            <input id="BEGINDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd")"
+        onfocus="WdatePicker({startDate:'%y-%M-%d',dateFmt: &#39;yyyy-MM-dd&#39;})" />
+        </td>
+        <th class="formTitle">
+            结束日期：
+        </th>
+        <td class="formValue">
+            <input id="ENDDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd")"
+        onfocus="WdatePicker({startDate:'%y-%M-%d',dateFmt: &#39;yyyy-MM-dd&#39;})" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            车数：
+        </th>
+        <td class="formValue">
+            <input id="CARSNUM" type="text" class="txt readonly" readonly="readonly" dbfield="true"
+                value="0" />
+        </td>
+        <th class="formTitle">
+            应收重量：
+        </th>
+        <td class="formValue">
+            <input id="YFSUTTLE" name="YFSUTTLE" type="text" dbfield="true" class="txt readonly"
+                readonly="readonly" value="0" />
+        </td>
+        <th class="formTitle">
+            磅单净重：
+        </th>
+        <td class="formValue">
+            <input id="SUTTLE" type="text" class="txt readonly" readonly="readonly" dbfield="true"
+                value="0" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制单日期：
+        </th>
+        <td class="formValue">
+            <input id="CREATEDATE" type="text" class="txt Wdate" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")"
+                          onfocus="WdatePicker({startDate:'%y-%M-%d %H:%m:%s',dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;})" />
+        </td>
+        <th class="formTitle">
+            结算重量：
+        </th>
+        <td class="formValue">
+            <input id="JSSUTTLE" name="JSSUTTLE" type="text" class="txt" dbfield="true" value="0" />
+        </td>
+        <th class="formTitle">
+            结算单价：
+        </th>
+        <td class="formValue">
+            <input id="PRICE" name="PRICE" type="text" class="txt" dbfield="true" value="0" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            制单人：
+        </th>
+        <td class="formValue">
+            <input id="CREATEUSER" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                err="制单人" checkexpession="NotNull" value="@ViewBag.CreateUserName" />
+        </td>
+        <th class="formTitle">
+            执行重量：
+        </th>
+        <td class="formValue">
+            <input id="ZXSUTTLE" name="ZXSUTTLE" type="text" class="txt readonly" readonly="readonly"
+                dbfield="true" value="0" />
+        </td>
+        <th class="formTitle">
+            执行单价：
+        </th>
+        <td class="formValue">
+            <input id="ZXPRICE" name="ZXPRICE" type="text" class="txt" dbfield="true" value="0" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            加权公式：
+        </th>
+        <td class="formValue" colspan="3">
+            <input id="PK_AVGEXPRESSIONS" type="hidden" dbfield="true" />
+            <input id="AVGEXPRESSIONS" type="text" dbfield="true" class="txt" datacol="yes" err="加权公式"
+                checkexpession="NotNull" onclick="SelectAVGEXPRESSIONS()" />
+        </td>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input type="checkbox" name="checkbox" id="ISKZ" />
+                <label for="ISKZ">
+                    提交采购部</label>
+            </span>@*<span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISZJX1" />
+                <label for="ISZJX1">
+                    发热量</label>
+            </span><span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISZJX2" />
+                <label for="ISZJX2">
+                    水分</label>
+            </span><span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISZJX3" />
+                <label for="ISZJX3">
+                    硫</label>
+            </span><span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISZJX4" />
+                <label for="ISZJX4">
+                    挥发分</label>
+            </span><span class="item">
+                <input type="checkbox" name="checkbox" checked="checked" id="ISZJX5" />
+                <label for="ISZJX5">
+                    灰分</label>
+            </span>*@
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue" colspan="5">
+            <input id="MEMO" type="text" class="txt" dbfield="true" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                明细信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--拼单信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+    </div>
+</div>
+</form>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+    
+    .ui-jqgrid tr.ui-row-ltr td
+    {
+        padding: 0px;
+        border-bottom: 1px solid #ccc;
+    }
+    
+    .ui-jqgrid .ui-jqgrid-htable th
+    {
+        line-height: 15px;
+    }
+    
+    .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+    {
+        background: none;
+    }
+    
+    .editable
+    {
+        height: 22px;
+        background-color: #fff;
+    }
+</style>

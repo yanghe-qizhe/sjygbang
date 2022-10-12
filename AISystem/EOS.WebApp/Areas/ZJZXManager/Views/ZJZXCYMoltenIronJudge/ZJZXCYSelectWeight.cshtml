@@ -1,0 +1,105 @@
+﻿@{
+    ViewBag.Title = "铁水选择磅单匹配";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript"> 
+    var FormID = GetQuery('FormID'); 
+    var LH = GetQuery('LH');  
+    var maxcode = GetQuery('maxcode');  
+    $(function () {  
+        $("#LH").val(LH);
+        setTimeout(function(){
+            GetGrid(); 
+        },100);
+    })  
+     
+    //搜索
+    function btn_Search() {  
+        var LH = $("#LH").val();  
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIronJudge/GetWeightForMolten")?LH=" + escape(LH), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var LH = $("#LH").val();  
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJZXManager/ZJZXCYMoltenIronJudge/GetWeightForMolten")?LH=" + escape(LH),
+            datatype: "json",
+            height: $(window).height() - 110,
+            autowidth: true,
+            colModel: [  
+            { label: 'ID', name: 'ID',  width: 120, hidden:true },      
+            { label: '过磅单号', name: 'BILLNO',  width: 120, align: 'left' },   
+            { label: '罐号', name: 'CARNUM', index: 'CARNUM', width: 80, align: 'left' },   
+            { label: '物料', name: 'STANDNAME', index: 'STANDNAME', width:120, align: 'left' },  
+            { label: '毛重', name: 'MAOAMOUNT', index: 'MAOAMOUNT', width:80, align: 'left' }, 
+            { label: '皮重', name: 'PIAMOUNT', index: 'PIAMOUNT', width:80, align: 'left' }, 
+            { label: '净重', name: 'FACTAMOUNT', index: 'FACTAMOUNT', width:80, align: 'left' }, 
+            {  label: '重车日期', name: 'MAOTIME', index: 'MAOTIME', width: 130, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                }
+            }
+            ],
+            multiselect: false,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'MAOTIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            //单击事件
+            onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var $parentobj ;
+                var FormID = GetQuery('FormID'); 
+                if(IsNull(FormID)){
+                    $parentobj = top.frames[FormID]; 
+                } else{
+                    $parentobj = top.frames[tabiframeId()];
+                }  
+                $parentobj.CallBackEvent(rowData,maxcode);
+                closeDialog(); 
+            }  
+        });
+        
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    炉号：
+                </th>
+                <td>
+                    <input id="LH" type="text" class="txt readonly" readonly="readonly" disabled="disabled"
+                        style="width: 120px" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

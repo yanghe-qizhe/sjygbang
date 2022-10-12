@@ -1,0 +1,21 @@
+﻿.items-list {
+	margin: 0px;
+}
+.items_move_img {
+    width:20px;
+    vertical-align:middle;
+    padding:5px;
+    position: absolute;
+    z-index: 1000;
+    display:none;
+}
+.items-list li {
+	height: 30px;
+	line-height: 30px;
+	padding-left: 10px;
+	cursor: pointer;
+}
+.items-list li:hover {
+	background: #F7F7F7;
+}
+.items-list li img{vertical-align:middle;margin:0px 5px 0px 0px;padding-bottom:3px;}

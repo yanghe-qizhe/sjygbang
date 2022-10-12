@@ -1,0 +1,458 @@
+﻿@{
+    ViewBag.Title = "原材采样组大批管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+ 
+     CreateReport("Report");
+    $(function () {   
+        $("#Report").css("display","none");  
+        GetGrid(); 
+        GetGrid2("");   
+        setTimeout(function () {
+            Report.LoadFromURL(RootPath() + "/Content/GRF/ReportView/PrintCode1.grf");
+        }, "500");
+    })
+     
+    //搜索
+    function btn_Search() {
+      var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BILLNO = $("#BILLNO").val();
+         var PRINTCODE = $("#PRINTCODE").val();
+        var ISSEND = $("#ISSEND").val();
+        var TYPE= $("#TYPE").val();
+          var DEF6 = $("#DEF6").val();
+         var MATERIALNAME = $("#MATERIALNAME").val();
+          var MATERIALSPEC = $("#MATERIALSPEC").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJManager/PCRawAllBatch/GetPCRawCYList")?iszp=1&PCRAWTYPE=4&StartTime=" + StartTime + '&EndTime=' + EndTime + '&BILLNO=' + escape(BILLNO) + '&PRINTCODE=' + escape(PRINTCODE)   + "&ISSEND=" + ISSEND+"&CHECKTYPE="+TYPE+ '&MATERIALNAME=' + escape(MATERIALNAME)+'&DEF6='+DEF6 , page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val(); 
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJManager/PCRawAllBatch/GetPCRawCYList")?iszp=1&PCRAWTYPE=4&StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+             height: $(window).height() - 300,
+            autowidth: true,
+            colModel:  [
+                { label: 'ID', name: 'ID', index: 'ID', width: 180, align: 'left',align:'center',hidden:true }, 
+                { label: '组批单号', name: 'BILLNO', index: 'BILLNO', width: 120, align: 'left',align:'center' },
+                 { label: '制样单号', name: 'PRINTCODE', index: 'PRINTCODE', width: 110, align: 'left', align: 'center' },
+                { label: 'TYPE', name: 'TYPE', index: 'TYPE',  hidden: true },
+                {
+                    label: '状态', name: 'TYPENAME', index: 'TYPENAME', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<span style='color:red;font-size:18px'>组批</span>";
+                    if (cellvalue == '2') return "<span style='color:blue;font-size:18px'>组批中</span>";
+                      if (cellvalue == '3') return "<span style='color:blue;font-size:18px'>组批完成</span>";
+                        if (cellvalue == '4') return "<span style='color:black;font-size:18px'>制样</span>";
+                        if (cellvalue == '5') return "<span style='color:green;font-size:18px'>化验</span>";
+                    }
+                },
+                { label: 'ISSEND', name: 'ISSEND', index: 'ISSEND',  hidden: true },
+                {
+                    label: '送检状态', name: 'ISSENDNAME', index: 'ISSENDNAME', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "<span style='color:red;font-size:18px'>未送检</span>";
+                        if (cellvalue == '1') return "<span style='color:green;font-size:18px'>已送检</span>";
+                        if (!IsNull(cellvalue)) return "<span style='color:red;font-size:18px'>未送检</span>";
+                    }
+                }, 
+               {  label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center'  }, 
+                   { label: 'SUPPLY', name: 'SUPPLY', index: 'SUPPLY',  hidden: true },
+                 { label: '供应商', name: 'SUPPLYNAME', index: 'SUPPLYNAME', width: 150, align: 'center' },
+               
+                { label: 'MATERIAL', name: 'MATERIAL', index: 'MATERIAL',  hidden: true },
+                    { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center' },
+                { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'center' },
+                 { label: '扣杂', name: 'SUMKZ', index: 'SUMKZ', width: 60, align: 'center' },
+               { label: 'ZYBUCKET', name: 'ZYBUCKET', index: 'ZYBUCKET',  hidden: true },
+                  { label: '混样桶', name: 'ZYBUCKETNAME', index: 'CYBUCKETNAME', width: 110, align: 'center' },
+                    { label: '混样桶状态', name: 'ZYBUCKETTYPE', index: 'ZYBUCKETTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                          if (cellvalue == '0') return "<span style='color:red;font-size:18px'>有效</span>";
+                       else if (cellvalue == '1') return "<span style='color:blue;font-size:18px'>使用</span>";
+                        else return"";
+                    }
+                },
+                { label: '承运商', name: 'DEF8', index: 'DEF8', width: 100, align: 'center' },
+                { label: '采样车数', name: 'CARSNUM', index: 'CARSNUM', width: 60, align: 'center' },
+                { label: '采样日期', name: 'CYDATE', index: 'CYDATE', width: 100, align: 'center' },
+                { label: '监督员', name: 'CYUSER', index: 'CYUSER', width: 80, align: 'center' },
+               
+                 { label: '采样人', name: 'CYUSER1', index: 'CYUSER1', width: 80, align: 'center' },
+                { label: '采样类型', name: 'CYTYPE', index: 'CYTYPE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                          if (cellvalue == '0') return "<span style='color:red;font-size:18px'>正常样</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:18px'>平均样</span>";
+                    }
+                },
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 80, align: 'center' },
+                 { label: '打印次数', name: 'PRINTCOUNT', index: 'PRINTCOUNT', width: 80, align: 'center' },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+           multiselect: true,//复选框 
+             multiboxonly: true,  
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false,
+            //单击事件
+            onSelectRow: function (RowIndx) {  
+                var MAINID = GetJqGridRowValue("#gridTable", "ID"); 
+                $("#gridTable2").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ZJManager/PCRawAllBatch/GetPCRawBatchListItem")?MAINID=" + escape(MAINID), page: 1
+                }).trigger('reloadGrid'); 
+            }  
+        });
+        
+    }
+
+    function GetGrid2(MAINID) {  
+        $("#gridTable2").jqGrid({ 
+            url: "@Url.Content("~/ZJManager/PCRawAllBatch/GetPCRawBatchListItem")?MAINID=" + escape(MAINID),
+            datatype: "json",
+         height: 100,
+         autowidth: true,
+            colModel: [ 
+                 { label: '车号', name: 'CARSNAME', index: 'CARSNAME', width: 80, align: 'center' },
+                { label: '采样时间', name: 'CRETIME', index: 'CRETIME', width: 120, align: 'center' },
+               { label: '到货单号', name: 'PCID', index: 'PCID', width: 120, align: 'center' },
+                    { label: '订单编号', name: 'DEF3', index: 'DEF3', width: 100, align: 'center' },
+                     { label: '供应商', name: 'SUPPLYNAME', index: 'SUPPLYNAME', width: 160, align: 'center' },
+                     { label: '承运商', name: 'DEF8', index: 'DEF8', width: 150, align: 'center' },
+                { label: '接收公司', name: 'ORGNAME', index: 'ORGNAME', width: 160, align: 'center' },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center' },
+                { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 120, align: 'center' },
+                { label: '扣杂', name: 'KZ', index: 'KZ', width: 80, align: 'center' },
+                { label: '毛重时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 80, align: 'center' },
+                { label: '毛重', name: 'GROSS', index: 'GROSS', width: 80, align: 'center' },
+                { label: '毛重磅房', name: 'WEIGHTNAME', index: 'WEIGHTNAME', width: 80, align: 'center' },
+                { label: '单位', name: 'DEF2', index: 'DEF2', width: 80, align: 'center' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true, 
+            pager: false,
+            sortname: 'ID',
+            sortorder: 'desc',
+            multiselect: true,//复选框
+             viewrecords: true,
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        columnModelData("#gridTable2");
+    } 
+
+    //新增
+    function btn_add() { 
+        AddTabMenu("PCRawAllBatchAdd", "@Url.Content("~/ZJManager/PCRawAllBatch/PCRawAllBatchAdd")?ModuleId="+ModuleId, "新增原料组批", "page_white_add.png", true, true, true);
+    }
+     
+    //编辑
+    function btn_edit() { 
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+                AddTabMenu("PCRawCYForm", "@Url.Content("~/ZJManager/PCRawAllBatch/PCRawAllBatchAdd")?ModuleId="+ModuleId+"&KeyValue="+escape(KeyValue), "编辑原料组批", "page_white_add.png", true, true, true);
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) { 
+         var TYPE = GetJqGridRowValue("#gridTable", "TYPE");
+    var arrtype= TYPE.split(",");
+    var arr=$.grep(arrtype,
+    function(n,i){
+        return n=="4" || n=="5" 
+        }); 
+     if(arr.length>0){
+          tipDialog('只能删除未制样和化验的组批单数据！', 4, 'warning');
+          return;
+        } 
+         var ZYBUCKET = GetJqGridRowValue("#gridTable", "ZYBUCKET");
+            var delparm = 'KeyValue=' + KeyValue+'&ZYBUCKET='+ZYBUCKET;
+            delConfig('/ZJManager/PCRawAllBatch/DeleteItem', delparm, KeyValue.split(",").length);
+        }
+    }
+   
+  
+    //移除组批明细
+    function DeleteCar() {
+        var type = GetJqGridRowValue("#gridTable", "TYPE");
+        //        if ( type != "1") {
+        //                tipDialog("只有采样状态可以移除明细!", 3, 0);
+        //                return;
+        //            }
+       //if (type == "4") {
+       //     tipDialog("组批单已制样不可以移除明细!", 3, 0);
+       //     return;
+       // }
+      if (type == "5") {
+            tipDialog("组批单已化验不可以移除明细!", 3, 0);
+            return;
+        }
+
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        var BILLNO = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            var url = "/ZJManager/PCRawAllBatch/PCRawAllDeleteCar?Type=0&FormID=@ViewBag.FormID&KeyValue=" + escape(KeyValue) + "&BILLNO=" + escape(BILLNO);
+            Dialog(url, "PCRawCYDeleteCar", "移除组批明细", 900, 400);
+        }
+    }
+
+    //移入组批明细
+    function AddDetailsCar() {
+        var type = GetJqGridRowValue("#gridTable", "TYPE");
+        //        if ( type != "1") {
+        //                tipDialog("只有采样状态可以移入明细!", 3, 0);
+        //                return;
+        //            }
+//     if (type == "4") {
+//            tipDialog("组批单已制样不可以移入明细!", 3, 0);
+//            return;
+//        }
+      if (type == "5") {
+            tipDialog("组批单已化验不可以移入明细!", 3, 0);
+            return;
+        }
+        var MATERIAL = GetJqGridRowValue("#gridTable", "MATERIAL");
+        var SUPPLY = GetJqGridRowValue("#gridTable", "SUPPLY");
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        var BILLNO = GetJqGridRowValue("#gridTable", "BILLNO");
+      
+        if (IsChecked(KeyValue)) {
+            var url = "/ZJManager/PCRawAllBatch/PCRawAllAddCar?Type=0&FormID=@ViewBag.FormID&KeyValue=" + escape(KeyValue) + "&BILLNO=" + escape(BILLNO)   + "&MATERIAL=" + MATERIAL  + "&SUPPLY=" + SUPPLY  ;
+            Dialog(url, "PCRawCYAddCar", "移入组批明细", 900, 400);
+        }
+    }
+     
+    
+
+     //打印条码
+    function Print() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+            Report.LoadDataFromURL("/ZJManager/PCRawZY/ZYPrintCode1?KeyValue=" +KeyValue);
+            //Report.Print(true);
+            Report.PrintPreview(true);
+        }
+    }
+     //补打条码
+      function BDPrint() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+         if (IsChecked(KeyValue)) {
+         AddTabMenu("BDPrintCodeReportIndex", "@Url.Content("~/ReportManager/PrintViewReport/BDPrintCodeReportIndex")?KeyValue="+KeyValue, "补打条码", "page_white_edit.png", true, true, true);
+        }
+    }
+
+   //送检
+    function SendCheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsNull(KeyValue)) {
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + KeyValue + '\"}');
+            AjaxJson("/ZJManager/PCRawZY/CheckCYDataZP", postData, function (data) {
+                if (IsNull(data) && IsNull(data.Code)) {
+                        tipDialog(data.Message, 3, data.Code);
+                        windowload();
+                }
+            });
+        } else {
+            tipDialog('请至少选择一个批次', 4, 'warning');
+        }
+    }
+    //取消送检
+    function UNSendCheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsNull(KeyValue) && KeyValue.indexOf(',') < 0) {
+            var postData = jQuery.parseJSON('{\"DATA\":\"' + KeyValue + '\"}');
+            AjaxJson("/ZJManager/PCRawZY/UNSendCheck", postData, function (data) {
+                if (IsNull(data) && IsNull(data.Code)) {
+                    tipDialog(data.Message, 3, data.Code);
+                    windowload();
+                }
+            });
+        } else {
+            tipDialog('请选择一个批次', 4, 'warning');
+        }
+    }
+      //打开读卡器
+    //res:1-打开读卡器失败,2-打开射频卡片失败,0-成功。
+    var CardNumber = "";
+    function CardOpen() {
+        var res = 100;
+        var version = MWRFATL.OpenReader();
+        var iRet = MWRFATL.LastRet;
+        //蜂鸣30
+        MWRFATL.RF_Beep(30);
+        if (iRet != 0) {
+            res = 1;
+            tipDialog("打开读卡器失败！", 3, "");
+            MWRFATL.CloseCard();
+            iRet = MWRFATL.LastRet;
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        else {
+            tipDialog(version, 3, "");
+            CardNumber = MWRFATL.OpenCard(1);
+            iRet = MWRFATL.LastRet;
+            if (iRet != 0) {
+                res = 1;
+                tipDialog("IC卡没有放在读卡器上！", 3, "");
+            }
+            else {
+                res = 0;
+                $('#msg').text(CardNumber);
+            }
+            MWRFATL.CloseReader();
+            iRet = MWRFATL.LastRet;
+        }
+        return res;
+    }
+
+    function SetCardNo(CardNumber) {
+        var arr = CardNumber.split('');
+        var num = "";
+        var len = arr.length - 1;
+        for (i = len; i >= 0; i = i - 2) {
+            num += arr[i - 1] + arr[i];
+        }
+        var cid = parseInt(num, 16);
+        return cid;
+    }
+
+    function ReadCard() {
+        CardOpen();
+        var ICCard = "";
+        if (IsNullOrEmpty(CardNumber)) {
+            ICCard = SetCardNo(CardNumber);
+            $("#DEF6").val(ICCard);
+            btn_Search();
+        }
+        if (ICCard == "") {
+            tipDialog("读IC卡失败，IC卡序号为空！", 3, "");
+            return false;
+        }
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+        $("#gridTable2").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<object id="MWRFATL" style="display: none; width: 0px; height: 0px" codebase="~/RFReader/MwRFReader.cab#version=1,0,0,2"
+    data="data:application/x-oleobject;base64,VPpLUhUXNkSyudxeJIvBwwADAAAAAAAAAAAAAA=="
+    classid="CLSID:524BFA54-1715-4436-B2B9-DC5E248BC1C3">
+</object>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    状态：
+                </th>
+                <td>
+                    <select id="TYPE" name="TYPE" class="select" style="width: 120px;">
+                        <option value="">请选择</option>
+                        <option value="3">组批完成</option>
+                        <option value="4">制样</option>
+                        <option value="5">化验</option>
+                    </select>
+                </td>
+                <th>
+                    组批单号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    异型卡序号：
+                </th>
+                <td>
+                    <input id="DEF6" type="text" class="txt" style="width: 120px" />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    送检状态：
+                </th>
+                <td>
+                    <select id="ISSEND" class=" select" style="width: 125px">
+                        <option value="">全部</option>
+                        <option value="0">未送检</option>
+                        <option value="1">已送检</option>
+                    </select>
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    规格：
+                </th>
+                <td>
+                    <input id="MATERIALSPEC" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制样单号：
+                </th>
+                <td>
+                    <input id="PRINTCODE" type="text" class="txt" style="width: 120px" />
+                </td>
+                <td colspan="2">
+                    &nbsp;
+                    <input id="btnRead" type="button" class="btnSearch" value="读 卡" onclick="ReadCard()" />
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+        <table id="gridTable2">
+        </table>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

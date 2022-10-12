@@ -1,0 +1,198 @@
+﻿@{
+    ViewBag.Title = "新增环境监测任务";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery("ModuleId");
+    var KeyValue = GetQuery("KeyValue");
+    $(function () {
+        $("#ZJFANAME").bind("click", function () {
+            SelectZJFA();
+        });
+        GetModel();
+    })
+
+    function GetModel() {
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJEnergyManager/ZJEnvironment/SetForm", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+                InitControl();
+            });
+        }
+    }
+    function SetWebControls(data) {
+        try {
+            if (data != null) {
+                for (var key in data.M[0]) {
+                    var id = $('#' + key);
+                    if (id.attr('id')) {
+                        var value = $.trim(data.M[0][key]).replace("&nbsp;", "").replace(/</g, "<").replace(/>/, ">");
+                        var type = id.attr('type');
+                        switch (type) {
+                            case "checkbox":
+                                if (value == 1) {
+                                    id.attr("checked", 'checked');
+                                } else {
+                                    id.removeAttr("checked");
+                                }
+                                break;
+                            default:
+                                id.val(value);
+                                break;
+                        }
+                    }
+                }
+            }
+
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+
+    function SelectZJFA() {
+        var url = "/ZJEnergyManager/ZJEnvironment/ZJEnvironmentSelectZJFA?Type=0&FormID=@ViewBag.FormID";
+        Dialog(url, "ZJEnvironmentSelectZJFA", "选取监测站点", 900, 410);
+    }
+
+    function CallBackEvent(ZJFA, FANAME) {
+        $("#tbZJItem").empty();
+        $("#ZJFA").val(ZJFA);
+        $("#ZJFANAME").val(FANAME);
+        InitControl();
+    }
+
+
+    //得到一个对象实体
+    function InitControl() {
+        $("#tbZJItem").empty();
+        var KeyValue = $("#ZJFA").val();
+        if (IsNull(KeyValue)) {
+            AjaxJson("/ZJEnergyManager/ZJEnvironment/GetZJItem", { KeyValue: KeyValue }, function (data) {
+                if (IsNull(data) && data.Code == "1") {
+                    LoadZJItemControls(data.Message);
+                } else {
+                    tipDialog(data.Message, 3, 0);
+                }
+            });
+        }
+    }
+
+
+    //循环加载化学质检项目 
+    function LoadZJItemControls(json) {
+        var rowindex = 0;
+        var len = jQuery.parseJSON(json);
+        var tr = ''
+        $.each(jQuery.parseJSON(json), function (i, o) {
+            var index = i + 1;
+            if (index == 1 || (index > 2 && index % 2 == 1)) {
+                rowindex++;
+                tr += '<tr index=' + rowindex + '>';
+            }
+            tr += '<th class="formTitle">' + (o.ITEMNAME) + '</th>';
+            tr += '<td class="formValue">';
+            tr += '<input type="text" class="txt required readonly" readonly="readonly" datacol="yes" dbfield="true" value=' + (IsNull(o.UNIT) ? o.UNIT : "无单位") + ' />';
+            tr += '</td>';
+            if (index == len || (index % 2 == 0)) {
+                tr += '</tr>';
+            }
+        })
+        $("#tbZJItem").append(tr);
+    }
+
+    //保存事件
+    function SubmitOrderForm() {
+        if ($("#tbZJItem").find("tr").length <= 0) {
+            tipDialog("未发现质检项目", 3, 0);
+            return false;
+        }
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControlsForTrue("#RuleHead1");
+            postData["KeyValue"] = GetQuery('KeyValue');
+            AjaxJson("/ZJEnergyManager/ZJEnvironment/ZJEnvironmentSave", postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames["tabs_iframe_" + ModuleId].windowload();
+                closeDialog();
+            });
+        }, 200);
+    } 
+    
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a><a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a><a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn"> <span>
+                        <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<div id="ZJRECEIVE">
+    <div class="bd" style="border: none; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div id="TabToolbar" class="tab_list bd actived">
+                    任务信息</div>
+            </div>
+        </div>
+    </div>
+    <div id="RuleHead1">
+        <table class="form">
+            <tr>
+                <th class="formTitle">
+                    采样日期：
+                </th>
+                <td class="formValue">
+                    <input id="CYDATE" maxlength="50" type="text" class="txt Wdate" datacol="yes" value="@EOS.Utilities.DateTimeHelper.GetToday("yyyy-MM-dd HH:mm:ss")" DBField="true"
+                    onfocus="var CYDATE=$dp.$('CYDATE');WdatePicker({dateFmt: &#39;yyyy-MM-dd HH:mm:ss&#39;,onpicked:function(){CYDATE.focus();},maxDate:'#F{$dp.$D(\'CYDATE\')}'})"
+                        err="日期" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    监测点位：
+                </th>
+                <td class="formValue">
+                    <input id="ZJFA" type="hidden" dbfield="true" dbfield="true" />
+                    <input id="ZJFANAME" type="text" class="txt iconsearch" readonly="readonly" err="监测点位"
+                        dbfield="true" datacol="yes" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    制单日期：
+                </th>
+                <td class="formValue">
+                    <input id="CRETIME" type="text" class="txt required readonly" readonly="readonly" DBField="true"
+                        err="制单日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    制单人：
+                </th>
+                <td class="formValue">
+                    <input id="CREUSER" type="text" class="txt required readonly" readonly="readonly" DBField="true"
+                        err="制单人" checkexpession="NotNull" value="@EOS.Utilities.ManageProvider.Provider.Current().UserName" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="bd" style="border: none; margin-bottom: 1px;">
+        <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+            <div class="tab_list_top" style="position: absolute">
+                <div id="TabToolbar1" class="tab_list bd actived">
+                    监测项目</div>
+            </div>
+        </div>
+    </div>
+    <div class="ScrollBar" style="overflow: hidden">
+        <div id="ZJItem" class="tabPanel" style="display: block;">
+            <table id="tbZJItem" class="form">
+            </table>
+        </div>
+    </div>
+</div>
+</form>

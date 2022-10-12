@@ -1,0 +1,136 @@
+﻿@{
+    ViewBag.Title = "门禁IC发卡";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var RESERVATIONCHAR3 = $("#RESERVATIONCHAR3").val();
+        var RESERVATIONCHAR12 = $("#RESERVATIONCHAR12").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/BindICCard/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + "&RESERVATIONCHAR3=" + RESERVATIONCHAR3 + "&RESERVATIONCHAR12=" + RESERVATIONCHAR12, page: 1
+        }).trigger('reloadGrid');
+    }
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/BindICCard/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ID', index: 'ID', width: 80, align: 'left', hidden: true },
+                { label: '卡序号', name: 'RESERVATIONCHAR1', index: 'RESERVATIONCHAR1', width: 100, align: 'center' },
+                { label: '卡面编号', name: 'RESERVATIONCHAR3', index: 'RESERVATIONCHAR3', width: 100, align: 'center' },
+                { label: '身份证号', name: 'RESERVATIONCHAR12', index: 'RESERVATIONCHAR12', width: 150, align: 'center' },
+                { label: '登记时间', name: 'CREATEDATE', index: 'CREATEDATE', width: 120, align: 'center' },
+                { label: '登记人', name: 'CREATEUSER', index: 'CREATEUSER', width: 100, align: 'center' },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers: true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CREATEDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        columnModelData("#gridTable");
+    }
+    //新增
+    function btn_add() {
+        var url = "/ExampleModule/BindICCard/BindICCardForm";
+        openDialog(url, "BindICCardForm", "门禁发卡", 650, 380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var url = "/ExampleModule/BindICCard/BindICCardForm?KeyValue=" + KeyValue;
+            openDialog(url, "BindICCardForm", "编辑门禁发卡", 650, 380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ExampleModule/BindICCard/DeleteForm', delparm, KeyValue.split(",").length);
+        }
+    }
+
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    登记日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    卡面编号：
+                </th>
+                <td>
+                    <input id="RESERVATIONCHAR3" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    身份证号：
+                </th>
+                <td>
+                    <input id="RESERVATIONCHAR12" type="text" class="txt" style="width: 120px" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

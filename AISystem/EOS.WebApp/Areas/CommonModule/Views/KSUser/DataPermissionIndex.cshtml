@@ -1,0 +1,160 @@
+﻿@{
+    ViewBag.Title = "";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+  var ObjectId = GetQuery('ObjectId');   
+     var ObjectName = GetQuery('ObjectName');
+    var Category = GetQuery('Category'); 
+       var Type = GetQuery('Type');   
+    $(function () {
+    if(Type=="2"){
+        GetGridSup();
+        }else if(Type=="3")
+        {
+        GetGridCus();
+        }else{
+        GetGridTraffic();
+        }
+    })
+    
+    //加载表格
+    function GetGridSup() {
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/CommonModule/Permission/SupplyListJson")?ObjectId=" + ObjectId+ '&Category=' + Category ,
+            datatype: "json",
+            height: $(window).height() -112,
+            autowidth: true,
+            colModel: [
+                 { label: '主键',index:'datascopepermissionid', name: 'datascopepermissionid', width: 80, align: 'left', hidden: true },
+                  { label: '用户主键', name: 'objectid', width: 80, align: 'left', hidden: true },
+               { label: '用户', name: 'objectname', index: 'objectname', width: 100, align: 'center' },
+                { label: '公司主键', name: 'id', width: 80, align: 'left', hidden: true },
+                { label: '公司编号', name: 'code', index: 'code', width: 100, align: 'center' },
+                { label: '公司名称', name: 'name', index: 'name', width: 300, align: 'center' }
+              
+            ],
+            viewrecords: true,
+            rowNum: 500,
+            rowList: [500, 1000],
+            pager: "#gridPager",
+            sortname: 'CODE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+ 
+        });
+        
+    }
+     function GetGridCus() {
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/CommonModule/Permission/CustomerListJson")?ObjectId=" + ObjectId+ '&Category=' + Category ,
+            datatype: "json",
+            height: $(window).height() -112,
+            autowidth: true,
+            colModel: [
+                 { label: '主键',index:'datascopepermissionid', name: 'datascopepermissionid', width: 80, align: 'left', hidden: true },
+                  { label: '用户主键', name: 'objectid', width: 80, align: 'left', hidden: true },
+                  { label: '用户', name: 'objectname', index: 'objectname', width: 100, align: 'center' },
+                      { label: '公司主键', name: 'id', width: 80, align: 'left', hidden: true },
+                { label: '公司编号', name: 'code', index: 'code', width: 100, align: 'center' },
+                { label: '公司名称', name: 'name', index: 'name', width: 300, align: 'center' }
+              
+            ],
+            viewrecords: true,
+            rowNum: 500,
+            rowList: [500, 1000],
+            pager: "#gridPager",
+            sortname: 'CODE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+ 
+        });
+        
+    }
+
+         function GetGridTraffic() {
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/CommonModule/Permission/TrafficListJson")?ObjectId=" + ObjectId+ '&Category=' + Category ,
+            datatype: "json",
+            height: $(window).height() -112,
+            autowidth: true,
+            colModel: [
+                 { label: '主键',index:'datascopepermissionid', name: 'datascopepermissionid', width: 80, align: 'left', hidden: true },
+                  { label: '用户主键', name: 'objectid', width: 80, align: 'left', hidden: true },
+                  { label: '用户', name: 'objectname', index: 'objectname', width: 100, align: 'center' },
+                      { label: '承运商主键', name: 'id', width: 80, align: 'left', hidden: true },
+                { label: '承运商编号', name: 'code', index: 'code', width: 100, align: 'center' },
+                { label: '承运商名称', name: 'name', index: 'name', width: 300, align: 'center' }
+              
+            ],
+            viewrecords: true,
+            rowNum: 500,
+            rowList: [500, 1000],
+            pager: "#gridPager",
+            sortname: 'CODE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+ 
+        });
+        
+    }
+
+     //新增
+   
+    function btn_add() {
+      //  AddTabMenu("DataPermissionForm", "@Url.Content("~/CommonModule/KSUser/DataPermissionForm")?ObjectId=" + ObjectId+ '&ObjectName=' + ObjectName + '&Category=' + Category + '&Type=' + Type , "客商用户-数据范围", "page_white_add.png", true, true, true);
+            var url = "/CommonModule/KSUser/DataPermissionForm?op=add&ObjectId=" + ObjectId + "&ObjectName=" +escape(ObjectName)   + "&Category=" + Category+ "&Type=" + Type;
+            this.location.href = url;
+    }
+
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "datascopepermissionid");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue ;
+            delConfig('/CommonModule/KSUser/DeleteUserData', delparm, KeyValue.split(",").length);
+        }
+    }
+ 
+    
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+    
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div style="margin-top: 1px; margin-bottom: 0px" class="tools_bar">
+        <div class="PartialButton">
+            <a id="ai-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+                <b style="background: url(../../Content/Images/Icon16/arrow_refresh.png) no-repeat 50% 4px">
+                    刷新</b></span></a>
+            <div class="tools_separator">
+            </div>
+            <a id="ai-add" class="tools_btn" title="新增(Ctrl+Z)" onclick="btn_add()"><span><b
+                style="background: url(../../Content/Images/Icon16/add.png) no-repeat 50% 4px">新增</b></span></a>
+            <a id="lr-delete" class="tools_btn" title="删除(Ctrl+S)" onclick="btn_delete()"><span>
+                <b style="background: url(../../Content/Images/Icon16/DeleteRed.png) no-repeat 50% 4px">
+                    删除</b></span></a> <a id="lr-leave" class="tools_btn" title="关闭当前窗口(Esc)" onclick="btn_back()">
+                        <span><b style="background: url(../../Content/Images/Icon16/back.png) no-repeat 50% 4px">
+                            离开</b></span></a></div>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

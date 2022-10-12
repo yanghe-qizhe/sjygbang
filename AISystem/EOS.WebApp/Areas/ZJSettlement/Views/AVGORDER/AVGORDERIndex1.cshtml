@@ -1,0 +1,260 @@
+﻿@{
+    ViewBag.Title = "加权平均管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script src="~/Content/Scripts/Report/CreateControl.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+ 
+    $(function () {
+       BindAutocomplete("MATERIALNAME", "MATERIAL", "Material", "200", "150", "");
+        BindAutocomplete("SUPPLYNAME", "SUPPLY", "Supply", "200", "150", "");
+        GetGrid();
+        GetGrid2("");
+    });
+
+    //搜索
+    function btn_Search() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BILLNO = $("#BILLNO").val();
+        var MATERIAL = $("#MATERIAL").val();
+     
+        var SUPPLY = $("#SUPPLY").val();
+        var CREATEUSER=$("#CREATEUSER").val();
+      
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ZJSettlement/AVGORDER/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&BILLNO=' + escape(BILLNO) + '&MATERIAL=' + MATERIAL+'&SUPPLY='+SUPPLY +"&CREATEUSER="+escape(CREATEUSER), page: 1
+        }).trigger('reloadGrid');
+    }
+
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+      
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ZJSettlement/AVGORDER/GetOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime  ,
+          datatype: "json",
+            height: $(window).height() - 300,
+            autowidth: true,
+            colModel: [
+                { label: '单据编号', name: 'BILLNO', index: 'BILLNO', width: 110, align: 'left', align: 'center' },
+             {  label: '结算日期', name: 'JSDATE', index: 'JSDATE', width: 100, align: 'center'  }, 
+               {
+                    label: '结算方式', name: 'AVGTYPE', index: 'AVGTYPE', width: 80, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                          if (cellvalue == '0') return "<span style='color:red;font-size:18px'>应收数量</span>";
+                        if (cellvalue == '1') return "<span style='color:blue;font-size:18px'>实收数量</span>";
+                    }
+                },
+             
+            { label: '订单编号', name: 'VBILLCODE', index: 'VBILLCODE', width: 120, align: 'center' },
+             { label: 'MATERIAL', name: 'MATERIAL', index: 'MATERIAL',  hidden: true },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 120, align: 'center' },
+               { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 120, align: 'center' },
+                { label: 'SUPPLY', name: 'SUPPLY', index: 'PK_SUPPLIER',  hidden: true },
+                { label: '供应商', name: 'SUPPLYNAME', index: 'SUPPLYNAME', width: 180, align: 'center' },
+                
+                { label: '应收重量', name: 'YFSUTTLE', index: 'YFSUTTLE', width: 60, align: 'center' },
+                 { label: '磅单重量', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+              
+                   { label: '结算重量', name: 'JSSUTTLE', index: 'JSWEIGHT', width: 60, align: 'center' },
+                 { label: '结算单价', name: 'PRICE', index: 'CHARGE', width: 60, align: 'center' },
+                 { label: '车数', name: 'CARSNUM', index: 'CARSNUM', width: 60, align: 'center' },
+                 {  label: '开始日期', name: 'BEGINDATE', index: 'BEGINDATE', width: 100, align: 'center'  }, 
+                {  label: '结束日期', name: 'ENDDATE', index: 'ENDDATE', width: 100, align: 'center'  }, 
+               {  label: '创建日期', name: 'CREATEDATE', index: 'CREATEDATE', width: 120, align: 'center'  }, 
+                { label: '创建人', name: 'CREATEUSER', index: 'CREATEUSER', width: 80, align: 'center' },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 150, align: 'left' }
+            ],
+             viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CREATEDATE',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            multiselect: false,//复选框 
+             multiboxonly: true,  
+            //单击事件
+             onSelectRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var BILLNO=rowData.BILLNO;
+                  $("#gridTable2").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ZJSettlement/AVGORDER/GetOrderEntryList")?KeyValue="+BILLNO, page: 1
+                 }).trigger('reloadGrid');
+            }
+          
+        });
+        columnModelData("#gridTable");
+    }
+
+    function GetGrid2() {
+        $("#gridTable2").jqGrid({
+            url: "@Url.Content("~/ZJSettlement/AVGORDER/GetOrderEntryList")?KeyValue=",
+            datatype: "json",
+            height: 100,
+           autowidth: true,
+            colModel: [
+                { label: 'ID', name: 'ID', index: 'ID',  hidden: true },
+                   { label: '日期', name: 'JSDATE', index: 'PK_TASK', width: 120, align: 'center'   },
+              
+               { label: '车数', name: 'CARSNUM', index: 'CARSNUM', width: 60, align: 'center' },
+                 { label: '应收重重', name: 'YFSUTTLE', index: 'YFSUTTLE', width: 60, align: 'center' },
+               
+                 { label: '净料', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+                
+                   { label: '结算重量', name: 'JSSUTTLE', index: 'JSWEIGHT', width: 60, align: 'center' },
+                    
+                          { label: '发热量', name: 'ITEMVALUE1', index: 'ITEMVALUE1', width: 60, align: 'center' },
+                                   { label: '水分', name: 'ITEMVALUE2', index: 'ITEMVALUE2', width: 60, align: 'center' },
+                    { label: '硫', name: 'ITEMVALUE3', index: 'ITEMVALUE3', width: 60, align: 'center' },
+                          { label: '挥发分', name: 'ITEMVALUE4', index: 'ITEMVALUE4', width: 60, align: 'center' } 
+
+            ],
+            viewrecords: true,
+            rowNum: 100,
+            rownumbers: true,
+            pager: false,
+            sortname: 'BILLNO',
+            sortorder: 'asc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+        });
+        columnModelData("#gridTable2");
+    }
+
+     
+ 
+    //审核
+    function btn_Check(){
+       var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+
+         var AUDITSTATUS = GetJqGridRowValue("#gridTable", "AUDITSTATUS");
+          if (AUDITSTATUS =="1" ) {
+                     tipDialog("此数据已审批,无法继续审批！", 3, ""); 
+                    return false;
+                }
+          var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+
+          if (isuse == "4") {
+                  tipDialog("此数据已作废,无法审批操作！", 3, "");  
+                               return false;
+                }
+                
+           
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ZJSettlement/AVGORDER/CheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+    //反审核
+    function btn_UnCheck(){
+      var KeyValue = GetJqGridRowValue("#gridTable", "BILLNO");
+        if (IsChecked(KeyValue)) {
+         var STATUS = GetJqGridRowValue("#gridTable", "STATUS");
+          if (STATUS=="0") {
+                     tipDialog("此单据未审批,无法继续反审！", 3, ""); 
+                    return false;
+                }
+   
+            var  parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ZJSettlement/AVGORDER/UnCheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+           });
+        }
+    }
+
+ 
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+        $("#gridTable2").trigger("reloadGrid"); //重新载入
+    }
+
+     
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 120px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    结算单号：
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 120px" />
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    供应商：
+                </th>
+                <td>
+                    <input id="SUPPLY" type="hidden" />
+                    <input id="SUPPLYNAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIAL" type="hidden" />
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单人：
+                </th>
+                <td>
+                    <input id="CREATEUSER" type="text" class="txt" style="width: 120px" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+        <table id="gridTable2">
+        </table>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

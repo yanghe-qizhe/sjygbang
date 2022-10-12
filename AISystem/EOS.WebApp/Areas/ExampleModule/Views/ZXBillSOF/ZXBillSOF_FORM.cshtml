@@ -1,0 +1,264 @@
+﻿@{ ViewBag.Title = "生产上料计划"; Layout = "~/Views/Shared/_LayoutIndex.cshtml"; }
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var json = [
+       { val: '1000', txt: '阳光纸业' },
+       { val: '6000', txt: '盛世热电' },
+       //{ val: '7000', txt: '新迈纸业' },
+       { val: '8000', txt: '阳光王子' },
+       { val: '9000', txt: '华迈纸业' },
+       { val: '9010', txt: '科迈制浆' }
+    ];
+
+
+    var json5 = [
+{ val: 'D', txt: '全班' } ,
+{ val: 'B', txt: '白班' } ,
+{ val: 'C', txt: '中班' } ,
+{ val: 'A', txt: '夜班' }
+    ];
+    $(function () {
+        BindJSONAutocomplete(json, "SITENAME", "SITE", "", "");//站点
+        BindAutocomplete("WORK_SHOP_BONAME", "WORK_SHOP_BO", "Dictionary", "", "", "");//车间
+        //BindAutocomplete("PRODUCTION_LINE_BONAME", "PRODUCTION_LINE_BO", "Dictionary", "", "", "");//产线
+        //BindAutocomplete("OPERATION_BONAME", "OPERATION_BO", "Dictionary", "", "", "");//工序
+        //BindAutocomplete("WORK_BONAME", "WORK_BO", "Dictionary", "", "", "");//工作中心
+        BindJSONAutocomplete(json5, "SHIFTNAME", "SHIFT", "", "");//班组
+        BindAutocomplete("ITEM_BONAME", "ITEM_BO", "Material", "", "", "");//物料
+        if (!!KeyValue) {
+            //主表信息
+            InitControl();
+        }
+    })
+
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/ZXBillSOF/SetFormControl", { KeyValue: KeyValue }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+
+
+
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#tb_OrderFrom");
+                    AjaxJson("/ExampleModule/ZXBillSOF/SubmitOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+
+
+    /*明细end=======================================*/
+</script>
+<form id="form1">
+    <div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+        <div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+            <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()">
+                <span>
+                    <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+                        刷新
+                    </b>
+                </span>
+            </a> <a id="button_Commit_Save" class="tools_btn" title="保存单据" onclick="SubmitOrderForm()">
+                <span>
+                    <b style='background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) no-repeat 50% 4px;'>
+                        保存
+                    </b>
+                </span>
+            </a><a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                <span>
+                    <b style='background: url(@Url.Content("~/Content/Images/Icon16/back.png")) no-repeat 50% 4px;'>
+                        离开
+                    </b>
+                </span>
+            </a>
+        </div>
+        <table id="tb_OrderFrom" class="form">
+            <tr>
+                <th class="formTitle">
+                    计划单号：
+                </th>
+                <td class="formValue">
+                    <input id="ID" type="hidden" dbfield="true" value="@ViewBag.BillNo" />
+                    <input id="HANDLE" type="text" class="txt readonly required" datacol="yes"
+                           readonly="readonly" err="计划单号" checkexpession="NotNull" value="@ViewBag.BillNo" />
+                </td>
+                <th class="formTitle">
+                    站点：
+                </th>
+                <td class="formValue">
+                    <input id="SITE" type="hidden" dbfield="true" datacol="yes"
+                           err="请您选择站点" checkexpession="NotNull" value="1000"/>
+                    <input id="SITENAME" type="text" class="txt required" datacol="yes"
+                           err="站点" checkexpession="NotNull" dbfield="true" value="阳光纸业" />
+                </td>
+                <th class="formTitle">
+                    车间：
+                </th>
+                <td class="formValue">
+                    <input id="WORK_SHOP_BO" type="hidden" dbfield="true" datacol="yes"
+                           err="请您选择车间" checkexpession="NotNull" />
+                    <input id="WORK_SHOP_BONAME" type="text" class="txt required" datacol="yes" err="车间"
+                           checkexpession="NotNull" dbfield="true" items="车间" />
+                </td>
+            </tr>
+            <tr>
+                @*<th class="formTitle">
+                        产线：
+                    </th>
+                    <td class="formValue">
+                        <input id="PRODUCTION_LINE_BO" type="hidden" dbfield="true" datacol="yes"
+                               err="请您选择产线" checkexpession="NotNull" />
+                        <input id="PRODUCTION_LINE_BONAME" type="text" class="txt" dbfield="true" datacol="yes"
+                               err="产线" checkexpession="NotNull" items="产线" />
+                    </td>
+                    <th class="formTitle">
+                        工序：
+                    </th>
+                    <td class="formValue">
+                        <input id="OPERATION_BO" type="hidden" dbfield="true" datacol="yes"
+                               err="请您选择产线" checkexpession="NotNull" />
+                        <input id="OPERATION_BONAME" type="text" class="txt" dbfield="true" datacol="yes"
+                               err="工序" checkexpession="NotNull" items="工序" />
+                    </td> <th class="formTitle">
+                        工作中心：
+                    </th>
+                    <td class="formValue">
+                        <input id="WORK_BO" type="hidden" dbfield="true" datacol="yes"
+                               err="请您选择工作中心" checkexpession="NotNull" />
+                        <input id="WORK_BONAME" type="text" class="txt" dbfield="true" items="工作中心" datacol="yes"
+                               err="工作中心" checkexpession="NotNull" />
+                    </td>*@
+
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    物料：
+                </th>
+                <td class="formValue">
+                    <input id="ITEM_BO" type="hidden" dbfield="true" datacol="yes"
+                           err="请您选择物料" checkexpession="NotNull" />
+                    <input id="ITEM_BONAME" type="text" class="txt" dbfield="true" datacol="yes"
+                           err="物料" checkexpession="NotNull" istype="YG30" />
+                </td>
+                <th class="formTitle">
+                    班组：
+                </th>
+                <td class="formValue">
+                    <input id="SHIFT" type="hidden" dbfield="true" datacol="yes"
+                           err="请您选择班组" checkexpession="NotNull" />
+                    <input id="SHIFTNAME" type="text" class="txt required" dbfield="true" datacol="yes"
+                           err="班组" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">
+                    待备库量：
+                </th>
+                <td class="formValue">
+                    <input id="DEMAND_ORIGINAL_QTY" type="hidden" value="0" dbfield="true" />
+                    <input id="DEMAND_CONFIRMED_QTY" type="hidden" value="0" dbfield="true" />
+                    <input id="NET_DEMAND_CONFIRMED_QTY" type="text" class="txt required" datacol="yes" err="待备库量" checkexpession="DoubleOrZero"
+                           onfocus="IsMoney(this.id);" value="0" dbfield="true" />
+                </td>
+
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    状态：
+                </th>
+                <td class="formValue">
+                    <select id="STATUS" class="txt select">
+                        <option value="">===请选择===</option>
+                        <option value="CONFIRMED" selected="selected">已确认</option>
+                        <option value="FINISHED">已完成</option>
+                        <option value="CANCELED">已取消</option>
+                    </select>
+                </td>
+                <th class="formTitle">
+                    制单人：
+                </th>
+                <td class="formValue">
+                    <input id="DEMAND_CONFIRMED_USER" type="hidden" dbfield="true" />
+                    <input id="MODIFED_USER" type="hidden" dbfield="true" />
+                    <input id="CREATED_USER" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                           err="制单人" checkexpession="NotNull" value="@ViewBag.CreateUserName" dbfield="true" />
+                </td>
+                <th class="formTitle">
+                    制单时间：
+                </th>
+                <td class="formValue">
+                    <input id="DEMAND_CONFIRMED_DATE" type="hidden" dbfield="true" />
+                    <input id="MODIFED_DATE_TIME" type="hidden" dbfield="true" />
+                    <input id="CREATED_DATE_TIME" type="text" class="txt readonly" readonly="readonly" datacol="yes"
+                           err="制单时间" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" dbfield="true" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">
+                    类型：
+                </th>
+                <td class="formValue">
+                    <select id="TYPE" class="txt select">
+                        <option value="">===请选择===</option>
+                        <option value="0" selected="selected">上料</option>
+                        <option value="1">移库</option>
+                    </select>
+                </td>
+                <th class="formTitle">
+                    需求日期：
+                </th>
+                <td class="formValue">
+                    <input id="DEMAND_DATE" type="text" class="txt" datacol="yes"
+                           err="需求日期" checkexpession="NotNull" value="@DateTime.Now.ToString("yyyy-MM-dd")" onfocus="WdatePicker({startDate:'%y-%M-%d',dateFmt: &#39;yyyy-MM-dd&#39;})" dbfield="true" />
+                </td>
+                <th class="formTitle">
+                <td class="formValue"></td>
+            </tr>
+
+        </table>
+        <div id="grid_List">
+            <table id="gridTable"></table>
+            <style>
+                .ui-widget-content {
+                    border-left: none;
+                }
+
+                .ui-jqgrid tr.ui-row-ltr td {
+                    padding: 0px;
+                    border-bottom: 1px solid #ccc;
+                }
+
+                .ui-jqgrid .ui-jqgrid-htable th {
+                    line-height: 15px;
+                }
+
+                    .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+                        background: none;
+                    }
+
+                .editable {
+                    height: 22px;
+                    background-color: #fff;
+                }
+            </style>
+        </div>
+    </div>
+</form>

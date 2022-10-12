@@ -1,0 +1,159 @@
+﻿@{
+    ViewBag.Title = "系统日志";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        GetTree();
+        GetGrid("");
+    });
+    var ModuleId = "", ModuleName = "";
+    //加载左边树
+    function GetTree() {
+        var itemtree = {
+            onnodeclick: function (item) {
+                ModuleId = item.id;            //ID
+                ModuleName = item.text;        //名称
+                $("#titleinfo").text(ModuleName);
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/CommonModule/SysLog/GridPageListJson")?ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            },
+            url: "@Url.Content("~/CommonModule/Module/TreeJson")"
+        };
+        $("#ItemsTree").treeview(itemtree);
+    }
+    //加载表格
+    function GetGrid(ParameterJson) {
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/CommonModule/SysLog/GridPageListJson")",
+            datatype: "json",
+            height: $(window).height() - 132,
+            autowidth: true,
+            colModel: [
+                { label: "主键", name: "syslogid", index: "syslogid", hidden: true },
+                {
+                    label: "操作时间", name: "createdate", index: "createdate", width: 120,
+                    formatter: function (value, options, rowObject) {
+                        return formatDate(value, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                { label: "操作模块", name: "modulename", index: "modulename", width: 100 },
+                { label: "操作类型", name: "logtype", index: "logtype", width: 100, hidden: true },
+                {
+                    label: "操作类型", name: "logtypename", width: 65, align: "center",
+                    formatter: function (value, options, rowObject) {
+                        if (rowObject.logtype == '0') { return "登陆"; }
+                        if (rowObject.logtype == '1') { return "新增"; }
+                        if (rowObject.logtype == '2') { return "修改"; }
+                        if (rowObject.logtype == '3') { return "删除"; }
+                        if (rowObject.logtype == '4') { return "其他"; }
+                        if (rowObject.logtype == '5') { return "访问"; }
+                        if (rowObject.logtype == '6') { return "离开"; }
+                        if (rowObject.logtype == '7') { return "查询"; }
+                        if (rowObject.logtype == '8') { return "安全退出"; }
+                    }
+                },
+                { label: "ip地址", name: "ipaddress", index: "ipaddress", width: 100 },
+                { label: "操作用户", name: "createusername", index: "createusername", width: 80 },
+                { label: "操作公司", name: "companyid", index: "companyid", width: 120 },
+                { label: "操作部门", name: "departmentid", index: "departmentid", width: 80 },
+                {
+                    label: "操作状态", name: "status", index: "status", width: 50, align: "center",
+                    formatter: function (value, options, rowObject) {
+                        if (value == '1') {
+                            return "<span style='color:blue'>成功</span>";
+                        } else {
+                            return "<span style='color:red'>失败</span>";
+                        }
+                    }
+                },
+                { label: "对象值", name: "objectid", index: "objectid", width: 260 },
+                { label: "操作描述", name: "remark", index: "remark", width: 300 } 
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CreateDate',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+        
+    }
+    //查询
+    var QueryParamJson = "";
+    function btn_query() {
+                 QueryDialog("/CommonModule/SysLog/SysLogQuery", "SysLogQuery", "查询过滤",350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/CommonModule/SysLog/GridPageListJson")?action=query" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+
+    //明细
+    function btn_detail() {
+        var SysLogId = GetJqGridRowValue("#gridTable", "syslogid");
+        var LogType = GetJqGridRowValue("#gridTable", "logtype");
+        var LogTypeName = GetJqGridRowValue("#gridTable", "logtypename");
+        if (IsChecked(SysLogId)) {
+            var url = "/CommonModule/SysLog/DetailNew?SysLogId=" + SysLogId + '&LogType=' + LogType;
+            Dialog(url, "DetailNew", '日志详细信息-【' + LogTypeName + '】', 1050, 550);
+        }
+    }
+
+    //清空数据
+    function btn_broom() {
+        var url = "/CommonModule/SysLog/RemoveLog";
+        openDialog(url, "Form", "清空系统日志", 300, 80, function (iframe) {
+            top.frames[iframe].AcceptClick();
+        });
+    }
+
+    //导出Excel
+    function btn_derive() {
+        SetDeriveExcel("#gridTable", "系统日志-" + formatDate(CurrentTime(), 'yyyyMMdd'));
+        openDialog("/CommonModule/ExcelImport/DeriveDialog", "DeriveDialog", "系统日志导出", 600, 300, function (iframe) {
+            top.frames[iframe].AcceptClick();
+        });
+    }
+
+    //刷新表格
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入  
+    }
+
+</script>
+<div id="layout" class="layout">
+    <!--左边-->
+    <div class="layoutPanel layout-west">
+        <div class="btnbartitle">
+            <div>
+                导航目录
+            </div>
+        </div>
+        <div class="ScrollBar" id="ItemsTree">
+        </div>
+    </div>
+    <!--中间-->
+    <div class="layoutPanel layout-center">
+        <div class="btnbartitle">
+            <div>
+                系统日志 - <span id="titleinfo">所有日志</span>
+            </div>
+        </div>
+        <div class="tools_bar" style="border-top: none; margin-bottom: 0px;">
+            <div class="PartialButton">
+                @Html.Partial("_PartialButton")
+            </div>
+        </div>
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>

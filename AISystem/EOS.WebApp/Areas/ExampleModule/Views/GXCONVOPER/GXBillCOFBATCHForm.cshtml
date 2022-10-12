@@ -1,0 +1,459 @@
+﻿@{
+    ViewBag.Title = "工序任务单》新增";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        //秤点
+        DictionaryAutocomplete();
+        GetGrid();
+
+    })
+
+    //称点
+    function DictionaryAutocomplete() {
+        var txtname = "SCALENAME";
+        var $txtid = $("#PK_SCALE");
+        var $txtname = $("#SCALENAME");
+
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 3) {
+                    var parm = "keywords=" + escape(keyvalue);
+                    var items = $(this).attr("items");
+                    if (items != null && items != "") {
+                        parm += "&items=" + escape(items);
+                    }
+                    DataSource(parm);
+                }
+            }
+        }).focus(function () {
+            var parm = "keywords=";
+            $(this).select();
+            var items = $(this).attr("items"); //添加items属性值为职称查找职称字典数据
+            if (items != null && items != "") {
+                parm += "&items=" + items;
+            }
+            DataSource(parm);
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.code);
+            $txtname.val(data.name);
+        });
+        //获取数据源
+        function DataSource(parm) {
+            AjaxJson("/AutoData/Dictionary", parm, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].code + "-" + DataJson[i].name + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, $txtname.width() + "px", height + "px", html, function (data) {
+                    $txtid.val(data.code);
+                    $txtname.val(data.name);
+                });
+            });
+        }
+    }
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!KeyValue) {
+            AjaxJson("/ExampleModule/GXCONVOPER/SetFormControl", { KeyValue: KeyValue, ModuleId: ModuleId }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function SubmitOrderForm() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        confirmDialog('提示', '注：您确认要保存此操作吗？', function (r) {
+            if (r) {
+                Loading(true, "正在提交数据...");
+                window.setTimeout(function () {
+                    var postData = GetWebControls("#form1");
+                    postData["OrderEntryJson"] = GetTableDataJson("#gridTable");
+                    AjaxJson("/ExampleModule/GXCONVOPER/SubmitAllOrderForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, postData, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        var tabframeid = "tabs_iframe_" + ModuleId;
+                        top.frames[tabframeid].windowload();
+                        ThisCloseTab();
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    /*车皮明细begin=======================================*/
+    //订单分录
+    function GetGrid() {
+        $("#gridTable").jqGrid({
+            datatype: "local",
+            height: $(window).height() - 315,
+            autowidth: true,
+            colModel: [
+                { label: '物料[<font face="宋体">*</font>]', name: 'MATERIALNAME', width: 180, sortable: false, align: 'center' },
+                 { label: '物料内码[<font face="宋体">*</font>]', name: 'MATERIALCODE', width: 180, sortable: false, align: 'center' },
+                { label: '规格[<font face="宋体">*</font>]', name: 'MATERIALSPEC', width: 180, sortable: false, align: 'center' },
+                { label: '牌号[<font face="宋体">*</font>]', name: "DEF2", width: 150, sortable: false },
+                { label: '长度', name: "MATERIALSPECNAME", width: 150, sortable: false, hidden: true },
+                 { label: '长度内码', name: "MATERIALSPECCODE", width: 150, sortable: false, hidden: true },
+                { label: '件数', name: "MATERPIECENUM", width: 70, sortable: false, align: 'center', hidden: true },
+                { label: '单根重', name: "MATERIALWEI", width: 70, sortable: false, align: 'center', hidden: true },
+                { label: '件根数', name: "MATERIALNUM", width: 70, sortable: false, align: 'center', hidden: true },
+                { label: '总根数', name: "MATERIALSNUM", width: 70, sortable: false, hidden: true },
+                { label: '理重', name: "MATERIALSUTTLE", width: 70, sortable: false, hidden: true }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+
+        //默认添加6行 空行
+        for (var i = 1; i < 11; i++) {
+            var rowdata = {
+                MATERIALNAME: '<input readonly id="MATERIALNAME➩' + i + '" class="editable" type="text" style="cursor:pointer" datacol="no" isdatacol="ok" err="物料" checkexpession="NotNull" /><input id="PK_MATERIAL➩' + i + '" type="hidden" />',
+                MATERIALCODE: '<input readonly id="MATERIALCODE➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" isdatacol="ok" />',
+                MATERIALSPEC: '<input readonly id="MATERIALSPEC➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" isdatacol="ok" />',
+                DEF2: '<input readonly id="DEF2➩' + i + '" class="editable disabled" type="text" style="cursor:pointer" isdatacol="ok" />',
+                MATERIALSPECNAME: '<input id="MATERIALSPECNAME➩' + i + '" class="editable" type="text" datacol="no" isdatacol="no" err="长度" checkexpession="NotNull" material=""/><input id="PK_MATERIALSPEC➩' + i + '" type="hidden" />',
+                MATERIALSPECCODE: '<input id="MATERIALSPECCODE➩' + i + '" class="editable" type="text" />',
+
+                MATERPIECENUM: '<input id="MATERPIECENUM➩' + i + '" maxlength="10"  class="editable decimal center" type="text" onkeyup="Conversion(' + i + ')" datacol="No" isdatacol="no" err="件数" checkexpession="DoubleOrZero" value="0"/>',
+                MATERIALWEI: '<input id="MATERIALWEI➩' + i + '" maxlength="20"  class="editable decimal center" type="text" onkeyup="Conversion(' + i + ')" datacol="No" isdatacol="no" err="单根重" checkexpession="DoubleOrZero" value="0"/>',
+                MATERIALNUM: '<input id="MATERIALNUM➩' + i + '" maxlength="10"  class="editable decimal center" type="text" onkeyup="Conversion(' + i + ')" datacol="No" isdatacol="no" err="件根数" checkexpession="DoubleOrZero" value="0"/>',
+                MATERIALSNUM: '<input id="MATERIALSNUM➩' + i + '" class="editable disabled center" type="text" datacol="No" isdatacol="no" err="总根数" checkexpession="Double" value="0"/>',
+                MATERIALSUTTLE: '<input id="MATERIALSUTTLE➩' + i + '" class="editable disabled center" type="text" datacol="No" isdatacol="no" err="理重" checkexpession="Double" value="0"/>'
+            }
+            $('#gridTable').jqGrid('addRowData', i, rowdata);
+            MaterialSpecAutocomplete("MATERIALSPECNAME➩" + i, "PK_MATERIALSPEC➩" + i, "MATERIALSPECCODE➩" + i);
+
+        }
+        //金额设置居中、设置只能输入金额格式
+        $("#gridTable").find('.decimal').attr('onfocus', 'IsMoney(this.id)');
+        $("#gridTable").find('.center').css('text-align', 'center')
+        $("#gridTable").find('input').attr("disabled", "disabled");
+
+        //$("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled').attr("datacol", "yes");
+        $("#gridTable tbody tr:eq(1)").find('input').removeAttr('disabled');
+        $("#gridTable tbody tr:eq(1)").find('input[isdatacol="ok"]').attr("datacol", "yes");
+
+        $("#gridTable").find('.disabled').attr("disabled", "disabled");
+        $('.jqgrid-rownum').attr('title', '单击复制-双击清空一行');
+        $("#gridTable tbody tr").find('td:eq(0)').dblclick(function () {
+            var index = $(this).text();
+            $("#PK_MATERIAL➩" + index).val("");
+            $("#MATERIALNAME➩" + index).val("");
+            $("#MATERIALCODE➩" + index).val("");
+            $("#MATERIALSPEC➩" + index).val("");
+            $("#MATERIALSPECNAME➩" + index).val("");
+            $("#MATERIALSPECCODE➩" + index).val("");
+            $("#PK_MATERIALSPEC➩" + index).val("");
+            $("#DEF2➩" + index).val("");
+            $("#MATERPIECENUM➩" + index).val("");
+            $("#MATERIALWEI➩" + index).val("");
+            $("#MATERIALWEI➩" + index).val("");
+            $("#MATERIALNUM➩" + index).val("");
+            $("#MATERIALSNUM➩" + index).val("");
+            $("#MATERIALSUTTLE➩" + index).val("");
+        });
+        $("#gridTable tbody tr").find('td:eq(0)').click(function () {
+            var index = $(this).text();
+            if (index > 1) {
+                var rowindex = parseInt(index) - 1;
+                $("#PK_MATERIAL➩" + index).val($("#PK_MATERIAL➩" + rowindex).val());
+                $("#MATERIALNAME➩" + index).val($("#MATERIALNAME➩" + rowindex).val());
+                $("#MATERIALCODE➩" + index).val($("#MATERIALCODE➩" + rowindex).val());
+                $("#MATERIALSPEC➩" + index).val($("#MATERIALSPEC➩" + rowindex).val());
+
+                $("#PK_MATERIALSPEC➩" + index).val($("#PK_MATERIALSPEC➩" + rowindex).val());
+                $("#MATERIALSPECCODE➩" + index).val($("#MATERIALSPECCODE➩" + rowindex).val());
+                $("#MATERIALSPECNAME➩" + index).val($("#MATERIALSPECNAME➩" + rowindex).val());
+
+
+                $("#DEF2➩" + index).val($("#DEF2➩" + rowindex).val());
+                $("#MATERPIECENUM➩" + index).val($("#MATERPIECENUM➩" + rowindex).val());
+                $("#MATERIALWEI➩" + index).val($("#MATERIALWEI➩" + rowindex).val());
+                $("#MATERIALWEI➩" + index).val($("#MATERIALWEI➩" + rowindex).val());
+                $("#MATERIALNUM➩" + index).val($("#MATERIALNUM➩" + rowindex).val());
+                $("#MATERIALSNUM➩" + index).val($("#MATERIALSNUM➩" + rowindex).val());
+                $("#MATERIALSUTTLE➩" + index).val($("#MATERIALSUTTLE➩" + rowindex).val());
+                $("#gridTable tbody tr:eq(" + index + ")").find('input').removeAttr('disabled');
+                $("#gridTable").find('.disabled').attr("disabled", "disabled");
+            }
+        });
+        //点击订单文本框时间，弹出选择订单信息
+        $("#gridTable tbody tr").find('td:eq(1)').find('input').click(function () {
+            if ($(this).attr('disabled') == 'disabled') {
+                return false;
+            }
+            var index = $(this).attr('id').split('➩')[1];
+            SelectMaterialMyClass("MATERIALNAME➩" + index, "PK_MATERIAL➩" + index, "MATERIALSPEC➩" + index, "MATERIALCODE➩" + index, "DEF2➩" + index, "", index);
+        });
+        $("#gridTable tbody tr").find('td:eq(7)').find('input').keyup(function () {
+            if ($(this).attr('disabled') == 'disabled') {
+                return false;
+            }
+            var num = this.value;
+            if (Number(num) > 3) {
+                tipDialog("件数不能大于3件！", 3, "");
+                this.value = 0;
+            }
+
+        });
+        //价格信息文本框点击事件
+        $("#gridTable").find('.decimal').click(function () {
+            $(this).select();
+        });
+    }
+
+    function round2(num, precision) {
+        var dnum = Math.pow(10, precision);
+        if (Math.floor(num * dnum * 10) % 5 == 0 && Math.floor(num * dnum * 10) == num * dnum * 10 && Math.floor(num * dnum) % 2 == 0) {
+            return Math.floor(num * dnum) / dnum;
+        } else {
+            return Math.round(num, precision);
+        }
+    }
+    var array = new Array();
+    function IsExistOrder(index, json) {
+        if (!ArrayOrderExists(array, json)) {
+            array[index] = json;
+            return false;
+        } else {
+            return true;
+        }
+    }
+    function ArrayOrderExists(arr, json) {
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] != null) {
+                if (arr[i].MATERIALNAME == json.MATERIALNAME && arr[i].MATERIALSPEC == json.MATERIALSPEC && arr[i].DEF2 == json.DEF2)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    function MaterialSpecAutocomplete(txtname, txtid, txtcode) {
+        var $txtid = $("#" + txtid);
+        var $txtname = $("#" + txtname);
+        var $txtcode = $("#" + txtcode);
+        var width = "";
+        if (width == "") {
+            width = $txtname.width();
+        }
+        var height = "";
+        if (height == "") {
+            height = "150";
+        }
+        $txtname.bind("keyup", function (e) {
+            if (e.which != 13 && e.which != 40 && e.which != 38) {
+                var keyvalue = $(this).val();
+                if (keyvalue.length >= 2) {
+                    DataSource();
+                }
+                $txtid.val("");
+            }
+        }).focus(function () {
+            $(this).select();
+            DataSource();
+        });
+        //上，下键盘回调
+        autocompletekeydown(txtname, function (data) {
+            $txtid.val(data.id);
+            $txtname.val(data.name);
+            $txtcode.val(data.code);
+        });
+        //获取数据源
+        function DataSource() {
+            AjaxJson("/AutoData/MaterialSpec", { keywords: $txtname.val(), material: $txtname.attr("material") }, function (DataJson) {
+                var html = "";
+                $.each(DataJson, function (i) {
+                    html += "<tr>";
+                    html += '<td id="id" style="display: none;">' + DataJson[i].id + '</td>';
+                    html += '<td id="name" style="width: 100%;">' + DataJson[i].name + '</td>';
+                    html += '<td id="code" style="display: none;">' + DataJson[i].code + '</td>';
+                    html += "</tr>";
+                });
+                //点击事件回调
+                autocomplete(txtname, width + "px", height + "px", html, function (data) {
+                    $txtid.val(data.id);
+                    $txtname.val(data.name);
+                    $txtcode.val(data.code);
+                });
+            });
+        }
+    }
+
+
+
+    function SelectMaterialMyClass(txtname, txtid, txtspec, txtcode, txtclass, title, index) {
+        if (title == "") {
+            title = "选取物料信息";
+        }
+        var url = "/Utility/SelectMaterial?type=2";
+        openMyDialog(url, "Form11111", title, 800, 380,
+             function (iframe) {
+                 top.frames[iframe].SelectText3(txtname, txtid, txtspec, txtcode, txtclass);
+                 var MATERIALNAME = $("#MATERIALNAME➩" + index).val();
+                 var MATERIALSPEC = $("#MATERIALSPEC➩" + index).val();
+                 var MATERIALCODE = $("#MATERIALCODE➩" + index).val();
+                 $("#MATERIALSPECNAME➩" + index).attr("material", MATERIALCODE);
+                 var DEF2 = $("#DEF2➩" + index).val();
+                 var json = { "MATERIALNAME": MATERIALNAME.toLowerCase(), "MATERIALSPEC": MATERIALSPEC.toLowerCase(), "DEF2": DEF2.toLowerCase() }
+                 if (IsExistOrder(index, json)) {
+                     top.TipMsg("相同物料、规格、牌号已存在,不能重复添加", 4000, "error");
+                     $("#MATERIALNAME➩" + index).val("");
+                     $("#MATERIALCODE➩" + index).val("");
+                     $("#PK_MATERIAL➩" + index).val("");
+                     $("#MATERIALSPEC➩" + index).val("");
+                     $("#DEF2➩" + index).val("");
+                     return;
+                 }
+
+                 //$("#gridTable tbody tr:eq(" + index + ")").find('input').attr("datacol", "yes");  
+                 $("#gridTable tbody tr:eq(" + index + ")").find('input[isdatacol="ok"]').attr("datacol", "yes");
+
+                 index++;
+                 $("#gridTable tbody tr:eq(" + index + ")").find('input').removeAttr('disabled');
+                 $("#gridTable").find('.disabled').attr("disabled", "disabled");
+             }, function (iframe) {
+                 top.frames[iframe].ClearText3(txtname, txtid, txtspec, txtcode, txtclass);
+             });
+    }
+    //订单明细换算+合计
+    function Conversion(index) {
+        var GZ = $("#MATERIALWEI➩" + index).val();
+        var JS = $("#MATERPIECENUM➩" + index).val();
+        var JZ = $("#MATERIALWEI➩" + index).val();
+        var JGS = $("#MATERIALNUM➩" + index).val();
+
+        if (JS != 0 && JS != undefined && JGS != 0 && JGS != undefined) {
+            var ZS = FloatMul(JS, JGS);
+            $("#MATERIALSNUM➩" + index).val(ZS);
+            var LZ = FloatMul(ZS, GZ);
+            var LZSuttle = round2(LZ, 4);
+            $("#MATERIALSUTTLE➩" + index).val(LZSuttle);
+        } else {
+            $("#MATERIALSNUM➩" + index).val('0');
+            $("#MATERIALSUTTLE➩" + index).val('0');
+        }
+    }
+    /*明细end=======================================*/
+</script>
+<form id="form1" style="margin: 1px">
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="SubmitOrderForm()"
+                class="tools_btn"><span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    保存</b></span></a> <a title="关闭当前窗口(Esc)" onclick="ThisCloseTab()" class="tools_btn">
+                        <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<table id="GXOrder" class="form">
+    <tr>
+        <th class="formTitle">
+            发货单位：
+        </th>
+        <td class="formValue">
+            <input id="PK_SENDUNIT" type="hidden" />
+            <input id="SENDUNITNAME" type="text" class="txt required" datacol="yes" err="发货单位"
+                checkexpession="NotNull" onclick='SelectDept("SENDUNITNAME", "PK_SENDUNIT", "选取收货单位信息");' />
+        </td>
+        <th class="formTitle">
+            收货单位：
+        </th>
+        <td class="formValue">
+            <input id="PK_ACCEPTUNIT" type="hidden" />
+            <input id="ACCEPTUNITNAME" type="text" class="txt required" datacol="yes" err="收货单位"
+                checkexpession="NotNull" onclick='SelectDept("ACCEPTUNITNAME", "PK_ACCEPTUNIT", "选取收货单位信息");' />
+        </td>
+        <th class="formTitle">
+            过磅秤点：
+        </th>
+        <td class="formValue">
+            <input id="PK_SCALE" type="hidden" />
+            <input id="SCALENAME" type="text" class="txt required" datacol="yes" err="过磅秤点" checkexpession="NotNull"
+                items="计量称点" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            开始时间：
+        </th>
+        <td class="formValue">
+            <input id="STARTTIME" type="text" class="txt Wdate" value="@ViewBag.STARTTIME"   onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'STARTTIME\')}'})" />
+        </td>
+        <th class="formTitle">
+            结束时间：
+        </th>
+        <td class="formValue">
+            <input id="ENDTIME" type="text" class="txt Wdate" value="@ViewBag.ENDTIME"  onfocus="WdatePicker({minDate:'#F{$dp.$D(\'ENDTIME\')}'})"  />
+        </td>
+        <th class="formTitle">
+            备注：
+        </th>
+        <td class="formValue">
+            <input id="MEMO" type="text" class="txt" />
+        </td>
+    </tr>
+</table>
+<div class="bd" style="border-bottom: none; margin: 2px;">
+    <div class="tipstitle_title settingtable bold bd todayInfoPanelTab rightPanelTitle_normal">
+        <div class="tab_list_top" style="position: absolute">
+            <div id="Taborder" class="tab_list bd actived" onclick="Tabchange('order')">
+                物料信息</div>
+        </div>
+    </div>
+</div>
+<div class="ScrollBar" style="margin: 1px; overflow: hidden;">
+    <!--批量信息-->
+    <div id="order" class="tabPanel">
+        <table id="gridTable">
+        </table>
+        <style>
+            .ui-widget-content
+            {
+                border-left: none;
+            }
+            
+            .ui-jqgrid tr.ui-row-ltr td
+            {
+                padding: 0px;
+                border-bottom: 1px solid #ccc;
+            }
+            
+            .ui-jqgrid .ui-jqgrid-htable th
+            {
+                line-height: 15px;
+            }
+            
+            .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column
+            {
+                background: none;
+            }
+            
+            .editable
+            {
+                height: 22px;
+                background-color: #fff;
+            }
+        </style>
+    </div>
+</div>
+</form>

@@ -1,0 +1,449 @@
+﻿Object Report
+	Version='6.3.0.1'
+	Title='车辆信息'
+	PageDivideLine=T
+	PrintAsDesignPaper=F
+	Object Font
+		Name='宋体'
+		Size=105000,0
+		Weight=400
+		Charset=134
+	End
+	Object Printer
+		LeftMargin=1
+		TopMargin=0.5
+		RightMargin=1
+		BottomMargin=0.5
+		PrintOffsetX=1
+		PrintOffsetY=1
+	End
+	Object DetailGrid
+		CenterView=T
+		PrintAdaptMethod=ResizeToFit
+		Object Recordset
+			ConnectionString='Provider=MSDAORA.1;Password=CZGT2017es;User ID=c##czgtmqis;Data Source=192.168.7.18/orclczgt'
+			QuerySQL='select CODE, NAME,TGGWEIGHT from  bd_cars where CARTYPE=0 and isuse=1'
+			Items Field
+				Item
+					Name='CODE'
+				End
+				Item
+					Name='NAME'
+				End
+				Item
+					Name='TGGWEIGHT'
+					Type=Float
+				End
+			End
+		End
+		Items Column
+			Item
+				Name='CODE'
+				Width=3.175
+			End
+			Item
+				Name='NAME'
+				Width=3.01625
+			End
+			Item
+				Name='TGGWEIGHT'
+				Width=2.80458
+			End
+		End
+		Object ColumnContent
+			CanGrow=T
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Weight=400
+				Charset=134
+			End
+			Items ColumnContentCell
+				Item
+					Column='CODE'
+					TextAlign=MiddleCenter
+					DataField='CODE'
+				End
+				Item
+					Column='NAME'
+					TextAlign=MiddleCenter
+					DataField='NAME'
+				End
+				Item
+					Column='TGGWEIGHT'
+					TextAlign=MiddleCenter
+					DataField='TGGWEIGHT'
+				End
+			End
+		End
+		Object ColumnTitle
+			Height=0.79375
+			Object Font
+				Name='宋体'
+				Size=90000,0
+				Bold=T
+				Charset=134
+			End
+			Items ColumnTitleCell
+				Item
+					GroupTitle=F
+					Column='CODE'
+					TextAlign=MiddleCenter
+					Text='编号'
+				End
+				Item
+					GroupTitle=F
+					Column='NAME'
+					TextAlign=MiddleCenter
+					Text='车号'
+				End
+				Item
+					GroupTitle=F
+					Column='TGGWEIGHT'
+					TextAlign=MiddleCenter
+					Text='车货总重'
+				End
+			End
+		End
+		Items Group
+			Item
+				Name='Group1'
+				SortAsc=T
+				Object GroupHeader
+					Height=0
+				End
+				Object GroupFooter
+					BackColor=LtGray
+					Height=0
+					Object Font
+						Name='宋体'
+						Size=75000,0
+						Bold=T
+						Charset=134
+					End
+					Items Control
+						Item
+							Type=StaticBox
+							Name='StaticBox2'
+							BackColor=White
+							Left=1.00542
+							Width=10.35
+							Height=0.65
+							Object Font
+								Name='宋体'
+								Size=120000,0
+								Bold=T
+								Charset=134
+							End
+							TextAlign=MiddleCenter
+							Text='合    计：'
+						End
+						Item
+							Type=SummaryBox
+							Name='SummaryBox2'
+							BackColor=White
+							Left=42.201
+							Width=2.48708
+							Height=0.85
+							Object Border
+								Styles=[DrawRight]
+							End
+							Object Font
+								Name='宋体'
+								Size=90000,0
+								Weight=400
+								Charset=134
+							End
+							TextAlign=MiddleRight
+							Format='0.00'
+						End
+						Item
+							Type=SummaryBox
+							Name='SummaryBox3'
+							BackColor=White
+							Left=39.661
+							Width=2.54
+							Height=0.85
+							Object Border
+								Styles=[DrawLeft|DrawRight]
+							End
+							Object Font
+								Name='宋体'
+								Size=90000,0
+								Weight=400
+								Charset=134
+							End
+							TextAlign=MiddleRight
+							Format='0.00'
+						End
+						Item
+							Type=SummaryBox
+							Name='SummaryBox7'
+							BackColor=White
+							Left=36.8565
+							Width=2.83104
+							Height=0.85
+							Object Border
+								Styles=[DrawLeft|DrawRight]
+							End
+							Object Font
+								Name='宋体'
+								Size=90000,0
+								Weight=400
+								Charset=134
+							End
+							TextAlign=MiddleRight
+							Format='0.00'
+						End
+						Item
+							Type=SummaryBox
+							Name='SummaryBox8'
+							BackColor=White
+							Left=34.4752
+							Width=2.40771
+							Height=0.85
+							Object Border
+								Styles=[DrawLeft|DrawRight]
+							End
+							Object Font
+								Name='宋体'
+								Size=90000,0
+								Weight=400
+								Charset=134
+							End
+							TextAlign=MiddleRight
+							SummaryFun=Count
+							Format='0'
+						End
+						Item
+							Type=SummaryBox
+							Name='SummaryBox9'
+							BackColor=White
+							Left=46.8577
+							Width=2.83104
+							Height=0.85
+							Object Border
+								Styles=[DrawLeft|DrawRight]
+							End
+							Object Font
+								Name='宋体'
+								Size=75000,0
+								Weight=400
+								Charset=134
+							End
+							TextAlign=MiddleRight
+							Format='0.00'
+						End
+					End
+				End
+			End
+			Item
+				Name='Group2'
+				Object GroupHeader
+					Height=0
+				End
+				Object GroupFooter
+					Height=0
+				End
+			End
+		End
+	End
+	Object PageHeader
+		Height=0
+	End
+	Object PageFooter
+		Height=1.00542
+		Items Control
+			Item
+				Type=MemoBox
+				Name='MemoBox2'
+				Anchor=[Top|Right]
+				Left=15.1871
+				Width=3.59833
+				Height=0.608542
+				Object Font
+					Name='宋体'
+					Size=90000,0
+					Weight=400
+					Charset=134
+				End
+				Text='第[#SystemVar(PageNumber)#]页 共[#SystemVar(PageCount)#]页'
+			End
+		End
+	End
+	Items Parameter
+		Item
+			Name='title'
+		End
+		Item
+			Name='start_Date'
+		End
+		Item
+			Name='end_Date'
+		End
+		Item
+			Name='Query'
+		End
+	End
+	Items ReportHeader
+		Item
+			Height=1.00542
+			Items Control
+				Item
+					Type=StaticBox
+					Name='StaticBox14'
+					Width=18.8119
+					Height=0.79375
+					Object Font
+						Name='宋体'
+						Size=180000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Text='逐车明细表'
+					Parameter='title'
+				End
+			End
+			RepeatOnPage=T
+		End
+	End
+	Items ReportFooter
+		Item
+			Name='ReportFooter2'
+			Height=1.00542
+			Items Control
+				Item
+					Type=SummaryBox
+					Name='SummaryBox14'
+					Left=46.8577
+					Width=2.83104
+					Height=0.85
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=75000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Format='0.00'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox16'
+					Left=44.6881
+					Width=2.2225
+					Height=0.85
+					Object Border
+						Styles=[DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=105000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox17'
+					Left=49.6888
+					Width=8.17563
+					Height=0.85
+					Object Border
+						Styles=[DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=105000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox25'
+					AlignColumn='CODE'
+					Left=-0.0264583
+					Width=3.20146
+					Height=0.85
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=120000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					Text='合   计：'
+				End
+				Item
+					Type=StaticBox
+					Name='StaticBox36'
+					Left=41.1427
+					Top=0.0529167
+					Width=2.98979
+					Height=0.79375
+					Object Border
+						Styles=[DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=105000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox35'
+					AlignColumn='NAME'
+					Left=3.14854
+					Width=3.04271
+					Height=0.85
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=90000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					SummaryFun=Count
+					Format='0'
+				End
+				Item
+					Type=SummaryBox
+					Name='SummaryBox36'
+					AlignColumn='TGGWEIGHT'
+					Left=6.16479
+					Width=2.83104
+					Height=0.85
+					Object Border
+						Styles=[DrawLeft|DrawRight|DrawBottom]
+					End
+					Object Font
+						Name='宋体'
+						Size=90000,0
+						Bold=T
+						Charset=134
+					End
+					TextAlign=MiddleCenter
+					DataField='TGGWEIGHT'
+					Format='0.00'
+				End
+			End
+		End
+	End
+End

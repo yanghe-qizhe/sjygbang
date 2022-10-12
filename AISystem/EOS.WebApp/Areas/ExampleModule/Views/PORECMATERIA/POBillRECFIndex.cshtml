@@ -1,0 +1,302 @@
+﻿@{
+    ViewBag.Title = "采购收货";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var ISJL = $("#ISJL").val();
+        var TaskNo = $("#BillNo").val();
+        var CQDEF1 = $("#CQDEF1").val();
+        var VBILLCODE = $("#VBILLCODE").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/PORECMATERIA/GetOrderList")?TYPE=0&StartTime=" + StartTime + '&EndTime=' + EndTime + '&TaskNo=' + escape(TaskNo) + '&CQDEF1=' + CQDEF1 + "&VBILLCODE=" + VBILLCODE + "&ISJL=" + ISJL, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var ISJL = $("#ISJL").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/PORECMATERIA/GetOrderList")?TYPE=0&StartTime=" + StartTime + '&EndTime=' + EndTime + "&ISJL=" + ISJL,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+            { label: '到货单号', name: 'ID', index: 'ID', width: 120, align: 'center' },
+            { label: '过磅单号', name: 'BILLNO', index: 'BILLNO', width: 120, align: 'center' },
+            { label: '车号', name: 'CARS', index: 'CARS', width: 80, align: 'center' },
+            { label: '订单号', name: 'VBILLCODE', index: 'VBILLCODE', width: 120, align: 'center' },
+            { label: '发货单位', name: 'SENDORG', index: 'SENDORG', width: 180, align: 'center' },
+            { label: '物料分类', name: 'PK_MARBASCLASSNAME', index: 'PK_MARBASCLASSNAME', width: 80, align: 'center' },
+            { label: '物料', name: 'MATERIAL', index: 'MATERIAL', width: 130, align: 'center' },
+            { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 100, align: 'center' },
+            { label: '单位', name: "JLUNIT1", index: 'JLUNIT1', width: 50, align: 'center' },
+            {
+                label: '业务状态', name: 'STATUSNAME', index: 'STATUSNAME', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '0')
+                        return "<span style='color:red;'>已登记</span>";
+                    if (cellvalue == '1')
+                        return "<span style='color: blue; font-weight: bold;'>已收货</span>";
+                    if (cellvalue == '2')
+                        return "<span style='color: black; font-weight: bold;'>已退货</span>";
+                }
+            },
+            { label: '业务状态PK', name: 'STATUS', hidden: true },
+            {
+                label: '数据来源', name: 'BILLFROM', index: 'BILLFROM', width: 60, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    if (cellvalue == '1')
+                        return "<span style='color:red;'>业务平台</span>";
+                    if (cellvalue == '2')
+                        return "<span style='color: blue; font-weight: bold;'>PDA设备</span>";
+                }
+            },
+            { label: 'PDA编号', name: 'PDANO', index: 'PDANO', width: 100, align: 'center' },
+            { label: '毛重时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 110, align: 'center' },
+            { label: '原发量', name: "PDAYF", index: 'PDAYF', width: 60, align: 'center' },
+            { label: '毛重', name: 'GROSS', index: 'GROSS', width: 60, align: 'center' },
+            { label: '皮重', name: 'TARE', index: 'TARE', width: 60, align: 'center' },
+            { label: '净重', name: 'SUTTLE', index: 'SUTTLE', width: 60, align: 'center' },
+            { label: '扣重', name: 'PDAKZ1', index: 'PDAKZ1', width: 60, align: 'center' },
+       { label: '扣重比例', name: 'PDAKZ8', index: 'PDAKZ8', width: 60, align: 'center' },
+              { label: '供应商系数', name: 'PDAKZ7', index: 'PDAKZ7', width: 60, align: 'center' },
+          { label: '结算扣重', name: 'PDAKZ2', index: 'PDAKZ2', width: 60, align: 'center' },
+           { label: '结算重量', name: 'JZXSUTTLE', index: 'JZXSUTTLE', width: 60, align: 'center' },
+           { label: '结算单价', name: 'JZXSUTTLE1', index: 'JZXSUTTLE1', width: 60, align: 'center' },
+           { label: '验包包号', name: 'CBNUMBER', index: 'CBNUMBER', width: 100, align: 'center' },
+            { label: '验级地点', name: "YJSTORENAME", index: 'YJSTORENAME', width: 120, align: 'center' },
+            { label: '批次号', name: "MATBATCHNO", index: 'MATBATCHNO', width: 80, align: 'center' },
+            { label: '检验批号', name: 'ZJBILLNO', index: 'ZJBILLNO', width: 120, align: 'left' },
+            { label: '扣重比例', name: 'KZAMOUNT', index: 'KZAMOUNT', width: 120, align: 'left' },
+            { label: '收货凭证编号', name: 'PZBILLNO', index: 'PZBILLNO', width: 120, align: 'left' },
+            { label: '件皮1', name: 'JTARE1', index: 'JTARE1', width: 60, align: 'center' },
+            { label: '件皮2', name: 'JTARE2', index: 'JTARE2', width: 60, align: 'center' },
+            { label: '件皮3', name: 'JTARE3', index: 'JTARE3', width: 60, align: 'center' },
+            { label: '总件皮', name: 'TOTALJTARE', index: 'TOTALJTARE', width: 60, align: 'center' },
+            { label: '件净1', name: 'JSUTTLE1', index: 'JSUTTLE1', width: 60, align: 'center' },
+            { label: '件净2', name: 'JSUTTLE2', index: 'JSUTTLE2', width: 60, align: 'center' },
+            { label: '件净3', name: 'JSUTTLE3', index: 'JSUTTLE3', width: 60, align: 'center' },
+            { label: '总件净', name: 'TOTALJSUTTLE', index: 'TOTALJSUTTLE', width: 60, align: 'center' },
+            { label: '件数1', name: 'JSAMOUNT1', index: 'JSAMOUNT1', width: 60, align: 'center' },
+            { label: '件数2', name: 'JSAMOUNT2', index: 'JSAMOUNT2', width: 60, align: 'center' },
+            { label: '件数3', name: 'JSAMOUNT3', index: 'JSAMOUNT3', width: 60, align: 'center' },
+            { label: '总件数', name: 'PDASSJS', index: 'PDASSJS', width: 60, align: 'center' },
+            { label: '夹板件数1', name: 'JBAMOUNT1', index: 'JBAMOUNT1', width: 60, align: 'center' },
+            { label: '夹板件数2', name: 'JBAMOUNT2', index: 'JBAMOUNT2', width: 60, align: 'center' },
+            { label: '夹板件数3', name: 'JBAMOUNT3', index: 'JBAMOUNT3', width: 60, align: 'center' },
+            { label: '夹板单重1', name: 'JIABAN1', index: 'JIABAN1', width: 60, align: 'center' },
+            { label: '夹板单重2', name: 'JIABAN2', index: 'JIABAN2', width: 60, align: 'center' },
+            { label: '夹板单重3', name: 'JIABAN3', index: 'JIABAN3', width: 60, align: 'center' },
+            { label: '总夹板件数', name: 'TOTALJBAMOUNT', index: 'TOTALJBAMOUNT', width: 70, align: 'center' },
+            { label: '总夹板重量', name: 'TOTALJIABAN', index: 'TOTALJIABAN', width: 70, align: 'center' },
+            { label: '原箱号', name: "JZXCODE", index: 'JZXCODE', width: 150, align: 'center' },
+            { label: '现箱号', name: "JZXCODE1", index: 'JZXCODE1', width: 150, align: 'center' },
+            { label: '原箱重量', name: "YXSUTTLE", index: 'YXSUTTLE', width: 150, align: 'center' },
+            { label: '现箱重量', name: "XXSUTTLE", index: 'XXSUTTLE', width: 150, align: 'center' },
+            { label: '铅封号', name: "QFCODE", index: 'QFCODE', width: 150, align: 'center' },
+            { label: '收货仓库', name: "STORE", index: 'STORE', width: 150, align: 'center' },
+            { label: '收料人', name: 'CREUSER', index: 'CREUSER', width: 100, align: 'center' },
+             { label: '外观判定', name: 'WGTYPE', index: 'WGTYPE', width: 100, align: 'center' },
+            //{ label: '外观结果', name: 'ZJRESULT', index: 'ZJRESULT', width: 100, align: 'center' },
+          { label: '质检报告', name: 'ISZJ', index: 'ISZJ', width: 100, align: 'center' },
+          // { label: '质检结果', name: 'ZJRESULT1', index: 'ZJRESULT1', width: 100, align: 'center' },
+            {
+                label: '确认时间', name: 'CRETIME', index: 'OPERTIME', width: 120, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                }
+            },
+            { label: '更新人', name: 'OPERUSER', index: 'CREUSER', width: 100, align: 'center' },
+            {
+                label: '更新时间', name: 'OPERTIME', index: 'OPERTIME', width: 120, align: 'center',
+                formatter: function (cellvalue, options, rowObject) {
+                    return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                }
+            },
+
+           { label: '工厂', name: 'RECEIVEORG', index: 'RECEIVEORG', width: 120, align: 'left' },
+           //{
+           //    label: '入厂厂区', name: "CQDEF1", width: 100, sortable: false, align: 'center',
+           //    formatter: function (cellvalue, options, rowObject) {
+           //        if (cellvalue == '1000')
+           //            return "阳光纸业";
+           //        else if (cellvalue == '6000')
+           //            return "盛世热电";
+           //        else if (cellvalue == '7000')
+           //            return "新迈纸业";
+           //        else if (cellvalue == '8000')
+           //            return "阳光王子";
+           //        else if (cellvalue == '9000')
+           //            return "华迈纸业";
+           //        else if (cellvalue == '9010')
+           //            return "科迈制浆";
+           //        else
+           //            return "";
+           //    }
+           //},
+           { label: '备注', name: 'MEMO', index: 'MEMO', width: 150, align: 'center' }
+            ],
+            viewrecords: true,
+            rownumbers: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true
+        });
+    }
+    //新增
+    function btn_add() {
+        AddTabMenu("POBillRECFForm", "@Url.Content("~/ExampleModule/PORECMATERIA/POBillRECFForm")?ModuleId=" + ModuleId, "采购收货确认", "page_white_add.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+
+            AddTabMenu("POBillRECFForm", "@Url.Content("~/ExampleModule/PORECMATERIA/POBillRECFForm")?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, "编辑采购收货", "page_white_edit.png", true, true, true);
+
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+
+            if (status == "2") {
+                tipDialog("已退货确认不能取消收货！", 3, "");
+                return false;
+            }
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ExampleModule/PORECMATERIA/DeleteOrder', delparm, KeyValue.split(",").length, KeyValue);
+        }
+    }
+    function delConfig(url, parm, count, BILLNO) {
+        if (count == undefined) {
+            count = 1;
+        }
+        confirmDialog("提示", "注：您确定要取消收货【" + BILLNO + "】当前记录吗？将会导致数据丢失,请谨慎操作", function (r) {
+            if (r) {
+                Loading(true, "正在取消收货数据...");
+                window.setTimeout(function () {
+                    AjaxJson(url, parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var TARE = GetJqGridRowValue("#gridTable", "TARE");
+            AddTabMenu("POBillRECFDetail", "@Url.Content("~/ExampleModule/PORECMATERIA/POBillRECFDetail")?KeyValue=" + KeyValue + "&TARE=" + TARE, "采购收料详细", "page_white_edit.png", true, true, true);
+        }
+    }
+    //查询
+    function btn_query() {
+        QueryDialog("/ExampleModule/PORECMATERIA/POBillRECFQuery", "POBillRECFQuery", "查询过滤", 350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/PORECMATERIA/GetSeOrderList")?TYPE=0&" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    单号/车号：
+                </th>
+                <td>
+                    <input id="BillNo" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    订单号：
+                </th>
+                <td>
+                    <input id="VBILLCODE" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    入厂厂区：
+                </th>
+                <td>
+                    <select id="CQDEF1" class="txt select" style="width: 80px">
+                        <option value="">---请选择---</option>
+                        <option value="1000">阳光纸业</option>
+                        @*<option value="6000">盛世热电</option>
+                            <option value="7000">新迈纸业</option>
+                            <option value="8000">阳光王子</option>
+                            <option value="9000">华迈纸业</option>
+                            <option value="9010">科迈制浆</option>*@
+                    </select>
+                </td>
+
+                <th>
+                    是否计量：
+                </th>
+                <td>
+                    <select id="ISJL" class="txt select" style="width: 80px">
+                        <option value="">---请选择---</option>
+                        <option value="0">否</option>
+                        <option value="1">是</option>
+                    </select>
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

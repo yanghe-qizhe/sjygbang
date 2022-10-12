@@ -1,0 +1,244 @@
+﻿@{
+    ViewBag.Title = "质检方案管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () { 
+        GetGrid();
+        Bind();
+    })
+    function Bind(){
+        $(":checkbox[name='checkbox']").bind("click",function(){
+             btn_Search();
+        }) ;
+       
+    } 
+
+    //搜索
+    function btn_Search() {
+        var StartTime = "";
+        var EndTime = "";
+        var NAME = $("#NAME").val();
+        var Checked = $(":checkbox[name='checkbox']")[0].checked.toString();
+        var Type = $("#Type").val(); 
+        var MaterialName = $("#MATERIALNAME").val();
+        var DEF7 = $("#DEF7").val(); var DEF8 = $("#DEF8").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/BaseSet/ZJFA/GetZJFAList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&NAME=' + escape(NAME) + '&Checked=' + escape(Checked) + '&Type=' + escape(Type) + '&MaterialName=' + escape(MaterialName) + '&DEF7=' + escape(DEF7)+ '&DEF8=' + escape(DEF8), page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = "";
+        var EndTime = "";
+        var Checked = $(":checkbox[name='checkbox']")[0].checked.toString();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/BaseSet/ZJFA/GetZJFAList")?StartTime=" + StartTime + '&EndTime=' + EndTime+ '&Checked=' + escape(Checked),
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'FANO', index: 'FANO', width: 80, align: 'left', hidden: false },
+                { label: '方案名称', name: 'FANAME', index: 'FANAME', width: 100, align: 'center' },
+                { label: '方案简称', name: 'SHORTNAME', index: 'SHORTNAME', width: 100, align: 'center' },
+                { label: '拼音码', name: 'SPELLCODE', index: 'SPELLCODE', width: 100, align: 'center' }, 
+                { label: '方案编码', name: 'DEF7', index: 'DEF7', width: 130, align: 'center' },
+                  { label: '物料编号', name: 'MATERIALID', index: 'MATERIALID', width: 100, align: 'center' }, 
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 150, align: 'center' }, 
+                 { label: '规格', name: 'DEF8', index: 'DEF8', width: 120, align: 'center' },
+                { label: '质检方案类型ID', name: 'TYPE', index: 'TYPE', width: 180,hidden:true, align: 'center' }, 
+                { label: '质检方案类型', name: 'TYPENAME', index: 'TYPENAME', width: 110, align: 'center'  }, 
+                {
+                    label: '有效', name: 'ENABLED', index: 'ENABLED', width: 45, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                },
+                {
+                    label: '默认', name: 'ISDEFAULT', index: 'ISDEFAULT', width: 45, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                },
+                       { label: '所属组织', name: 'DEF15', index: 'DEF15', width: 150, align: 'center' }, 
+                { label: '创建人', name: 'CREUSER', index: 'CREUSER', width: 90, align: 'center' },
+                {
+                    label: '创建日期', name: 'CRETIME', index: 'CRETIME', width: 110, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 200, align: 'left' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rownumbers:true,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: false
+
+        });
+        ////////
+    }
+    //新增
+    function btn_add() {
+        var url = "/BaseSet/ZJFA/ZJFAForm?ModuleId=" + ModuleId;
+        openDialog(url, "ZJFAForm", "新增质检方案", 750,380, function (iframe) {
+            top.frames[iframe].AcceptClick()
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "FANO");
+        if (IsChecked(KeyValue)) {
+            var url = "/BaseSet/ZJFA/ZJFAForm?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId;
+            openDialog(url, "ZJFAForm", "编辑质检方案", 750,380, function (iframe) {
+                top.frames[iframe].AcceptClick();
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "FANO");
+        var FANAME = GetJqGridRowValue("#gridTable", "FANAME");
+        if (IsDelData(KeyValue)) {
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/BaseSet/ZJFA/DeleteFA', delparm, KeyValue.split(",").length,FANAME);
+        }
+    }
+     
+    function delConfig(url, parm, count,FANAME) {
+        if (count == undefined) {
+            count = 1;
+        }
+        confirmDialog("提示", "注：您确定要删除【"+FANAME+"】当前质检方案？当前方案可能在使用中,请核对后谨慎操作", function (r) {
+            if (r) {
+                Loading(true, "正在删除数据...");
+                window.setTimeout(function () {
+                    AjaxJson(url, parm, function (data) {
+                        tipDialog(data.Message, 3, data.Code);
+                        if (data.Code > 0) {
+                            windowload();
+                        }
+                    });
+                }, 200);
+            }
+        });
+    }
+
+    //项目复制
+    function btn_copy(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "FANO");
+        var KeyValueName = GetJqGridRowValue("#gridTable", "FANAME");
+        var TYPE = GetJqGridRowValue("#gridTable", "TYPE");
+        var TYPENAME = GetJqGridRowValue("#gridTable", "TYPENAME");
+        if (IsDelData(KeyValue) && IsDelData(KeyValueName) && IsDelData(TYPE) && IsDelData(TYPENAME) ) {
+            var url = '@Url.Content("~/BaseSet/ZJFA/ZJFAProjectAddPaste")?FANO='+escape(KeyValue)+"&FANAME="+escape(KeyValueName)+'&TYPE='+escape(TYPE)+'&TYPENAME='+escape(TYPENAME);
+            openDialog(url, "ZJFAProjectAddPaste", "质检方案项目复制新增", 750,380, function (iframe) {
+                top.frames[iframe].AcceptClick()
+            }); 
+        }
+    }  
+
+    //添加项目方案
+    function btn_addfa(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "FANO");
+        var KeyValueName = GetJqGridRowValue("#gridTable", "FANAME");
+        var TYPE = GetJqGridRowValue("#gridTable", "TYPE");
+        var TYPENAME = GetJqGridRowValue("#gridTable", "TYPENAME");
+        if (IsDelData(KeyValue)) {
+            AddTabMenu("ZJFAProjectList", '@Url.Content("~/BaseSet/ZJFA/ZJFAProjectList")?FANO='+escape(KeyValue)+'&FANAME='+escape(KeyValueName)+'&TYPE='+escape(TYPE)+'&TYPENAME='+escape(TYPENAME), "质检方案项目", "house.png", 'true', 'true');
+        }
+    }
+
+    //添加项目标准
+    function btn_faNorm(){
+        var KeyValue = GetJqGridRowValue("#gridTable", "FANO");
+        var KeyValueName = GetJqGridRowValue("#gridTable", "FANAME");
+        var TYPE = GetJqGridRowValue("#gridTable", "TYPE");
+        var TYPENAME = GetJqGridRowValue("#gridTable", "TYPENAME");
+        if (IsDelData(KeyValue)) {
+            AddTabMenu("ZLBZList", '@Url.Content("~/BaseSet/ZJBZ/ZLBZList")?FANO='+escape(KeyValue)+'&FANAME='+escape(KeyValueName)+'&TYPE='+escape(TYPE)+'&TYPENAME='+escape(TYPENAME), "质检方案标准", "house.png", 'true', 'true');
+        }
+    }
+
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    名称：
+                </th>
+                <td>
+                    <input id="NAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    质检方案类型：
+                </th>
+                <td>
+                    <select id="Type" class="select" style="width: 105px">
+                        <option value="1">采购项目</option>
+                        <option value="2">过程项目</option>
+                    </select>
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="MATERIALNAME" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    规格：
+                </th>
+                <td>
+                    <input id="DEF8" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    方案编码：
+                </th>
+                <td>
+                    <input id="DEF7" type="text" class="txt" style="width: 100px" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+                <td>
+                    <span class="item">
+                        <input type="checkbox" name="checkbox" checked="checked" id="ENABLED" />
+                        <label for="ENABLED">
+                            有效</label>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable">
+        </table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "质检用户时间点设置";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var FormID = GetQuery('FormID');
+    $(function () {
+        
+    })
+
+    //保存事件  
+    function btn_OK() {
+        var ETIME = $("#ETIME").val();
+        if (IsNull(ETIME)) {
+            if (IsNull(FormID)) {
+                $parentobj = top.frames[FormID];
+            } else {
+                $parentobj = top.frames[tabiframeId()];
+            }
+            $parentobj.CallBackEventSetTime(ETIME);
+            closeDialog();
+        } else {
+            tipDialog('截止时间不能为空', 4, 'warning');
+        }
+    }
+    
+</script>
+<div class="tools_bar" style="margin-top: 1px; margin-bottom: 1px;">
+    <a id="lr-replace" class="tools_btn" title="刷新当前(Ctrl+Q)" onclick="Replace()"><span>
+        <b style='background: url(@Url.Content("~/Content/Images/Icon16/arrow_refresh.png")) no-repeat 50% 4px;'>
+            刷新</b></span></a> <a id="button_Commit_Save" title="保存单据" onclick="btn_OK()" class="tools_btn">
+                <span><b style="background: url(@Url.Content("~/Content/Images/Icon16/disk.png")) 50% 4px no-repeat;">
+                    确定</b></span></a> <a title="关闭当前窗口(Esc)" onclick="closeDialog()" class="tools_btn"><span>
+                        <b style="background: url(@Url.Content("~/Content/Images/Icon16/back.png")) 50% 4px no-repeat;">
+                            离开</b></span></a>
+</div>
+<div id="RuleHead">
+    <table class="form">
+        <tr>
+            <th class="formTitle">
+                截止时间点：
+            </th>
+            <td class="formValue">
+                <input id="ETIME" maxlength="50" type="text" class="txt Wdate" datacol="yes" value="@DateTime.Now.ToString("yyyy-MM-dd HH")" dbfield="true"
+                    onfocus="WdatePicker({dateFmt: &#39;yyyy-MM-dd HH&#39;,minDate:'%y-%M-%d %H:%m:%s'})"
+                        err="截止时间点" checkexpession="NotNull" />
+            </td>
+        </tr>
+    </table>
+</div>
+<style>
+    .ui-widget-content
+    {
+        border-left: none;
+    }
+</style>

@@ -1,0 +1,119 @@
+﻿@{
+    ViewBag.Title = "编辑产品标准";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script type="text/javascript">
+    var KeyValue = GetQuery('KeyValue'); //主键
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    var ID = GetQuery('ID');
+    var NAME = GetQuery('NAME');
+    $(function () {
+        if (ID != "") {
+            $("#MATERIAL").val(ID);
+            $("#MATERIALNAME").val(NAME);
+        }
+        BindAutocomplete("GBEXEC", "GBEXECNO", "GBMANAGER", "", "", "");
+        BindAutocomplete("NKEXEC1", "NKEXECNO1", "NKGBMANAGER", "", "", "");
+        BindAutocomplete("NKEXEC2", "NKEXECNO2", "NKGBMANAGER", "", "", "");
+        InitControl();
+    })
+
+    //得到一个对象实体
+    function InitControl() {
+        if (!!GetQuery('KeyValue')) {
+            AjaxJson("/BaseSet/GBMATERIAL/SetFormControl", { KeyValue: GetQuery('KeyValue') }, function (data) {
+                SetWebControls(data);
+            });
+        }
+    }
+    //保存事件
+    function AcceptClick() {
+        if (!CheckDataValid('#form1')) {
+            return false;
+        }
+        Loading(true, "正在提交数据...");
+        window.setTimeout(function () {
+            var postData = GetWebControls("#form1");
+            AjaxJson("/BaseSet/GBMATERIAL/SubmitOrderForm?KeyValue=" + GetQuery('KeyValue'), postData, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                top.frames[tabiframeId()].windowload();
+                closeDialog();
+            });
+        }, 200);
+    }
+</script>
+<form id="form1" style="margin: 1px">
+<div id="message" style="display: none">
+</div>
+<table class="form">
+    <tr>
+        <th class="formTitle">
+            物料：
+        </th>
+        <td class="formValue" colspan="3">
+            <input type="hidden" id="MATERIAL" />
+            <input id="MATERIALNAME" type="text" class="txt required" datacol="yes" err="物料"
+                checkexpession="NotNull" readonly="readonly" />
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            执行国家标准：
+        </th>
+        <td class="formValue">
+            <input type="hidden" id="GBEXECNO" />
+            <input id="GBEXEC" type="text" class="txt required" datacol="yes" err="执行国家标准" checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input type="checkbox" name="ISUSE" checked="checked" id="ISUSE" />
+                <label for="ISUSE">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            执行内控标准1：
+        </th>
+        <td class="formValue">
+            <input type="hidden" id="NKEXECNO1" />
+            <input id="NKEXEC1" type="text" class="txt required" datacol="yes" err="执行内控标准1"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input type="checkbox" name="ISUSE1" checked="checked" id="ISUSE1" />
+                <label for="ISUSE1">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th class="formTitle">
+            执行内控标准2：
+        </th>
+        <td class="formValue">
+            <input type="hidden" id="NKEXECNO2" />
+            <input id="NKEXEC2" type="text" class="txt required" datacol="no" err="执行内控标准2"
+                checkexpession="NotNull" />
+        </td>
+        <th class="formTitle">
+            选项：
+        </th>
+        <td class="formValue">
+            <span class="item">
+                <input type="checkbox" name="ISUSE2" id="ISUSE2" />
+                <label for="ISUSE2">
+                    有效</label>
+            </span>
+        </td>
+    </tr>
+</table>
+</form>

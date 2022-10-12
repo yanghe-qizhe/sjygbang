@@ -1,0 +1,710 @@
+<html>
+<title>金诚信四合一卡机控件测试</title>
+<style type="text/css">
+<!--
+body {
+	margin-left: 50px;
+}
+-->
+</style>
+<object id="ActivexTest" classid="clsid:2107BAAF-3F79-4F87-8746-11F493236D00" height="0"
+    width="0" codebase="GHC_GetCardInfo.dll">
+</object>
+<script language="javascript">
+
+    var CardNum;
+    var CardNumLen;
+    var CardType;
+
+    function OpenPort() {
+        //document.getElementById("result").value = "连接设备成功！";
+        var ComPort = parseInt(document.getElementById("ComPort").value);
+        var Baud = parseInt(document.getElementById("Baud").value);
+        var Extport = parseInt(document.getElementById("extport").value);
+        var ret = ActivexTest.c_Dev_Connect(ComPort, Extport, Baud);
+        document.getElementById("retStr").value = "c_Dev_Connect: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "连接设备成功！";
+        }
+        else {
+            document.getElementById("result").value = "连接设备失败！";
+        }
+    }
+
+    function ClosePort() {
+        var ret = ActivexTest.c_Dev_Disconnect();
+        document.getElementById("retStr").value = "c_Dev_Disconnect: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "断开连接成功！";
+        }
+        else {
+            document.getElementById("result").value = "断开连接失败！";
+        }
+    }
+
+    function ReadID() {
+        var ret = -1;
+        var timeout = 5;
+        var photoDir = "C:\\ID_Photo\\image.jpg";
+        var ps = document.getElementById("ps");
+
+        ret = ActivexTest.c_IDCardReadInfo(photoDir, timeout, 0);
+
+        document.getElementById("retStr").value = "c_IDCardReadInfo: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "读身份证成功！";
+            document.all.oTable.rows(0).cells(1).innerText = ActivexTest.En_name;
+            document.all.oTable.rows(1).cells(1).innerText = ActivexTest.IDname;
+            document.all.oTable.rows(2).cells(1).innerText = ActivexTest.gender;
+            document.all.oTable.rows(3).cells(1).innerText = ActivexTest.nation;
+            document.all.oTable.rows(4).cells(1).innerText = ActivexTest.birthday;
+            document.all.oTable.rows(5).cells(1).innerText = ActivexTest.cardID;
+            document.all.oTable.rows(6).cells(1).innerText = ActivexTest.validStart + "-" + ActivexTest.validEnd;
+            document.all.oTable.rows(7).cells(1).innerText = ActivexTest.ID_CardTag;
+            document.all.oTable.rows(8).cells(1).innerText = ActivexTest.ID_CardVer;
+            document.all.oTable.rows(9).cells(1).innerText = ActivexTest.issuingOrg;
+            document.all.oTable.rows(10).cells(1).innerText = ActivexTest.address;
+            ps.src = photoDir;
+        }
+        else {
+            document.getElementById("result").value = "读身份证失败！";
+        }
+    }
+    function ReadIDSerialNum() {
+        var ret = -1;
+        var timeout = 5;
+
+        ret = ActivexTest.c_IDCardReadSerialNum();
+
+        document.getElementById("retStr").value = "c_IDCardReadSerialNum: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "读身份证物理ID成功！\r\n" + "物理ID:" + ActivexTest.ID_SerialNum;
+        }
+        else {
+            document.getElementById("result").value = "读身份证物理ID失败！";
+        }
+    }
+
+
+    function ClearIDInfo() {
+        var ps = document.getElementById("ps");
+        ps.src = "";
+        document.all.oTable.rows(0).cells(1).innerText = "";
+        document.all.oTable.rows(1).cells(1).innerText = "";
+        document.all.oTable.rows(2).cells(1).innerText = "";
+        document.all.oTable.rows(3).cells(1).innerText = "";
+        document.all.oTable.rows(4).cells(1).innerText = "";
+        document.all.oTable.rows(5).cells(1).innerText = "";
+        document.all.oTable.rows(6).cells(1).innerText = "";
+        document.all.oTable.rows(7).cells(1).innerText = "";
+        document.all.oTable.rows(8).cells(1).innerText = "";
+        document.all.oTable.rows(9).cells(1).innerText = "";
+        document.all.oTable.rows(10).cells(1).innerText = "";
+    }
+
+    function ReadMag() {
+        var ret = -1;
+        var pTrack2 = "";
+        var pTrack3 = "";
+        var timeout = 10;
+
+        ret = ActivexTest.c_MagStripeReadInfo(23, 0, pTrack2, pTrack3, timeout);
+
+        document.getElementById("retStr").value = "c_MagStripeReadInfo: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "读卡成功！";
+            document.getElementById("Track2").value = ActivexTest.pTrack2;
+            document.getElementById("Track3").value = ActivexTest.pTrack3;
+        }
+        else {
+            document.getElementById("result").value = "读卡失败！";
+        }
+    }
+    function WriteMag() {
+        var ret = -1;
+        var timeout = 10;
+        var pTrack2 = document.getElementById("Track2").value;
+        var pTrack3 = document.getElementById("Track3").value;
+
+        ret = ActivexTest.c_MagStripeWriteInfo(23, 0, pTrack2, pTrack3, timeout);
+
+        document.getElementById("retStr").value = "c_MagStripeWriteInfo: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "写卡成功！";
+        }
+        else {
+            document.getElementById("result").value = "写卡失败！";
+        }
+    }
+
+    function ClearMagData() {
+        document.getElementById("Track2").innerText = "";
+        document.getElementById("Track3").innerText = "";
+    }
+    function ChangeCommand() {
+        var sec = document.getElementById("APDU_CommandSelect");
+        var value = sec.value;
+
+        if (value == "list1") {
+            document.getElementById("APDU_Command").innerText = "00A404000E315041592E5359532E444446303100";
+        }
+        else if (value == "list2") {
+            document.getElementById("APDU_Command").innerText = "00A4040008A000000333010101";
+        }
+        else if (value == "list3") {
+            document.getElementById("APDU_Command").innerText = "80A800000B8309FF0000000100000156";
+        }
+        else if (value == "list4") {
+            document.getElementById("APDU_Command").innerText = "00B2010C00";
+        }
+        else if (value == "list5") {
+            document.getElementById("APDU_Command").innerText = "00B2011400";
+        }
+        else if (value == "list6") {
+            document.getElementById("APDU_Command").innerText = "80CA9F3600";
+        }
+        else if (value == "list7") {
+            document.getElementById("APDU_Command").innerText = "80CA9F7900";
+        }
+    }
+    function Set_CommonTag() {
+        document.getElementById("TagList").innerText = "ACDEIJU";
+    }
+    function Set_AllTag() {
+        document.getElementById("TagList").innerText = "ABCDEFGHIJKLMNOPQRSTU";
+    }
+    function IC_PowerOn() {
+        var ret = -1;
+        var Obj = document.getElementsByName("CardType");
+        var i;
+        for (i = 0; i < Obj.length; i++) {
+            if (Obj[i].checked) {
+                break;
+            }
+        }
+        if (i == Obj.length) {
+            alert("没有选择！");
+            return;
+        }
+        var CardType = i;
+        var timeout = 10;
+        var PowerOnData = "";
+        var PowerOnDataLen = 0;
+
+        ret = ActivexTest.c_ICCardPowerOn(CardType, timeout, PowerOnData, PowerOnDataLen);
+        document.getElementById("retStr").value = "c_ICCardPowerOn: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "上电成功！返回数据为：" + ActivexTest.pPowerOnData;
+        }
+        else {
+            document.getElementById("result").value = "上电失败！";
+        }
+    }
+    function IC_PowerOff() {
+        var ret = -1;
+        ret = ActivexTest.c_ICCardPowerOff();
+        document.getElementById("retStr").value = "c_ICCardPowerOff: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "下电成功！";
+        }
+        else {
+            document.getElementById("result").value = "下电失败！";
+        }
+    }
+    function IC_GetStatus() {
+        var ret = -1;
+        var pCardStatus = -1;
+        var g_buf = "";
+        ret = ActivexTest.c_ICCardGetCardStatus(pCardStatus);
+        document.getElementById("retStr").value = "c_ICCardGetCardStatus: " + ret;
+        if (ret == 0) {
+            switch (ActivexTest.pCardStatus) {
+                case 1:
+                    document.getElementById("result").value = "接触卡已上电";
+                    break;
+
+                case 2:
+                    document.getElementById("result").value = "接触卡未上电";
+                    break;
+
+                case 3:
+                    document.getElementById("result").value = "卡片在非接卡槽未上电";
+                    break;
+
+                case 4:
+                    document.getElementById("result").value = "卡片在非接卡槽未上电";
+                    break;
+
+                case 5:
+                    document.getElementById("result").value = "无卡";
+                    break;
+
+                default:
+                    break;
+
+            }
+        }
+        else {
+            document.getElementById("result").value = "获取卡片状态失败！";
+        }
+
+    }
+    function IC_Command_Select() {
+        var ret = -1;
+        var IC_Command = 0;
+        var Obj = document.getElementsByName("CommandSlect");
+        var i;
+        for (i = 0; i < Obj.length; i++) {
+            if (Obj[i].checked) {
+                break;
+            }
+        }
+        if (i == Obj.length) {
+            alert("没有选择！");
+            return;
+        }
+
+        IC_Command = Obj[i].value;
+        ret = ActivexTest.c_ModifiedCommandselect(IC_Command);
+        document.getElementById("retStr").value = "c_ModifiedCommandselect: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "修改命令集成功！";
+        }
+        else {
+            document.getElementById("result").value = "修改命令集失败！";
+        }
+    }
+
+    function IC_SendCommand() {
+        var ret = -1;
+        var Obj = document.getElementsByName("CardType");
+        var i;
+        for (i = 0; i < Obj.length; i++) {
+            if (Obj[i].checked) {
+                break;
+            }
+        }
+        if (i == Obj.length) {
+            alert("没有选择！");
+            return;
+        }
+        var CardType = i;
+        var command = document.getElementById("APDU_Command").value;
+        var Rpdu = "";
+        var RpduLen = 0;
+
+        ret = ActivexTest.c_ICCardSendCommand(CardType, command, command.length, Rpdu, RpduLen);
+
+        document.getElementById("retStr").value = "c_ICCardSendCommand: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "执行APDU成功！" + ActivexTest.psRpdu;
+        }
+        else {
+            document.getElementById("result").value = "执行APDU失败！";
+        }
+    }
+
+    function ICCard_ReadInfo() {
+        var ret = -1;
+        var sTagList = "";
+        var sUserInfo = "";
+        var sUserInfoLen = 0;
+        var timeout = 10;
+        var Obj = document.getElementsByName("CardType");
+        var i;
+        for (i = 0; i < Obj.length; i++) {
+            if (Obj[i].checked) {
+                break;
+            }
+        }
+        if (i == Obj.length) {
+            alert("没有选择！");
+            return;
+        }
+        var CardType = i;
+        sTagList = document.getElementById("TagList").value;
+        ret = ActivexTest.c_ICCardReadInfo(CardType, timeout, sTagList, sUserInfo, sUserInfoLen);
+
+        document.getElementById("retStr").value = "c_ICCardReadInfo: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "读卡成功！" + ActivexTest.IC_CardInfo;
+            document.getElementById("btn_ARQC").disabled = false;
+        }
+        else {
+            document.getElementById("result").value = "读卡失败！";
+        }
+    }
+    function ICCard_GetARQC() {
+        var ret = -1;
+        var TransData = "";
+        var timeout = 5;
+        var ARQCRsp = "";
+        var ARQCRspLen = 0;
+        var Obj = document.getElementsByName("CardType");
+        var i;
+        for (i = 0; i < Obj.length; i++) {
+            if (Obj[i].checked) {
+                break;
+            }
+        }
+        if (i == Obj.length) {
+            alert("没有选择！");
+            return;
+        }
+        var CardType = i;
+        TransData = document.getElementById("ARQC_Data").value;
+        ret = ActivexTest.c_ICCardGenARQC(CardType, timeout, TransData, ARQCRsp, ARQCRspLen);
+        document.getElementById("retStr").value = "c_ICCardGenARQC: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "获取ARQC成功！" + ActivexTest.pARQC;
+            document.getElementById("btn_ARQC").disabled = true;
+        }
+        else {
+            document.getElementById("result").value = "获取ARQC失败！";
+        }
+    }
+    function ICCard_Script() {
+        var ret = -1;
+        var TransData = "";
+        var pARPC = "";
+        var timeout = 5;
+        var pTC = "";
+        var pTCLen = 0;
+        var pScriptResult = "";
+
+        var Obj = document.getElementsByName("CardType");
+        var i;
+        for (i = 0; i < Obj.length; i++) {
+            if (Obj[i].checked) {
+                break;
+            }
+        }
+        if (i == Obj.length) {
+            alert("没有选择！");
+            return;
+        }
+        var CardType = i;
+        TransData = document.getElementById("ARQC_Data").value;
+        pARPC = document.getElementById("ARPC_Data").value;
+
+        ret = ActivexTest.c_ICCardExecScript(CardType, timeout, TransData, pARPC, pTC, pTCLen, pScriptResult);
+
+        document.getElementById("retStr").value = "c_ICCardExecScript: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "执行脚本成功！" + ActivexTest.pTC + ActivexTest.pScriptResult;
+        }
+        else {
+            document.getElementById("result").value = "执行脚本失败！";
+        }
+    }
+    function ICCard_GetTransDetail() {
+        var ret = -1;
+        var timeout = 10;
+        var logCount = 10;
+        var DetailInfo = "";
+        var DetailLen = 0;
+        var Obj = document.getElementsByName("CardType");
+        var i;
+        for (i = 0; i < Obj.length; i++) {
+            if (Obj[i].checked) {
+                break;
+            }
+        }
+        if (i == Obj.length) {
+            alert("没有选择！");
+            return;
+        }
+        var CardType = i;
+        ret = ActivexTest.c_ICCardGetTransDetail(CardType, timeout, logCount, DetailInfo, DetailLen);
+        document.getElementById("retStr").value = "c_ICCardGetTransDetail: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "获取交易明细成功！" + ActivexTest.pDetailInfo;
+        }
+        else {
+            document.getElementById("result").value = "获取交易明细失败！";
+        }
+    }
+    function ICCard_GetLoadLog() {
+        var ret = -1;
+        var timeout = 10;
+        var logCount = 10;
+        var LogInfo = "";
+        var LogLen = 0;
+        var Obj = document.getElementsByName("CardType");
+        var i;
+        for (i = 0; i < Obj.length; i++) {
+            if (Obj[i].checked) {
+                break;
+            }
+        }
+        if (i == Obj.length) {
+            alert("没有选择！");
+            return;
+        }
+        var CardType = i;
+        ret = ActivexTest.c_ICCardGetLoadLog(CardType, timeout, logCount, LogInfo, LogLen);
+        document.getElementById("retStr").value = "c_ICCardGetLoadLog: " + ret;
+        if (ret == 0) {
+            document.getElementById("result").value = "获取圈存明细成功！" + ActivexTest.pLogInfo;
+        }
+        else {
+            document.getElementById("result").value = "获取圈存明细失败！";
+        }
+    }
+    function FindCard() {
+
+    }
+    function ReadDllVer() {
+        document.getElementById("DllVer").innerText = ActivexTest.Dll_version;
+    }
+</script>
+<body>
+    <tr>
+        <text>端口号：</text>
+        <select name="ComPort" id="ComPort">
+            <option value="1">COM1</option>
+            <option value="2">COM2</option>
+            <option value="3">COM3</option>
+            <option value="4">COM4</option>
+            <option value="5">COM5</option>
+            <option value="1001">USB1001</option>
+            <option value="2001">USB2001</option>
+            <option value="8">COM8</option>
+            <option value="9">COM9</option>
+            <option value="10">COM10</option>
+        </select>
+        &nbsp;&nbsp;<text> 波特率：</text>
+        <select name="Baud" id="Baud">
+            <option value="9600">9600</option>
+            <option value="115200">115200</option>
+        </select>
+        &nbsp;&nbsp; &nbsp;&nbsp;<text> 扩展盒：</text>
+        <select name="extport" id="extport">
+            <option value="9">9</option>
+            <option value="65">A</option>
+            <option value="66">B</option>
+            <option value="67">C</option>
+            <option value="68">K</option>
+        </select>
+        &nbsp;&nbsp;
+        <input name="connectdev" type="button" id="connectdev" style="width: 80px; height: 30px;
+            font-size: 15px; font-weight: bold" onclick="OpenPort()" value="连接设备" />
+        &nbsp;&nbsp;<input name="disconnect" type="button" id="disconnect" style="width: 80px;
+            height: 30px; font-size: 15px; font-weight: bold" onclick="ClosePort()" value="断开连接" />
+        &nbsp;&nbsp;<!--<input name="connectdev" type="button" id="connectdev" style="WIDTH: 80px; height:30px;font-size: 15px;font-weight:bold" onClick="FindCard()" value="寻卡"/>
+		  &nbsp;&nbsp;<input id="CardNum" style="WIDTH: 200px; height:25px" name="CardNum" /> -->
+        &nbsp;&nbsp;&nbsp;&nbsp;<text><span class="STYLE5"><strong>网页版本信息 V1.0.1 Build 170605</strong></span></text>
+        <br>
+    </tr>
+    <tr>
+        <td>
+            <br>
+            <text><span class="STYLE5"><strong>二代证操作测试</strong></span></text>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <text><span class="STYLE5"><strong>IC卡操作测试</strong></span></text>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <!-- 
+			<input name="connectdev" type="button" id="connectdev" style="WIDTH: 100px; height:20px;font-size: 15px;font-weight:bold" onClick="ReadDllVer()" value="读控件版本"/>
+			<input id="DllVer" style="WIDTH: 180px; height:20px" name="DllVer" />   
+			-->
+            <br>
+            <input name="ReadID" type="button" id="ReadID" style="width: 130px; height: 25px;
+                font-size: 15px; font-weight: bold" onclick="ReadID()" value="读身份证" />
+            &nbsp;
+            <input name="ReadIDSerialNum" type="button" id="ReadIDSerialNum" style="width: 130px;
+                height: 25px; font-size: 15px; font-weight: bold" onclick="ReadIDSerialNum()"
+                value="读身份证物理ID" />
+            &nbsp;
+            <input name="ClearIDInfo" type="button" id="ClearIDInfo" style="width: 130px; height: 25px;
+                font-size: 15px; font-weight: bold" onclick="ClearIDInfo()" value="清除身份证信息" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <tr>
+                <text>卡类型：</text>
+                <input name="CardType" type="radio" id="CardType" value="0" checked>接触
+                <input type="radio" id="CardType" name="CardType" value="1">非接
+                <input type="radio" id="CardType" name="CardType" value="2">自动&nbsp;&nbsp;
+                <input name="ICPowerOn" type="button" onclick="IC_PowerOn()" value="卡片上电">
+                <input name="IC_PowerOff" type="button" onclick="IC_PowerOff()" value="卡片下电">
+                <input name="IC_GetStatus" type="button" onclick="IC_GetStatus()" value="获取卡片状态">
+                <br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <text>接触卡命令集：</text>
+                <input type="radio" id="CommandSlect" name="CommandSlect" onclick="IC_Command_Select()"
+                    value="2" checked>02
+                <input type="radio" id="CommandSlect" name="CommandSlect" onclick="IC_Command_Select()"
+                    value="26">26
+                <input type="radio" id="CommandSlect" name="CommandSlect" onclick="IC_Command_Select()"
+                    value="28">28
+                <br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <text>APDU命令测试：</text>
+                <select name="" id="APDU_CommandSelect" onchange="ChangeCommand()">
+                    <option value="list1">选择支付环境</option>
+                    <option value="list2">选择借记应用</option>
+                    <option value="list3">应用初始化</option>
+                    <option value="list4">读010C记录</option>
+                    <option value="list5">读0114记录</option>
+                    <option value="list6">获取ATC</option>
+                    <option value="list7">电子现金余额</option>
+                </select>
+                <br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input name="APDU_Command" id="APDU_Command" style="width: 450px" value="00A404000E315041592E5359532E444446303100" />&nbsp;&nbsp;
+                <input name="IC_SendCommand" type="button" onclick="IC_SendCommand()" value="发送APDU命令">
+                <br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <text>标签列表：</text>
+                <input name="TagList" id="TagList" style="width: 350px" value="ACDEIJU" />
+                <input name="CommonTag" type="button" onclick="Set_CommonTag()" value="常用标签">
+                <input name="AllTag" type="button" onclick="Set_AllTag()" value="所有标签">
+                <br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input name="ICCard_ReadInfo" type="button" onclick="ICCard_ReadInfo()" value="读取卡信息">
+                <input name="ICCard_GetARQC" id="btn_ARQC" type="button" disabled onclick="ICCard_GetARQC()"
+                    value="获取ARQC">
+                <input name="ICCard_Script" type="button" onclick="ICCard_Script()" value="写卡执行脚本">
+                <input name="ICCard_GetTransDetail" type="button" onclick="ICCard_GetTransDetail()"
+                    value="获取交易明细">
+                <input name="ICCard_GetLoadLog" type="button" onclick="ICCard_GetLoadLog()" value="获取圈存明细">
+            </tr>
+    </tr>
+    <tr>
+        <table id="oTable" border="1" style="position: absolute; left: 50px; top: 120px">
+            <tr>
+                <td>
+                    英文姓名：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    姓名：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    性别：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    民族：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    出生日期：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    身份证号：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    有效日期：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    证件标识：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    证件版本：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    签发机关：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    住址：
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+        </table>
+        <img name="ps" id="ps" src="" alt="个人照片" style="position: absolute; left: 365px;
+            top: 110px;" />
+    </tr>
+    <br>
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <text>ARQC交易数据：</text>
+    <textarea name="ARQC_Data" id="ARQC_Data" style="width: 550px">P012000000000000Q012000000000000R0040156S006140426T00201U006143837V024D7DBBACFB9F1C3E6B2E2CAD4</textarea>
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <text>ARPC交易数据：</text>
+    <textarea name="ARPC_Data" id="ARPC_Data" style="width: 550px">114910A45ED95EE07D345F13030722B9F180400000001861004DA9F770A0000001000005A3714FE00861004DA9F780A000000020001A98548B500</textarea>
+    <br>
+    <br>
+    <text><span class="STYLE5"><strong>磁卡操作测试</strong></span></text>
+    <br>
+    <input name="ReadMag" type="button" id="ReadMag" style="width: 120px; height: 22px;
+        font-size: 15px; font-weight: bold" onclick="ReadMag()" value="读磁卡" />
+    &nbsp;&nbsp;
+    <input name="WriteMag" type="button" id="WriteMag" style="width: 120px; height: 22px;
+        font-size: 15px; font-weight: bold" onclick="WriteMag()" value="写磁卡" />
+    &nbsp;&nbsp;
+    <input name="ClearMagData" type="button" id="ClearMagData" style="width: 120px; height: 22px;
+        font-size: 15px; font-weight: bold" onclick="ClearMagData()" value="清空磁卡数据" />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <br>
+    <br>
+    <text>二磁道数据：</text>
+    <input name="Track2" id="Track2" style="width: 350px" value="" />
+    <br>
+    <br>
+    <text>三磁道数据：</text>
+    <input name="Track3" id="Track3" style="width: 350px" value="" />
+    <br>
+    <br>
+    <text><strong>返回值：</strong></text>
+    <input id="retStr" style="width: 300px" name="retStr" />
+    <br>
+    <text><strong>运行结果：</strong></text>
+    <br>
+    <textarea name="result" cols="60" rows="5" id="result"></textarea>
+    </td> </tr> </tr>
+</body>
+</html>

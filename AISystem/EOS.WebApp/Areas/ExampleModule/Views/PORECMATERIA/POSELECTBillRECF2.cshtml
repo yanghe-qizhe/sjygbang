@@ -1,0 +1,230 @@
+﻿@{
+    ViewBag.Title = "选择采购磅单";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    $(function () {
+        BindAutocomplete("RECEIVEORG", "PK_RECEIVEORG", "Company", "150", "150", "");
+        BindAutocomplete("SENDORG", "PK_SENDORG", "Supply", "200", "150", "");
+        BindAutocomplete("MATERIAL", "PK_MATERIAL", "Material", "200", "150", "");
+        BindAutocomplete("CARS", "PK_CARS", "Cars", "200", "150", "");
+
+        setTimeout(function () {
+            GetGrid();
+        }, 300);
+        //绑定键盘按下事件
+        $(document).keypress(function (e) {
+            // 回车键事件
+            if (e.which == 13) {
+                $("#keywords").focus();
+                $("#keywords").select();
+                $("#btnSearch").click();
+            }
+        });
+    });
+    //搜索
+    function btn_Search() {
+        //开始时间
+        var StartTime = $("#StartTime").val();
+        //结束时间
+        var EndTime = $("#EndTime").val();
+        //单号
+        var TaskNo = $("#BILLNO").val();
+        //供应商
+        var Supply = $("#PK_SENDORG").val();
+        //接收公司
+        var PK_ORG = $("#PK_RECEIVEORG").val();
+        //车号
+        var Cars = $("#PK_CARS").val();
+        //物料
+        var Material = $("#PK_MATERIAL").val();
+        var ISJL = $("#ISJL").val();
+        //用户
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/PORECMATERIA/GetWbOrderList")?MATERIALBARCODE=313&StartTime=" + StartTime + '&EndTime=' + EndTime + '&Supply=' + Supply + '&Material=' + Material + '&Cars=' + Cars + '&TaskNo=' + TaskNo + "&PK_ORG=" + PK_ORG + "&ISJL=" + ISJL
+        }).trigger('reloadGrid');
+    }
+
+    //显示
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var ISJL = $("#ISJL").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/PORECMATERIA/GetWbOrderList")?MATERIALBARCODE=313&StartTime=" + StartTime + '&EndTime=' + EndTime + "&ISJL=" + ISJL,
+            datatype: "json",
+            height: 270,
+            width: 890,
+            colModel: [
+                { label: '到货单号', name: 'ID', width: 130, align: 'left' },
+                { label: 'PK_DP_POCARSORDER', name: 'PK_DP_POCARSORDER', hidden: true },
+                { label: '过磅单号', name: 'BILLNO', width: 110, align: 'left' },
+                { label: '提货单号', name: 'TDBILLNO', width: 110, align: 'left' },
+                { label: '车号', name: 'CARS', index: 'CARS', width: 80, align: 'center' },
+                { label: 'ISBATCH', name: 'ISBATCH', hidden: true },
+                { label: '是否采样', name: 'ISBATCHNAME', index: 'ISBATCHNAME', width: 60, align: 'left' },
+                { label: '订单号', name: 'VBILLCODE', width: 110, align: 'left' },
+                { label: '物料PK', name: 'PK_MATERIAL', hidden: true },
+                { label: '物料', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 130, align: 'center' },
+                { label: '规格', name: 'MATERIALSPEC', index: 'MATERIALSPEC', width: 80, align: 'center' },
+                 { label: '品牌', name: 'MATERIALLEVEL', index: 'MATERIALLEVEL', width: 80, align: 'center' },
+                { label: '发货单位PK', name: 'PK_SUPPLIER', hidden: true },
+                { label: '发货单位', name: 'SUPPLIERNAME', index: 'SUPPLIERNAME', width: 130, align: 'left' },
+                { label: '发货量', name: 'AMOUNT', index: 'AMOUNT', width: 60, align: 'center' },
+                { label: '毛重', name: 'GROSS', index: 'GROSS', width: 60, align: 'center' },
+                  { label: '码单重量', name: 'MDSUTTLE', index: 'MDSUTTLE', width: 80, align: 'left' },
+             { label: '码单件数', name: 'MDAMOUNT', index: 'MDAMOUNT', width: 80, align: 'left' },
+             { label: '码单小包总数', name: 'MDMINAMOUNT', index: 'MDMINAMOUNT', width: 120, align: 'left' },
+             { label: '当车小包总数', name: 'MINAMOUNT', index: 'MINAMOUNT', width: 120, align: 'left' },
+             { label: '单包重量', name: 'DBAMOUNT', index: 'DBAMOUNT', width: 80, align: 'left' },
+              { label: '每件包数', name: 'MJAMOUNT', index: 'MJAMOUNT', width: 80, align: 'left' },
+                {
+                    label: '重车时间', name: 'WEIGHTDATE', index: 'WEIGHTDATE', width: 120, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+               { label: '单位', name: 'DEF1', width: 70, sortable: false, align: 'center' },
+                { label: '司机', name: 'DRIVERS', index: 'DRIVERS', width: 80, align: 'center' },
+                 { label: 'IC卡号', name: 'ICCARD', index: 'ICCARD', width: 100, align: 'center' },
+                { label: 'PK_ORG', name: 'PK_ORG', hidden: true },
+                { label: '工厂', name: 'ORGNAME', index: 'ORGNAME', width: 100, align: 'left' },
+                { label: '备注', name: 'MEMO', index: 'MEMO', width: 150, align: 'left' }
+            ],
+            pager: "#gridPager",
+            sortname: 'BillNo',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            //双击事件
+            ondblClickRow: function (RowIndx) {
+                var rowData = $(this).jqGrid('getRowData', RowIndx);
+                var MEMO = rowData.MEMO;
+                if (MEMO.indexOf("强制完结") >= 0) {
+                    top.TipMsg("强制完结数据不允许收货确认！", 4000, "error");
+                    return false;
+                }
+                var $parentobj = top.frames[tabiframeId()];
+                $parentobj.$("#ID").val(rowData.ID);//选择委托
+                $parentobj.$("#DEF3").val(rowData.ID);//选择委托
+                $parentobj.$("#BILLNO").val(rowData.BILLNO);//磅单号
+                $parentobj.$("#RECEIVEORG").val(rowData.ORGNAME);//接收公司
+                $parentobj.$("#PK_RECEIVEORG").val(rowData.PK_ORG);
+                $parentobj.$("#SENDORG").val(rowData.SUPPLIERNAME);//发货单位
+                $parentobj.$("#PK_SENDORG").val(rowData.PK_SUPPLIER);
+                $parentobj.$("#MATERIAL").val(rowData.MATERIALNAME);
+                $parentobj.$("#PK_MATERIAL").val(rowData.PK_MATERIAL);
+                $parentobj.$("#VBILLCODE").val(rowData.VBILLCODE);//选择框磅
+                $parentobj.$("#CARS").val(rowData.CARS);//车号
+                $parentobj.$("#DRIVERS").val(rowData.DRIVERS);//车号
+                $parentobj.$("#GROSS").val(rowData.GROSS);//毛重
+                $parentobj.$("#WEIGHTDATE").val(rowData.WEIGHTDATE);//毛重时间
+                $parentobj.$("#JLUNIT1").val(rowData.DEF1);
+                $parentobj.$("#MDSUTTLE").val(rowData.MDSUTTLE);
+                $parentobj.$("#MDAMOUNT").val(rowData.MDAMOUNT);
+                $parentobj.$("#MDMINAMOUNT").val(rowData.MDMINAMOUNT);
+                $parentobj.$("#JSUTTLE1").val(rowData.DBAMOUNT);
+                $parentobj.$("#TDBILLNO").val(rowData.TDBILLNO);
+                closeDialog();
+            }
+        });
+        //表格自适应（高度、宽度）
+        $(window).resize(function () {
+            $("#gridTable").jqGrid('setGridWidth', $(window).width()).jqGrid('setGridHeight', $(window).height() - 77);
+        });
+    }
+</script>
+<div class="border" style="margin: 1px; border-bottom: none; margin-bottom: 0px;">
+    <div class="QueryArea" style="width: 1150;">
+        <table border="0" class="form-find" style="height: 45px; width: 1150;">
+            <tr>
+                <th>
+                    接收公司：
+                </th>
+                <td>
+                    <input id="PK_RECEIVEORG" type="hidden" />
+                    <input id="RECEIVEORG" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    日期类型：
+                </th>
+                <td>
+                    <select id="DATETYPE" name="DATETYPE" class="select" style="width: 85px;">
+                        <option value="0">预约日期</option>
+                        <option value="1">计量日期</option>
+                    </select>
+                </td>
+                <th>
+                    日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-1)" style="width: 100px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <th>
+                    -
+                </th>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 100px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <th>
+                    是否计量：
+                </th>
+                <td>
+                    <select id="ISJL" class="txt select" style="width: 80px">
+                        <option value="">---请选择---</option>
+                        <option value="0">否</option>
+                        <option value="1" selected="selected">是</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    发货单位：
+                </th>
+                <td>
+                    <input id="PK_SENDORG" type="hidden" />
+                    <input id="SENDORG" type="text" class="txt" style="width: 110px" />
+                </td>
+                <th>
+                    磅单号:
+                </th>
+                <td>
+                    <input id="BILLNO" type="text" class="txt" style="width: 80px" />
+                </td>
+                <th>
+                    物料：
+                </th>
+                <td>
+                    <input id="PK_MATERIAL" type="hidden" />
+                    <input id="MATERIAL" type="text" class="txt" style="width: 100px" />
+                </td>
+                <th>
+                    车号：
+                </th>
+                <td>
+                    <input id="PK_CARS" type="hidden" />
+                    <input id="CARS" type="text" class="txt" style="width: 100px" />
+                </td>
+                <td></td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="line">
+    </div>
+    <table id="gridTable"></table>
+    <div id="gridPager">
+    </div>
+    <style>
+        .ui-widget-content {
+            border-left: none;
+        }
+
+        .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
+            background: none;
+        }
+    </style>
+</div>

@@ -1,0 +1,246 @@
+﻿@{
+    ViewBag.Title = "铁水转序单》列表";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script type="text/javascript">
+    var ModuleId = GetQuery('ModuleId'); //菜单主键
+    $(function () {
+        GetGrid();
+    })
+    //搜索
+    function btn_Search() {
+        var TaskNo = $("#TASKNO").val();
+        var STOVENUM = $("#STOVENUM").val();
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid('setGridParam', {
+            url: "@Url.Content("~/ExampleModule/HYCONVOPER/GetHYOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime + '&TaskNo=' + TaskNo + '&STOVENUM=' + STOVENUM, page: 1
+        }).trigger('reloadGrid');
+    }
+    //加载表格
+    function GetGrid() {
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        $("#gridTable").jqGrid({
+            url: "@Url.Content("~/ExampleModule/HYCONVOPER/GetHYOrderList")?StartTime=" + StartTime + '&EndTime=' + EndTime,
+            datatype: "json",
+            height: $(window).height() - 150,
+            autowidth: true,
+            colModel: [
+             { label: '主键单号', name: 'ID', hidden: true },
+             { label: '单据编号', name: 'TASKNOID', index: 'TASKNOID', width: 130, align: 'center' },
+             { label: '业务状态PK', name: 'STATUS', hidden: true },
+             {
+                 label: '业务状态', name: 'STATUSNAME', index: 'STATUSNAME', width: 60, align: 'center',
+                 formatter: function (cellvalue, options, rowObject) {
+                     if (cellvalue == '0')
+                         return "<span style='color:red;'>未使用</span>";
+                     if (cellvalue == '1')
+                         return "<span style='color: blue; font-weight: bold;'>已使用</span>";
+                 }
+             },
+             { label: '单据状态PK', name: 'ISUSE', hidden: true },
+             {
+                 label: '单据状态', name: 'ISUSENAME', index: 'ISUSENAME', width: 60, align: 'center',
+                 formatter: function (cellvalue, options, rowObject) {
+                     if (cellvalue == '0')
+                         return "<span style='color:red;'>未发布</span>";
+                     if (cellvalue == '1')
+                         return "<span style='color: blue; font-weight: bold;'>已发布</span>";
+                 }
+             },
+             { label: '炉批号', name: 'STOVENUM', index: 'STOVENUM', width: 100, align: 'left' },
+             { label: '单据行号', name: 'TASKNODTL', index: 'TASKNODTL', width: 100, align: 'left' },
+             { label: '灌号', name: "CARSNAME", index: 'CARSNO', width: 100, sortable: false },
+                         { label: '出铁口', name: "DEF1", index: 'DEF1', width: 100, sortable: false },
+
+             { label: '序号', name: 'SORTID', index: 'SORTID', width: 100, align: 'left' },
+             { label: '发货单位名称', name: 'SENDUNITNAME', index: 'SENDUNITNAME', width: 120, align: 'left' },
+             { label: '收货单位名称', name: 'ACCEPTUNITNAME', index: 'ACCEPTUNITNAME', width: 120, align: 'left' },
+             { label: '物料名称', name: 'MATERIALNAME', index: 'MATERIALNAME', width: 130, align: 'left' },
+             { label: '秤名称', name: 'SCALENAME', index: 'SCALENAME', width: 120, align: 'left' },
+             { label: '开始日期', name: 'STARTTIME', index: 'STARTTIME', width: 130, align: 'left' },
+             { label: '结束日期', name: 'ENDTIME', index: 'ENDTIME', width: 130, align: 'left' },
+             { label: '原发数量', name: "YFNUM", width: 80, sortable: false },
+             {
+                 label: '制单日期', name: 'CRETIME', index: 'CRETIME', width: 130, align: 'center',
+                 formatter: function (cellvalue, options, rowObject) {
+                     return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                 }
+             },
+             { label: '备注', name: 'MEMO', index: 'MEMO', width: 150, align: 'center' }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100, 500, 1000],
+            pager: "#gridPager",
+            sortname: 'CRETIME',
+            sortorder: 'desc',
+            shrinkToFit: false,
+            gridview: true
+        });
+        
+    }
+    //新增
+    function btn_add() {
+        AddTabMenu("HYBillCOFForm", "@Url.Content("~/ExampleModule/HYCONVOPER/HYBillCOFForm")?ModuleId=" + ModuleId, "新增铁水转序", "page_white_add.png", true, true, true);
+    }
+    //编辑
+    function btn_edit() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (status == "1") {
+                tipDialog("此单据属于已使用状态,无法继续编辑！", 3, "");
+                return false;
+            }
+            if (isuse == "1") {
+                tipDialog("此单据属于已发布状态,无法编辑，请先取消发布！", 3, "");
+                return false;
+            }
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            if (status == "0" && isuse == "0") {
+                AddTabMenu("HYBillCOFForm", "@Url.Content("~/ExampleModule/HYCONVOPER/HYBillCOFForm")?KeyValue=" + KeyValue + "&ModuleId=" + ModuleId, "编辑铁水转序", "page_white_edit.png", true, true, true);
+            }
+        }
+    }
+
+    //发布
+    function btn_Check() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            if (status == "1") {
+                tipDialog("此单据已使用,无法继续发布操作！", 3, "");
+                return false;
+            }
+            var isuse = GetJqGridRowValue("#gridTable", "ISDEL");
+            if (isuse == "1") {
+                tipDialog("此单据已发布,无法继续发布操作！", 3, "");
+                return false;
+            }
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/HYCONVOPER/CheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+    //取消发布
+    function btn_UnCheck() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            if (status == "1") {
+                tipDialog("此单据已使用,无法取消发布！", 3, "");
+                return false;
+            }
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (isuse == "0") {
+                tipDialog("此单据已取消发布,无法继续操作！", 3, "");
+                return false;
+            }
+            var parm = 'KeyValue=' + KeyValue;
+            AjaxJson('/ExampleModule/HYCONVOPER/UnCheckOrder', parm, function (data) {
+                tipDialog(data.Message, 3, data.Code);
+                if (data.Code > 0) {
+                    windowload();
+                }
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsDelData(KeyValue)) {
+            var status = GetJqGridRowValue("#gridTable", "STATUS");
+            if (status == "1") {
+                tipDialog("单据已使用，不可删除！！", 3, "");
+                return false;
+            }
+            var isuse = GetJqGridRowValue("#gridTable", "ISUSE");
+            if (isuse == "1") {
+                tipDialog("单据已发布，请取消发布再删除！！", 3, "");
+                return false;
+            }
+            var delparm = 'KeyValue=' + KeyValue;
+            delConfig('/ExampleModule/HYCONVOPER/DeleteOrder', delparm, KeyValue.split(",").length);
+        }
+    }
+    //详细
+    function btn_detail() {
+        var KeyValue = GetJqGridRowValue("#gridTable", "ID");
+        if (IsChecked(KeyValue)) {
+            //AddTabMenu("HYBillCOFDetail", "@Url.Content("~/ExampleModule/HYCONVOPER/HYBillCOFDetail")?KeyValue=" + KeyValue , "铁水衡详细", "page_white_edit.png", true, true, true);
+            var TASKNO = GetJqGridRowValue("#gridTable", "TASKNO");
+            AddTabMenu("HYBillCOFForm", "@Url.Content("~/ExampleModule/HYCONVOPER/HYBillCOFDetail")?KeyValue=" + KeyValue + "&TASKNO=" + TASKNO + "&ModuleId=" + ModuleId, "编辑铁水衡任务单", "page_white_edit.png", true, true, true);
+        }
+    }
+    //查询
+    function btn_query() {
+        QueryDialog("/ExampleModule/HYCONVOPER/HYBillCOFQuery", "HYBillCOFQuery", "查询过滤", 350, 395, function (iframe) {
+            top.frames[iframe].QueryClick(function (qurl) {
+                $("#gridTable").jqGrid('setGridParam', {
+                    url: "@Url.Content("~/ExampleModule/HYCONVOPER/GetHYOrderList")?" + qurl + "&ModuleId=" + ModuleId, page: 1
+                }).trigger('reloadGrid');
+            });
+        });
+    }
+    //刷新
+    function windowload() {
+        $("#gridTable").trigger("reloadGrid"); //重新载入
+    }
+</script>
+<div class="leftline rightline" style="margin-left: 1px; margin-right: 1px;">
+    <div class="tools_bar" style="margin-top: 1px; margin-bottom: 0px;">
+        <div class="PartialButton">
+            @Html.Partial("_PartialButton")
+        </div>
+    </div>
+    <div class="QueryArea">
+        <table border="0" class="form-find" style="height: 45px;">
+            <tr>
+                <th>
+                    单据编号：
+                </th>
+                <td>
+                    <input id="TASKNO" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    炉批号：
+                </th>
+                <td>
+                    <input id="STOVENUM" type="text" class="txt" style="width: 120px" />
+                </td>
+                <th>
+                    制单日期：
+                </th>
+                <td>
+                    <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 120px" onfocus="WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+                </td>
+                <td>
+                    -
+                </td>
+                <td>
+                    <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 120px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+                </td>
+                <td>
+                    <input id="btnSearch" type="button" class="btnSearch" value="搜 索" onclick="btn_Search()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="grid_List" class="topline">
+        <table id="gridTable"></table>
+        <div id="gridPager">
+        </div>
+    </div>
+</div>
+<style>
+    .ui-widget-content {
+        border-left: none;
+    }
+</style>

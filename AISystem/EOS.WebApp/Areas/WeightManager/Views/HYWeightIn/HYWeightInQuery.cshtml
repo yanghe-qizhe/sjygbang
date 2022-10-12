@@ -1,0 +1,125 @@
+﻿@{
+    ViewBag.Title = "采购过磅查询";
+    Layout = "~/Views/Shared/_LayoutForm.cshtml";
+}
+<script>
+
+    $(function () {
+        BindAutocomplete("MaterialName", "Material", "Material", "200", "150", "");
+        BindAutocomplete("SupplyName", "Supply", "Supply", "200", "150", "");
+    })
+    //获取条件 
+    function GetConditionURL() {
+        var url = "";
+        var StartTime = $("#StartTime").val();
+        var EndTime = $("#EndTime").val();
+        var BillNo = $("#BillNo").val();
+        var VBillCode = $("#VBillCode").val();
+        var ContractBillNo = $("#ContractBillNo").val();
+        var DHBillNo = $("#DHBillNo").val();
+        var Cars = $("#Cars").val();
+        var Material = $("#Material").val();
+        var Supply = $("#Supply").val();
+        var UPLOAD = $("#UPLOAD").val();
+        url += "&StartTime=" + StartTime + "&EndTime=" + EndTime + "&BillNo=" + BillNo;
+        url += "&VBillCode=" + VBillCode + "&ContractBillNo=" + ContractBillNo + "&DHBillNo=" + DHBillNo;
+        url += "&Cars=" + escape(Cars) + "&Material=" + escape(Material);
+        url += "&Supply=" + escape(Supply) + "&UPLOAD=" + escape(UPLOAD);
+        return url;
+    }
+    //回调查询确认事件
+    function QueryClick(callBack) {
+        callBack(GetConditionURL());
+        closeDialog();
+    }
+</script>
+<div class="QueryArea">
+    <table border="0" class="form-find" style="height: 45px;">
+        <tr>
+            <th>
+                开始时间：
+            </th>
+            <td>
+                <input id="StartTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetDate(-7)" style="width: 200px" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                结束时间：
+            </th>
+            <td>
+                <input id="EndTime" type="text" class="txt Wdate" value="@EOS.Utilities.DateTimeHelper.GetToday()" style="width: 200px" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" />
+            </td>
+        </tr>
+        
+        <tr>
+            <th>
+                车号：
+            </th>
+            <td>
+                <input id="Cars" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                物料：
+            </th>
+            <td>
+                <input id="Material" type="hidden" />
+                <input id="MaterialName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>  <tr>
+            <th>
+                供应商：
+            </th>
+            <td>
+                <input id="Supply" type="hidden" />
+                <input id="SupplyName" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr><tr>
+            <th>
+                过磅单号：
+            </th>
+            <td>
+                <input id="BillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr> <tr>
+            <th>
+                订单编号：
+            </th>
+            <td>
+                <input id="VBillCode" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>
+         <tr>
+            <th>
+                合同编号：
+            </th>
+            <td>
+                <input id="ContractBillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr>   
+        <tr>
+            <th>
+                到货单号：
+            </th>
+            <td>
+                <input id="DHBillNo" type="text" class="txt" style="width: 200px" />
+            </td>
+        </tr><tr>
+            <th>
+                推单状态：
+            </th>
+            <td>
+                <select id="UPLOAD" name="UPLOAD" class="select" style="width: 205px;" dbfield="true"
+                    like="false">
+                    <option value="">---请选择---</option>
+                    <option value="0">未推单</option>
+                    <option value="1">已推单</option>
+                    <option value="2">不推单</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</div>
+

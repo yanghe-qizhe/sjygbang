@@ -28,6 +28,27 @@ var ModuleId = GetQuery('ModuleId'); //菜单主键
                         if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
                     }
                 },
+                {
+                    label: '采样', name: 'SAMPLING', index: 'ISUSE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                },
+                {
+                    label: '验级', name: 'CHECK_GRADE', index: 'ISUSE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                },
+                {
+                    label: '采样+验级', name: 'SAMPLING_CHECK_GRADE', index: 'ISUSE', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '1') return "<img src='../../Content/Images/checkokmark.gif'/>";
+                        if (cellvalue == '0') return "<img src='../../Content/Images/checknomark.gif'/>";
+                    }
+                },
             ],
             viewrecords: true,
             rowNum: 30,

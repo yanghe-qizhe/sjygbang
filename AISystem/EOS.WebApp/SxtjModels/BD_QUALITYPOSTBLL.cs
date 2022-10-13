@@ -41,7 +41,7 @@ namespace EOS.WebApp.SxtjModels
             return Repository().FindListBySql(strSql.ToString());
         }
 
-        public List<BD_QUALITYPOST> GetOrderList2(string KeyValue)
+        public List<BD_QUALITYPOST> GetOrderList2(string KeyValue, string SAMPLING, string CHECK_GRADE, string SAMPLING_CHECK_GRADE)
         {
             JqGridParam jqgridparam = new JqGridParam();
             jqgridparam.rows = 50;
@@ -49,6 +49,23 @@ namespace EOS.WebApp.SxtjModels
             StringBuilder strSql = new StringBuilder();
             List<DbParameter> parameter = new List<DbParameter>();
             strSql.Append(@"SELECT * FROM BD_QUALITYPOST WHERE WORK_AMOUNT != '0' ");
+            if (SAMPLING != "0" || CHECK_GRADE != "0" || SAMPLING_CHECK_GRADE != "0")
+            {
+                strSql.Append("AND ABILITY IN ('3'");
+                if (SAMPLING == "1")
+                {
+                    strSql.Append(",'0'");
+                }
+                if (CHECK_GRADE == "1")
+                {
+                    strSql.Append(",'1'");
+                }
+                if (SAMPLING_CHECK_GRADE == "1")
+                {
+                    strSql.Append(",'2'");
+                }
+                strSql.Append(")");
+            }
 
             #region  数据范围权限控制
             int IsCheckData = ManageProvider.Provider.Current().IsCheckData;

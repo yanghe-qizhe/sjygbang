@@ -115,8 +115,8 @@ namespace EOS.WebApp.Areas.BaseSet.Controllers
                 if (!string.IsNullOrEmpty(KeyValue))
                 {
                     strSql.Clear();
-                    strSql.Append(string.Format("update BD_QUALITYPERSON set WORKER_ID='{0}',WORKER_NAME='{1}',VALID='{2}' where ID='{3}'",
-                        entity.WORKER_ID, entity.WORKER_NAME, entity.VALID, int.Parse(KeyValue)));
+                    strSql.Append(string.Format("update BD_QUALITYPERSON set WORKER_ID='{0}',WORKER_NAME='{1}',VALID='{2}',SAMPLING='{3}',CHECK_GRADE='{4}',SAMPLING_CHECK_GRADE='{5}' where ID='{6}'",
+                        entity.WORKER_ID, entity.WORKER_NAME, entity.VALID, entity.SAMPLING, entity.CHECK_GRADE, entity.SAMPLING_CHECK_GRADE, int.Parse(KeyValue)));
                     database.ExecuteBySql(strSql, isOpenTrans);
                 }
                 else
@@ -130,8 +130,8 @@ namespace EOS.WebApp.Areas.BaseSet.Controllers
                     }
 
                     strSql.Clear();
-                    strSql.Append(string.Format("insert into BD_QUALITYPERSON (WORKER_ID,WORKER_NAME,VALID) VALUES ('{0}','{1}','{2}')",
-                        entity.WORKER_ID, entity.WORKER_NAME, entity.VALID));
+                    strSql.Append(string.Format("insert into BD_QUALITYPERSON (WORKER_ID,WORKER_NAME,VALID,SAMPLING,CHECK_GRADE,SAMPLING_CHECK_GRADE) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}')",
+                        entity.WORKER_ID, entity.WORKER_NAME, entity.VALID, entity.SAMPLING, entity.CHECK_GRADE, entity.SAMPLING_CHECK_GRADE));
                     database.ExecuteBySql(strSql, isOpenTrans);
 
                 }

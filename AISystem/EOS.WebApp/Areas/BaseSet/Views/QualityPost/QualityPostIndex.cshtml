@@ -22,6 +22,15 @@ var ModuleId = GetQuery('ModuleId'); //菜单主键
                 { label: '岗位编号', name: 'WORK_ID', index: 'WORK_ID', width: 100, align: 'center' },
                 { label: '岗位名称', name: 'WORK_NAME', index: 'WORK_NAME', width: 150, align: 'center' },
                 { label: '岗位数量', name: 'WORK_AMOUNT', index: 'WORK_AMOUNT', width: 150, align: 'center' },
+                {
+                    label: '能力', name: 'ABILITY', index: 'ISBLACK', width: 60, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '0') return "采样";
+                        if (cellvalue == '1') return "验级";
+                        if (cellvalue == '2') return "采样+验级";
+                        if (cellvalue == null) return "";
+                    }
+                },
             ],
             viewrecords: true,
             rowNum: 30,

@@ -304,7 +304,6 @@ namespace EOS.WebApp.Areas.BaseSet.Controllers
                 entity_dtl.IMPLEMENTDATE = entity.IMPLEMENTDATE;
                 entity_dtl.ENABLESTATE = entity.ENABLESTATE;
                 entity_dtl.VMEMO = entity.VMEMO;
-                entity_dtl.MODIFIEDTIME = DateTime.Now.ToString("yyyy-MM-dd HH:mm:dd");
                 database.Insert(entity_dtl, isOpenTrans);
             }
 

@@ -93,8 +93,8 @@ namespace EOS.WebApp.Areas.BaseSet.Controllers
                 List<BD_QUALITYPERSON> qualityPersonList = bd_qualitypersonbll.GetOrderList2(KeyValue);
                 foreach (BD_QUALITYPERSON qualityPerson in qualityPersonList)
                 {
-                    //获取所有岗位数量不为0的岗位
-                    List<BD_QUALITYPOST> qualityPostList = bd_qualitypost.GetOrderList2(KeyValue);
+                    //获取所有岗位数量不为0并且能力符合要求的岗位
+                    List<BD_QUALITYPOST> qualityPostList = bd_qualitypost.GetOrderList2(KeyValue, qualityPerson.SAMPLING, qualityPerson.CHECK_GRADE, qualityPerson.SAMPLING_CHECK_GRADE);
                     if (qualityPostList.Count() != 0)
                     {
                         int num = rd.Next(0, qualityPostList.Count());

@@ -104,6 +104,10 @@ namespace EOS.WebApp.Areas.BaseSet.Controllers
         [HttpPost]
         public ActionResult SubmitOrderForm(BD_QUALITYPOST entity, string ModuleId, string KeyValue)
         {
+            if (string.IsNullOrEmpty(entity.ABILITY))
+            {
+                return Content(new JsonMessage { Success = false, Code = "-1", Message = "操作失败：请选择能力"}.ToString());
+            }
 
             IDatabase database = DataFactory.Database();
             DbTransaction isOpenTrans = database.BeginTrans();
@@ -115,8 +119,8 @@ namespace EOS.WebApp.Areas.BaseSet.Controllers
                 if (!string.IsNullOrEmpty(KeyValue))
                 {
                     strSql.Clear();
-                    strSql.Append(string.Format("update BD_QUALITYPOST set WORK_ID='{0}',WORK_NAME='{1}',WORK_AMOUNT='{2}' where ID='{3}'",
-                        entity.WORK_ID, entity.WORK_NAME, entity.WORK_AMOUNT, int.Parse(KeyValue)));
+                    strSql.Append(string.Format("update BD_QUALITYPOST set WORK_ID='{0}',WORK_NAME='{1}',WORK_AMOUNT='{2}',ABILITY='{3}' where ID='{4}'",
+                        entity.WORK_ID, entity.WORK_NAME, entity.WORK_AMOUNT, entity.ABILITY, int.Parse(KeyValue)));
                     database.ExecuteBySql(strSql, isOpenTrans);
                 }
                 else
@@ -130,8 +134,8 @@ namespace EOS.WebApp.Areas.BaseSet.Controllers
                     }
 
                     strSql.Clear();
-                    strSql.Append(string.Format("insert into BD_QUALITYPOST (WORK_ID,WORK_NAME,WORK_AMOUNT) VALUES ('{0}','{1}','{2}')",
-                        entity.WORK_ID, entity.WORK_NAME, entity.WORK_AMOUNT));
+                    strSql.Append(string.Format("insert into BD_QUALITYPOST (WORK_ID,WORK_NAME,WORK_AMOUNT,ABILITY) VALUES ('{0}','{1}','{2}','{3}')",
+                        entity.WORK_ID, entity.WORK_NAME, entity.WORK_AMOUNT,entity.ABILITY));
                     database.ExecuteBySql(strSql, isOpenTrans);
 
                 }

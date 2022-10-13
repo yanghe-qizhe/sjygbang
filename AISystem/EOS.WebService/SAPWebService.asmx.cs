@@ -6492,7 +6492,7 @@ namespace EOS.WebService
         public RETURN_SAP WRZS_SECONDWEIGHTZS(string materialtype, string BILLNO)
         {
             String url = $"{ ConfigHelper.AppSettings("QKLURL")}";
-            HttpPost1(url, BILLNO);
+            //HttpPost1(url, BILLNO);
             RETURN_SAP ret = new RETURN_SAP();
             RETURN_SAP ret1 = new RETURN_SAP();
             REDATA redata = new REDATA();
@@ -6758,13 +6758,28 @@ namespace EOS.WebService
                                             upload1 = false;
                                         }
                                     }
+
+                                    #region 是否一车多料
+                                    //sxy/myt 220905 新增逻辑化工辅料一车一料允许自动过账，一车多料（是否拼单==1）
+                                    DP_POCARSORDER dp_pocarsorder = Db.Queryable<DP_POCARSORDER>()
+                                    .Where(c => c.ID == data.MID)
+                                    .Take(1).First();
+                                    if (dp_pocarsorder.ISMULTI == "1")
+                                    {
+                                        ret.STATUS = "E";
+                                        ret.REMSG = "化工二次计量过账接口停用，一车多料请手动过账！";
+                                        redata.MATDOCUMENTYEAR = "";
+                                        redata.MATERIALDOCUMENT = "";
+                                        redata.PRUEFLOS = "";
+                                        redata.E_POSNR = "";
+                                        ret.REDATA = redata;
+                                        upload1 = false;
+                                    }
+                                    //sxy/myt 220905 新增逻辑化工辅料一车一料允许自动过账
+                                    #endregion
                                 }
                                 #endregion
-                                #region 是否一车多料
-                                //sxy/myt 220905 新增逻辑化工辅料一车一料允许自动过账，一车多料（是否拼单==1）
 
-                                //sxy/myt 220905 新增逻辑化工辅料一车一料允许自动过账
-                                #endregion
                                 #region 化工包装物二次推送
                                 if (!string.IsNullOrEmpty(data.ZJBILLNO) && upload1 == true)
                                 {

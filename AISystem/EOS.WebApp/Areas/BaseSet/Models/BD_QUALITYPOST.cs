@@ -13,5 +13,6 @@ namespace EOS.WebApp.Areas.BaseSet.Models
         public string WORK_ID { get; set; }
         public string WORK_NAME { get; set; }
         public string WORK_AMOUNT { get; set; }
+        public string ABILITY { get; set; }
     }
 }
